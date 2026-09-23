@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/data/curriculumdata.ts","./src/hooks/useprogressstore.ts","./src/screens/auditmatrixscreen.tsx","./src/screens/curriculumscreen.tsx","./src/screens/dashboardscreen.tsx","./src/screens/workbenchesscreen.tsx","./src/types/index.ts"],"version":"5.9.3"}
