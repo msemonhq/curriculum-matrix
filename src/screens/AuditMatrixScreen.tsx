@@ -1,6 +1,6 @@
 import React from 'react';
 import { jdLines } from '../data/curriculumData';
-import { Target, AlertCircle, FileSearch, History } from 'lucide-react';
+import { Target } from 'lucide-react';
 
 export default function AuditMatrixScreen() {
   return (
@@ -16,8 +16,8 @@ export default function AuditMatrixScreen() {
           <h3 className="font-bold text-lg">JD Coverage Score</h3>
         </div>
         <div className="flex items-end gap-2 mb-6">
-          <span className="text-5xl font-black text-gray-900">20</span>
-          <span className="text-xl font-bold text-gray-400 mb-1">/ 20</span>
+          <span className="text-5xl font-black text-gray-900">{jdLines.length}</span>
+          <span className="text-xl font-bold text-gray-400 mb-1">/ {jdLines.length}</span>
         </div>
         
         <div className="space-y-3">
@@ -28,19 +28,6 @@ export default function AuditMatrixScreen() {
             </div>
           ))}
         </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <button className="bg-white border border-gray-200 p-4 rounded-2xl shadow-sm flex flex-col gap-2 items-start active:bg-gray-50">
-          <AlertCircle className="w-6 h-6 text-orange-500" />
-          <h4 className="font-bold text-gray-800 text-left">Gap Analysis</h4>
-          <span className="text-xs text-gray-500">14 items tracked</span>
-        </button>
-        <button className="bg-white border border-gray-200 p-4 rounded-2xl shadow-sm flex flex-col gap-2 items-start active:bg-gray-50">
-          <FileSearch className="w-6 h-6 text-blue-500" />
-          <h4 className="font-bold text-gray-800 text-left">Source Audit</h4>
-          <span className="text-xs text-gray-500">44 verified links</span>
-        </button>
       </div>
     </div>
   );

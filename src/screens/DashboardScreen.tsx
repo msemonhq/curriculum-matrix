@@ -1,21 +1,27 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useProgressStore } from '../hooks/useProgressStore';
 import { phases } from '../data/curriculumData';
-import { CheckCircle2, AlertTriangle, BookOpen, Clock } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
 
-export default function DashboardScreen({ onNavigate }: { onNavigate: (id: string) => void }) {
+export default function DashboardScreen() {
+  const navigate = useNavigate();
   const { phaseStatus, deliverables } = useProgressStore();
   
   const completedPhases = Object.values(phaseStatus).filter(s => s === 'completed').length;
   const completedDeliverables = Object.values(deliverables).filter(Boolean).length;
   const totalPhases = phases.length;
 
+  const totalHoursMin = phases.reduce((acc, phase) => acc + phase.hoursMin, 0);
+  const totalHoursMax = phases.reduce((acc, phase) => acc + phase.hoursMax, 0);
+  const hoursDisplay = totalHoursMin === totalHoursMax ? `~${totalHoursMin}` : `~${totalHoursMin}-${totalHoursMax}`;
+
   return (
     <div className="p-4 space-y-6">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col items-center justify-center space-y-2">
         <h2 className="text-gray-500 text-sm font-semibold uppercase tracking-wider">Curriculum Progress</h2>
         <div className="text-5xl font-extrabold text-rokomari-darkTeal">
-          {Math.round((completedPhases / totalPhases) * 100)}%
+          {Math.round((completedPhases / totalPhases) * 100) || 0}%
         </div>
         <p className="text-sm text-gray-400">{completedPhases} of {totalPhases} phases completed</p>
         
@@ -35,7 +41,7 @@ export default function DashboardScreen({ onNavigate }: { onNavigate: (id: strin
         </div>
         <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
           <Clock className="text-rokomari-orange w-8 h-8 mb-2" />
-          <span className="text-2xl font-bold text-gray-800">~90<span className="text-sm">h</span></span>
+          <span className="text-2xl font-bold text-gray-800">{hoursDisplay}<span className="text-sm">h</span></span>
           <span className="text-xs text-gray-500">Estimated Core Hours</span>
         </div>
       </div>
@@ -53,7 +59,7 @@ export default function DashboardScreen({ onNavigate }: { onNavigate: (id: strin
       </div>
       
       <button 
-        onClick={() => onNavigate('curriculum')}
+        onClick={() => navigate('/curriculum')}
         className="w-full bg-rokomari-teal text-white font-semibold rounded-xl py-3.5 shadow-sm active:bg-rokomari-darkTeal transition-colors"
       >
         Resume Curriculum

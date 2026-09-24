@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { phases } from '../data/curriculumData';
 import { useProgressStore } from '../hooks/useProgressStore';
-import { ChevronDown, ChevronUp, BookOpen, Clock, Target, FileCheck, Circle, CheckCircle2, PlayCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, BookOpen, Clock, Target, FileCheck, Circle, CheckCircle2, PlayCircle, TestTube } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CurriculumScreen() {
+  const navigate = useNavigate();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const { phaseStatus, deliverables, setPhaseStatus, toggleDeliverable } = useProgressStore();
 
@@ -21,6 +24,8 @@ export default function CurriculumScreen() {
         const isExpanded = expandedId === phase.id;
         const status = phaseStatus[phase.id] || 'not_started';
         const deliverableDone = deliverables[phase.id] || false;
+        const toolIdMatch = phase.id.match(/\d+/);
+        const toolId = toolIdMatch ? toolIdMatch[0] : '';
 
         return (
           <div key={phase.id} className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
@@ -39,46 +44,64 @@ export default function CurriculumScreen() {
                 <div className="text-xs font-semibold text-rokomari-teal uppercase tracking-wide">Phase {phase.number}</div>
                 <h3 className="font-bold text-gray-900 text-lg leading-tight mt-0.5">{phase.title}</h3>
                 <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
-                  <div className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {phase.estimatedHours}</div>
+                  <div className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {phase.hoursMin === phase.hoursMax ? `~${phase.hoursMin} hrs` : `~${phase.hoursMin}-${phase.hoursMax} hrs`}</div>
                   <div className="flex items-center gap-1"><Target className="w-3.5 h-3.5" /> {phase.jdLinesServed.join(', ')}</div>
                 </div>
               </div>
               <div>{isExpanded ? <ChevronUp className="text-gray-400" /> : <ChevronDown className="text-gray-400" />}</div>
             </div>
 
-            {isExpanded && (
-              <div className="px-4 pb-4 pt-1 border-t border-gray-100 bg-gray-50/50 space-y-4">
-                <div className="mt-3">
-                  <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-800"><BookOpen className="w-4 h-4 text-rokomari-teal" /> Target Course</h4>
-                  <p className="text-sm text-gray-600 mt-1">{phase.course}</p>
-                  <ul className="mt-2 space-y-1">
-                    {phase.modules.map((mod, i) => (
-                      <li key={i} className="text-xs text-gray-600 bg-white border border-gray-100 p-2 rounded-lg">• {mod}</li>
-                    ))}
-                  </ul>
-                </div>
-                
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-800">Strategic Application</h4>
-                  <p className="text-sm text-gray-600 mt-1 bg-rokomari-teal/5 p-3 rounded-xl border border-rokomari-teal/10">{phase.application}</p>
-                </div>
-
-                <div 
-                  className={`p-3 rounded-xl border cursor-pointer transition-colors ${deliverableDone ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}
-                  onClick={() => toggleDeliverable(phase.id)}
+            <AnimatePresence>
+              {isExpanded && (
+                <motion.div 
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
                 >
-                  <div className="flex items-start gap-3">
-                    <div className="mt-0.5">
-                      {deliverableDone ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <FileCheck className="w-5 h-5 text-gray-400" />}
+                  <div className="px-4 pb-4 pt-1 border-t border-gray-100 bg-gray-50/50 space-y-4">
+                    <div className="mt-3">
+                      <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-800"><BookOpen className="w-4 h-4 text-rokomari-teal" /> Target Course</h4>
+                      <p className="text-sm text-gray-600 mt-1">{phase.course}</p>
+                      <ul className="mt-2 space-y-1">
+                        {phase.modules.map((mod, i) => (
+                          <li key={i} className="text-xs text-gray-600 bg-white border border-gray-100 p-2 rounded-lg">• {mod}</li>
+                        ))}
+                      </ul>
                     </div>
+                    
                     <div>
-                      <h4 className={`text-sm font-semibold ${deliverableDone ? 'text-green-800' : 'text-gray-800'}`}>Proof-of-Skill Deliverable</h4>
-                      <p className={`text-xs mt-1 ${deliverableDone ? 'text-green-700' : 'text-gray-600'}`}>{phase.deliverable}</p>
+                      <h4 className="text-sm font-semibold text-gray-800">Strategic Application</h4>
+                      <p className="text-sm text-gray-600 mt-1 bg-rokomari-teal/5 p-3 rounded-xl border border-rokomari-teal/10">{phase.application}</p>
                     </div>
+
+                    <div 
+                      className={`p-3 rounded-xl border cursor-pointer transition-colors ${deliverableDone ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}
+                      onClick={() => toggleDeliverable(phase.id)}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="mt-0.5">
+                          {deliverableDone ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <FileCheck className="w-5 h-5 text-gray-400" />}
+                        </div>
+                        <div>
+                          <h4 className={`text-sm font-semibold ${deliverableDone ? 'text-green-800' : 'text-gray-800'}`}>Proof-of-Skill Deliverable</h4>
+                          <p className={`text-xs mt-1 ${deliverableDone ? 'text-green-700' : 'text-gray-600'}`}>{phase.deliverable}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {toolId && (
+                      <button 
+                        onClick={() => navigate(`/workbenches/${toolId}`)}
+                        className="w-full mt-2 bg-white border border-gray-200 text-rokomari-darkTeal font-semibold rounded-xl py-3 shadow-sm active:bg-gray-50 transition-colors flex justify-center items-center gap-2"
+                      >
+                        <TestTube className="w-5 h-5" /> Open Workbench
+                      </button>
+                    )}
                   </div>
-                </div>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         );
       })}

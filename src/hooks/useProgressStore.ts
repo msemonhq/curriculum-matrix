@@ -8,7 +8,7 @@ interface ProgressState {
   workbench: WorkbenchData;
   setPhaseStatus: (phaseId: string, status: PhaseStatus) => void;
   toggleDeliverable: (phaseId: string) => void;
-  updateWorkbench: (phaseId: string, data: any) => void;
+  updateWorkbench: (phaseId: string, data: Record<string, unknown>) => void;
   resetProgress: () => void;
 }
 

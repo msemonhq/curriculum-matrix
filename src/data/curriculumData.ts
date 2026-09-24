@@ -28,7 +28,7 @@ export const phases: Phase[] = [
     application: 'Take a vague brief (e.g., "why did category conversion drop last month?") and decompose it from first principles: revenue = traffic × conversion rate × average order value. Turn each branch into a testable hypothesis.',
     jdLinesServed: ['R1', 'C1'],
     deliverable: 'One-page research plan: issue tree, ranked hypotheses, data source and method per branch, and the result that would change the decision.',
-    estimatedHours: '~5.5 hrs'
+    hoursMin: 5.5, hoursMax: 5.5
   },
   {
     id: 'phase_2',
@@ -42,7 +42,7 @@ export const phases: Phase[] = [
     application: 'Use AI to speed up desk research — landscape scans, question trees, summarising long sources — but treat every output as unverified until traced to a primary source.',
     jdLinesServed: ['C5'],
     deliverable: 'Verification log: 10 AI-generated claims about the Bangladeshi book market, each traced to a primary source and marked confirmed or unsupported.',
-    estimatedHours: '~2 hrs'
+    hoursMin: 2, hoursMax: 2
   },
   {
     id: 'phase_3',
@@ -57,7 +57,7 @@ export const phases: Phase[] = [
     application: 'Strip and normalise UTM parameters and campaign names from Meta Ads and GA4 exports into a table-driven intake sheet, pivot it by channel, and keep a Google Sheets twin.',
     jdLinesServed: ['C2', 'R5'],
     deliverable: 'Entry diagnostic + a refreshable intake → pivot → summary in both tools, with a data-dictionary tab.',
-    estimatedHours: '~16 hrs'
+    hoursMin: 16, hoursMax: 16
   },
   {
     id: 'phase_4',
@@ -71,7 +71,7 @@ export const phases: Phase[] = [
     application: 'Learn what each number means (GA4 sessions vs Ads Manager results) and why platforms never reconcile exactly (attribution rules). Read one real funnel end to end.',
     jdLinesServed: ['C3'],
     deliverable: 'Metric definition sheet (15 metrics) + one-week reconciliation note comparing GA4 sessions with Meta link clicks.',
-    estimatedHours: '~15–18 hrs'
+    hoursMin: 15, hoursMax: 18
   },
   {
     id: 'phase_5',
@@ -87,7 +87,7 @@ export const phases: Phase[] = [
     application: 'Build a Bangladesh demand calendar and an intent-tagged query map for Rokomari\'s main categories. Test hypotheses against actual date shifts (e.g., Book fair in Ramadan).',
     jdLinesServed: ['R2'],
     deliverable: '3-page Bangladesh Trend & Intent Brief: demand calendar, intent map of 50+ queries, three cultural drivers with evidence.',
-    estimatedHours: '~4.5–6 hrs'
+    hoursMin: 4.5, hoursMax: 6
   },
   {
     id: 'phase_6',
@@ -102,7 +102,7 @@ export const phases: Phase[] = [
     application: 'Score competitors (Wafilife, Daraz, etc.) on range, price, delivery, trust. Plot value curves, list gaps as hypotheses, rank by impact/effort.',
     jdLinesServed: ['R3'],
     deliverable: 'Competitor gap matrix + ranked opportunity list with testable hypotheses.',
-    estimatedHours: '~6 hrs'
+    hoursMin: 6, hoursMax: 6
   },
   {
     id: 'phase_7',
@@ -116,7 +116,7 @@ export const phases: Phase[] = [
     application: 'Design before you run: hypothesis, primary metric, guardrail metrics, MDE, sample size. Write every test up blamelessly.',
     jdLinesServed: ['R4'],
     deliverable: 'Reusable Test Plan and Test Report templates + one retrospective write-up of a past campaign.',
-    estimatedHours: '~18–19 hrs'
+    hoursMin: 18, hoursMax: 19
   },
   {
     id: 'phase_8',
@@ -130,6 +130,6 @@ export const phases: Phase[] = [
     application: 'Turn Phase 3–7 outputs into a one-page leadership brief: answer first, three findings, decision requested, confidence.',
     jdLinesServed: ['R5', 'C4'],
     deliverable: 'One-page leadership brief + 5-minute readout deck/script; searchable Failure/Success library index.',
-    estimatedHours: '~20 hrs'
+    hoursMin: 20, hoursMax: 20
   }
 ];

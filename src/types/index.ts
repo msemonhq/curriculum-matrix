@@ -15,10 +15,11 @@ export interface Phase {
   application: string;
   jdLinesServed: string[];
   deliverable: string;
-  estimatedHours: string;
+  hoursMin: number;
+  hoursMax: number;
   isOptional?: boolean;
 }
 
 export interface WorkbenchData {
-  [phaseId: string]: any;
+  [phaseId: string]: Record<string, unknown>;
 }

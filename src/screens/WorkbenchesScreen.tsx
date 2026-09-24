@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Network, Search, Table, Calculator, Calendar, GitCompare, TestTube, Presentation, ArrowLeft, Plus, Check, X } from 'lucide-react';
+import { useProgressStore } from '../hooks/useProgressStore';
 
 interface Tool {
   id: string;
@@ -9,6 +11,8 @@ interface Tool {
   color: string;
   description: string;
 }
+
+// ... existing components ...
 
 interface IssueTreeBuilderProps {
   issues: string[];
@@ -190,20 +194,55 @@ const DemandCalendar: React.FC<DemandCalendarProps> = ({ events, setEvents, isAd
   );
 };
 
+// Task 5: Add real interactivity to Strategy Canvas (sliders instead of fixed bars)
 const StrategyCanvas = () => {
+  const workbenchData = useProgressStore(state => state.workbench);
+  const updateWorkbench = useProgressStore(state => state.updateWorkbench);
+
+  const defaultFactors = [
+    { name: 'Price', you: 60, comp: 40 },
+    { name: 'Quality', you: 80, comp: 50 },
+    { name: 'Speed', you: 40, comp: 70 },
+  ];
+  
+  const factors = workbenchData['6']?.factors || defaultFactors;
+
+  const updateFactor = (index: number, key: 'you' | 'comp', value: number) => {
+    const newFactors = [...factors];
+    newFactors[index] = { ...newFactors[index], [key]: value };
+    updateWorkbench('6', { factors: newFactors });
+  };
+
   return (
     <div className="w-full max-w-md text-left">
       <h4 className="font-bold text-gray-800 mb-4">Value Curve</h4>
-      <div className="space-y-4">
-        {['Price', 'Quality', 'Speed'].map((factor) => (
-          <div key={factor}>
+      <div className="space-y-6">
+        {factors.map((factor: { name: string, you: number, comp: number }, idx: number) => (
+          <div key={factor.name} className="space-y-2">
             <label className="flex justify-between text-xs font-semibold text-gray-600 mb-1">
-              <span>{factor}</span>
-              <span className="text-indigo-600">You vs Competitor</span>
+              <span>{factor.name}</span>
             </label>
-            <div className="h-2 bg-gray-200 rounded-full overflow-hidden flex">
-              <div className="h-full bg-indigo-500" style={{ width: '60%' }}></div>
-              <div className="h-full bg-gray-400" style={{ width: '40%' }}></div>
+            
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-indigo-600 font-medium w-16">You: {factor.you}%</span>
+              <input 
+                type="range" 
+                min="0" max="100" 
+                value={factor.you} 
+                onChange={(e) => updateFactor(idx, 'you', parseInt(e.target.value))}
+                className="flex-1 accent-indigo-500" 
+              />
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-gray-500 font-medium w-16">Comp: {factor.comp}%</span>
+              <input 
+                type="range" 
+                min="0" max="100" 
+                value={factor.comp} 
+                onChange={(e) => updateFactor(idx, 'comp', parseInt(e.target.value))}
+                className="flex-1 accent-gray-400" 
+              />
             </div>
           </div>
         ))}
@@ -291,31 +330,11 @@ const BriefBuilder: React.FC<BriefBuilderProps> = ({ campaignName, setCampaignNa
 
 
 export default function WorkbenchesScreen() {
-  const [activeTool, setActiveTool] = useState<Tool | null>(null);
-
-  // Hoisted state for all tools
-  const [issues, setIssues] = useState<string[]>(['Low Conversion Rate', 'High Bounce Rate']);
-  const [newIssue, setNewIssue] = useState('');
+  const { toolId } = useParams<{ toolId?: string }>();
+  const navigate = useNavigate();
   
-  const [logs, setLogs] = useState<Log[]>([{ id: 1, text: 'Ad copy generation', status: 'pass' }]);
-  const [newLog, setNewLog] = useState('');
-
-  const [ga4, setGa4] = useState('');
-  const [other, setOther] = useState('');
-  
-  const [events, setEvents] = useState<Event[]>([{ date: 'Oct 15', title: 'Q4 Webinar' }]);
-  const [isAddingEvent, setIsAddingEvent] = useState(false);
-  const [newDate, setNewDate] = useState('');
-  const [newTitle, setNewTitle] = useState('');
-
-  const [variable, setVariable] = useState('');
-  const [control, setControl] = useState('');
-  const [variant, setVariant] = useState('');
-  const [hypothesis, setHypothesis] = useState('');
-  
-  const [campaignName, setCampaignName] = useState('');
-  const [targetAudience, setTargetAudience] = useState('');
-  const [isSaved, setIsSaved] = useState(false);
+  const workbenchData = useProgressStore(state => state.workbench);
+  const updateWorkbench = useProgressStore(state => state.updateWorkbench);
 
   const tools: Tool[] = [
     { id: '1', title: 'Issue Tree Builder', icon: Network, phase: 'Phase 1', color: 'bg-blue-50 text-blue-600', description: 'Break down complex problems into smaller, manageable components.' },
@@ -328,8 +347,58 @@ export default function WorkbenchesScreen() {
     { id: '8', title: 'Brief Builder', icon: Presentation, phase: 'Phase 8', color: 'bg-teal-50 text-teal-600', description: 'Create comprehensive briefs for campaigns and projects.' },
   ];
 
-  const renderActiveToolContent = (toolId: string) => {
-    switch (toolId) {
+  const activeTool = toolId ? tools.find(t => t.id === toolId) : null;
+
+  // Hoisted state for all tools
+  const [issues, setIssues] = useState<string[]>(workbenchData['1']?.issues || ['Low Conversion Rate', 'High Bounce Rate']);
+  const [newIssue, setNewIssue] = useState('');
+  
+  const [logs, setLogs] = useState<Log[]>(workbenchData['2']?.logs || [{ id: 1, text: 'Ad copy generation', status: 'pass' }]);
+  const [newLog, setNewLog] = useState('');
+
+  const [ga4, setGa4] = useState(workbenchData['4']?.ga4 || '');
+  const [other, setOther] = useState(workbenchData['4']?.other || '');
+  
+  const [events, setEvents] = useState<Event[]>(workbenchData['5']?.events || [{ date: 'Oct 15', title: 'Q4 Webinar' }]);
+  const [isAddingEvent, setIsAddingEvent] = useState(false);
+  const [newDate, setNewDate] = useState('');
+  const [newTitle, setNewTitle] = useState('');
+
+  const [variable, setVariable] = useState(workbenchData['7']?.variable || '');
+  const [control, setControl] = useState(workbenchData['7']?.control || '');
+  const [variant, setVariant] = useState(workbenchData['7']?.variant || '');
+  const [hypothesis, setHypothesis] = useState(workbenchData['7']?.hypothesis || '');
+  
+  const [campaignName, setCampaignName] = useState(workbenchData['8']?.campaignName || '');
+  const [targetAudience, setTargetAudience] = useState(workbenchData['8']?.targetAudience || '');
+  const [isSaved, setIsSaved] = useState(workbenchData['8']?.isSaved || false);
+
+  useEffect(() => {
+    updateWorkbench('1', { issues });
+  }, [issues, updateWorkbench]);
+
+  useEffect(() => {
+    updateWorkbench('2', { logs });
+  }, [logs, updateWorkbench]);
+
+  useEffect(() => {
+    updateWorkbench('4', { ga4, other });
+  }, [ga4, other, updateWorkbench]);
+
+  useEffect(() => {
+    updateWorkbench('5', { events });
+  }, [events, updateWorkbench]);
+
+  useEffect(() => {
+    updateWorkbench('7', { variable, control, variant, hypothesis });
+  }, [variable, control, variant, hypothesis, updateWorkbench]);
+
+  useEffect(() => {
+    updateWorkbench('8', { campaignName, targetAudience, isSaved });
+  }, [campaignName, targetAudience, isSaved, updateWorkbench]);
+
+  const renderActiveToolContent = (id: string) => {
+    switch (id) {
       case '1': return <IssueTreeBuilder issues={issues} setIssues={setIssues} newIssue={newIssue} setNewIssue={setNewIssue} />;
       case '2': return <AIVerificationLog logs={logs} setLogs={setLogs} newLog={newLog} setNewLog={setNewLog} />;
       case '3': return <FormulaCheatSheet />;
@@ -348,7 +417,7 @@ export default function WorkbenchesScreen() {
       <div className="flex flex-col h-full bg-gray-50">
         <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3">
           <button 
-            onClick={() => setActiveTool(null)}
+            onClick={() => navigate('/workbenches')}
             className="p-2 -ml-2 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
           >
             <ArrowLeft className="w-6 h-6" />
@@ -388,7 +457,7 @@ export default function WorkbenchesScreen() {
           return (
             <button 
               key={tool.id} 
-              onClick={() => setActiveTool(tool)}
+              onClick={() => navigate(`/workbenches/${tool.id}`)}
               className="bg-white border border-gray-200 rounded-2xl p-4 flex flex-col items-start text-left shadow-sm active:bg-gray-50 transition-all focus:outline-none focus:ring-2 focus:ring-teal-500/50"
             >
               <div className={`p-3 rounded-xl ${tool.color} mb-3`}>
