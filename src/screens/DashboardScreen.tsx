@@ -64,6 +64,51 @@ export default function DashboardScreen() {
       >
         Resume Curriculum
       </button>
+
+      <div className="flex gap-4 mt-4">
+        <button 
+          onClick={async () => {
+            const data = localStorage.getItem('bspr-curriculum-storage');
+            if (data) {
+              try {
+                const { Share } = await import('@capacitor/share');
+                await Share.share({
+                  title: 'Curriculum Progress Backup',
+                  text: data,
+                  dialogTitle: 'Save Progress Backup'
+                });
+              } catch {
+                navigator.clipboard.writeText(data);
+                alert('Progress copied to clipboard!');
+              }
+            }
+          }}
+          className="flex-1 bg-white border border-gray-200 text-gray-700 font-semibold rounded-xl py-3 shadow-sm active:bg-gray-50 transition-colors text-sm"
+        >
+          Export Progress
+        </button>
+        <button 
+          onClick={() => {
+            const data = prompt('Paste your progress JSON string here:');
+            if (data) {
+              try {
+                const parsed = JSON.parse(data);
+                if (parsed && parsed.state) {
+                  useProgressStore.getState().importProgress(parsed.state);
+                  alert('Progress imported successfully!');
+                } else {
+                  alert('Invalid format.');
+                }
+              } catch {
+                alert('Invalid JSON.');
+              }
+            }
+          }}
+          className="flex-1 bg-white border border-gray-200 text-gray-700 font-semibold rounded-xl py-3 shadow-sm active:bg-gray-50 transition-colors text-sm"
+        >
+          Import Progress
+        </button>
+      </div>
     </div>
   );
 }

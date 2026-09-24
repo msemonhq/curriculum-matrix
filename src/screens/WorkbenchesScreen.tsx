@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Network, Search, Table, Calculator, Calendar, GitCompare, TestTube, Presentation, ArrowLeft, Plus, Check, X } from 'lucide-react';
+import { Network, Search, Table, Calculator, Calendar, GitCompare, TestTube, Presentation, ArrowLeft, Plus, Check, X, Share2 } from 'lucide-react';
 import { useProgressStore } from '../hooks/useProgressStore';
 
 interface Tool {
@@ -429,6 +429,21 @@ export default function WorkbenchesScreen() {
             <h2 className="font-bold text-gray-900 leading-tight">{activeTool.title}</h2>
             <span className="text-xs text-gray-500">{activeTool.phase} Workbench</span>
           </div>
+          <button 
+            onClick={async () => {
+              const data = JSON.stringify(workbenchData[activeTool.id] || {}, null, 2);
+              try {
+                const { Share } = await import('@capacitor/share');
+                await Share.share({ title: activeTool.title, text: data, dialogTitle: 'Share Workbench Output' });
+              } catch {
+                navigator.clipboard.writeText(data);
+                alert('Copied to clipboard!');
+              }
+            }}
+            className="ml-auto p-2 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
+          >
+            <Share2 className="w-5 h-5" />
+          </button>
         </header>
         <div className="flex-1 p-6 flex flex-col items-center justify-start overflow-y-auto text-center">
           <div className={`p-6 rounded-full ${activeTool.color} mb-4 opacity-80 shrink-0`}>

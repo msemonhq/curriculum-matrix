@@ -24,6 +24,12 @@ jobs:
     - name: Install NPM Dependencies
       run: npm ci
 
+    - name: Run Linter
+      run: npm run lint
+
+    - name: Type Check
+      run: npx tsc --noEmit
+
     - name: Build Web Assets
       run: npm run build
 

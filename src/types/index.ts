@@ -18,6 +18,7 @@ export interface Phase {
   hoursMin: number;
   hoursMax: number;
   isOptional?: boolean;
+  workbenchId?: string;
 }
 
 export interface WorkbenchData {

@@ -1,14 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { phases } from '../data/curriculumData';
 import { useProgressStore } from '../hooks/useProgressStore';
-import { ChevronDown, ChevronUp, BookOpen, Clock, Target, FileCheck, Circle, CheckCircle2, PlayCircle, TestTube } from 'lucide-react';
+import { ChevronDown, ChevronUp, BookOpen, Clock, Target, FileCheck, Circle, CheckCircle2, PlayCircle, TestTube, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CurriculumScreen() {
   const navigate = useNavigate();
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const { phaseStatus, deliverables, setPhaseStatus, toggleDeliverable } = useProgressStore();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  
+  const { phaseStatus, deliverables, timeTracking, notes, setPhaseStatus, toggleDeliverable, setPhaseTime, setPhaseNote } = useProgressStore();
 
   const getStatusIcon = (status: string | undefined) => {
     switch (status) {
@@ -18,14 +21,48 @@ export default function CurriculumScreen() {
     }
   };
 
+  const filteredPhases = useMemo(() => {
+    return phases.filter(phase => {
+      const matchesSearch = phase.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            phase.jdLinesServed.some(jd => jd.toLowerCase().includes(searchQuery.toLowerCase()));
+      const status = phaseStatus[phase.id] || 'not_started';
+      const matchesFilter = statusFilter === 'all' || status === statusFilter;
+      return matchesSearch && matchesFilter;
+    });
+  }, [searchQuery, statusFilter, phaseStatus]);
+
   return (
     <div className="p-4 space-y-4">
-      {phases.map((phase) => {
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input 
+            type="text" 
+            placeholder="Search phases or JD lines..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-rokomari-teal"
+          />
+        </div>
+        <select 
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rokomari-teal text-gray-600"
+        >
+          <option value="all">All Status</option>
+          <option value="not_started">Not Started</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+
+      {filteredPhases.map((phase) => {
         const isExpanded = expandedId === phase.id;
         const status = phaseStatus[phase.id] || 'not_started';
         const deliverableDone = deliverables[phase.id] || false;
-        const toolIdMatch = phase.id.match(/\d+/);
-        const toolId = toolIdMatch ? toolIdMatch[0] : '';
+        const toolId = phase.workbenchId;
+        const timeLogged = timeTracking[phase.id] || 0;
+        const note = notes[phase.id] || '';
 
         return (
           <div key={phase.id} className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
@@ -73,6 +110,52 @@ export default function CurriculumScreen() {
                     <div>
                       <h4 className="text-sm font-semibold text-gray-800">Strategic Application</h4>
                       <p className="text-sm text-gray-600 mt-1 bg-rokomari-teal/5 p-3 rounded-xl border border-rokomari-teal/10">{phase.application}</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-white border border-gray-200 p-3 rounded-xl">
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">Hours Logged</label>
+                        <input 
+                          type="number" 
+                          min="0"
+                          value={timeLogged || ''} 
+                          onChange={(e) => setPhaseTime(phase.id, parseFloat(e.target.value) || 0)}
+                          placeholder={`Est: ${phase.hoursMin}`}
+                          className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-rokomari-teal" 
+                        />
+                      </div>
+                      <div className="bg-white border border-gray-200 p-3 rounded-xl">
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">Notes / Blockers</label>
+                        <textarea 
+                          rows={1}
+                          value={note} 
+                          onChange={(e) => setPhaseNote(phase.id, e.target.value)}
+                          placeholder="Add notes..."
+                          className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-rokomari-teal resize-none" 
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <button 
+                          onClick={async () => {
+                            try {
+                              const { LocalNotifications } = await import('@capacitor/local-notifications');
+                              await LocalNotifications.requestPermissions();
+                              await LocalNotifications.schedule({
+                                notifications: [{
+                                  title: 'Curriculum Reminder',
+                                  body: `Time to get back to ${phase.title}!`,
+                                  id: Math.floor(Math.random() * 1000000),
+                                  schedule: { at: new Date(Date.now() + 1000 * 60 * 60 * 24) }
+                                }]
+                              });
+                              alert('Reminder set for 24 hours from now.');
+                            } catch { alert('Notifications not supported in browser context.'); }
+                          }}
+                          className="w-full bg-gray-50 border border-gray-200 text-gray-700 font-semibold rounded-xl py-2 shadow-sm text-sm hover:bg-gray-100 transition-colors"
+                        >
+                          Remind Me Tomorrow
+                        </button>
+                      </div>
                     </div>
 
                     <div 
