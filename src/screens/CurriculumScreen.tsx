@@ -1,9 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { phases } from '../data/curriculumData';
+import curriculumData from '../data/curriculumData.json';
+const { phases } = curriculumData;
 import { useProgressStore } from '../hooks/useProgressStore';
 import { ChevronDown, ChevronUp, BookOpen, Clock, Target, FileCheck, Circle, CheckCircle2, PlayCircle, TestTube, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { EmptyState } from '../components/EmptyState';
 
 export default function CurriculumScreen() {
   const navigate = useNavigate();
@@ -11,7 +13,7 @@ export default function CurriculumScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   
-  const { phaseStatus, deliverables, timeTracking, notes, setPhaseStatus, toggleDeliverable, setPhaseTime, setPhaseNote } = useProgressStore();
+  const { phaseStatus, deliverables, timeTracking, notes, workbench, setPhaseStatus, toggleDeliverable, setPhaseTime, setPhaseNote } = useProgressStore();
 
   const getStatusIcon = (status: string | undefined) => {
     switch (status) {
@@ -55,6 +57,15 @@ export default function CurriculumScreen() {
           <option value="completed">Completed</option>
         </select>
       </div>
+
+      {filteredPhases.length === 0 && (
+        <div className="mt-8">
+          <EmptyState 
+            title="No phases found" 
+            description="Try adjusting your search or filters." 
+          />
+        </div>
+      )}
 
       {filteredPhases.map((phase) => {
         const isExpanded = expandedId === phase.id;
@@ -138,6 +149,34 @@ export default function CurriculumScreen() {
                         <button 
                           onClick={async () => {
                             try {
+                              let targetDate = new Date(Date.now() + 1000 * 60 * 60 * 24);
+                              let alertMsg = 'Reminder set for 24 hours from now.';
+                              const demandEvents = workbench['5']?.events || [];
+                              
+                              if (demandEvents.length > 0) {
+                                const now = new Date();
+                                const currentYear = now.getFullYear();
+                                const validEvents = demandEvents
+                                  .flatMap((e: any) => {
+                                    const dThisYear = new Date(`${e.date} ${currentYear}`);
+                                    const dNextYear = new Date(`${e.date} ${currentYear + 1}`);
+                                    const options = [];
+                                    if (!isNaN(dThisYear.getTime()) && dThisYear.getTime() > now.getTime()) {
+                                      options.push({ ...e, parsed: dThisYear });
+                                    }
+                                    if (!isNaN(dNextYear.getTime()) && dNextYear.getTime() > now.getTime()) {
+                                      options.push({ ...e, parsed: dNextYear });
+                                    }
+                                    return options;
+                                  })
+                                  .sort((a: any, b: any) => a.parsed.getTime() - b.parsed.getTime());
+                                  
+                                if (validEvents.length > 0) {
+                                  targetDate = validEvents[0].parsed;
+                                  alertMsg = `Reminder set for ${validEvents[0].title} on ${validEvents[0].date}.`;
+                                }
+                              }
+
                               const { LocalNotifications } = await import('@capacitor/local-notifications');
                               await LocalNotifications.requestPermissions();
                               await LocalNotifications.schedule({
@@ -145,15 +184,15 @@ export default function CurriculumScreen() {
                                   title: 'Curriculum Reminder',
                                   body: `Time to get back to ${phase.title}!`,
                                   id: Math.floor(Math.random() * 1000000),
-                                  schedule: { at: new Date(Date.now() + 1000 * 60 * 60 * 24) }
+                                  schedule: { at: targetDate }
                                 }]
                               });
-                              alert('Reminder set for 24 hours from now.');
+                              alert(alertMsg);
                             } catch { alert('Notifications not supported in browser context.'); }
                           }}
                           className="w-full bg-gray-50 border border-gray-200 text-gray-700 font-semibold rounded-xl py-2 shadow-sm text-sm hover:bg-gray-100 transition-colors"
                         >
-                          Remind Me Tomorrow
+                          Remind Me
                         </button>
                       </div>
                     </div>

@@ -1,4 +1,4 @@
-export type PhaseStatus = 'not_started' | 'in_progress' | 'in_review' | 'completed';
+export type PhaseStatus = 'not_started' | 'in_progress' | 'completed';
 
 export interface JDLine {
   id: string;

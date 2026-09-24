@@ -48,8 +48,13 @@ function MainApp() {
     <div className="flex flex-col h-screen bg-gray-50 overflow-hidden text-gray-900 pb-safe">
       {/* Top App Bar */}
       <header className="bg-rokomari-teal text-white shadow-md z-10 px-4 py-3 safe-top flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight">Rokomari BSPR Curriculum</h1>
-        <FileBarChart className="w-5 h-5 text-white/80" />
+        <h1 className="text-xl font-bold tracking-tight">
+          {tabs.find(t => t.id === activeTab)?.label || 'Rokomari BSPR Curriculum'}
+        </h1>
+        {(() => {
+          const ActiveIcon = tabs.find(t => t.id === activeTab)?.icon || FileBarChart;
+          return <ActiveIcon className="w-5 h-5 text-white/80" />;
+        })()}
       </header>
 
       {/* Main Content Area */}

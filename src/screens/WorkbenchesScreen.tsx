@@ -12,7 +12,6 @@ interface Tool {
   description: string;
 }
 
-// ... existing components ...
 
 interface IssueTreeBuilderProps {
   issues: string[];
@@ -431,12 +430,28 @@ export default function WorkbenchesScreen() {
           </div>
           <button 
             onClick={async () => {
-              const data = JSON.stringify(workbenchData[activeTool.id] || {}, null, 2);
+              const data = workbenchData[activeTool.id] || {};
+              let formattedText = '';
+              if (!data || Object.keys(data).length === 0) {
+                formattedText = 'No data recorded yet.';
+              } else {
+                switch(activeTool.id) {
+                  case '1': formattedText = `Core Issues:\n${(data.issues || []).map((i: string) => `- ${i}`).join('\n')}`; break;
+                  case '2': formattedText = `Recent Verifications:\n${(data.logs || []).map((l: any) => `- ${l.text} [${l.status.toUpperCase()}]`).join('\n')}`; break;
+                  case '4': formattedText = `GA4 Discrepancy:\nGA4 Conversions: ${data.ga4 || 0}\nCRM/Other: ${data.other || 0}`; break;
+                  case '5': formattedText = `Upcoming Campaigns:\n${(data.events || []).map((e: any) => `- ${e.date}: ${e.title}`).join('\n')}`; break;
+                  case '6': formattedText = `Strategy Canvas Factors:\n${(data.factors || []).map((f: any) => `- ${f.name} (You: ${f.you}%, Comp: ${f.comp}%)`).join('\n')}`; break;
+                  case '7': formattedText = `A/B Test Hypothesis:\n"If we change the ${data.variable || '[Variable]'} from '${data.control || '[Control]'}' to '${data.variant || '[Variant]'}', we expect to see an improvement in our primary metric because it better addresses user needs."`; break;
+                  case '8': formattedText = `Campaign Brief:\nName: ${data.campaignName || 'Untitled'}\nTarget Audience: ${data.targetAudience || 'Not specified'}`; break;
+                  default: formattedText = JSON.stringify(data, null, 2);
+                }
+              }
+
               try {
                 const { Share } = await import('@capacitor/share');
-                await Share.share({ title: activeTool.title, text: data, dialogTitle: 'Share Workbench Output' });
+                await Share.share({ title: activeTool.title, text: formattedText, dialogTitle: 'Share Workbench Output' });
               } catch {
-                navigator.clipboard.writeText(data);
+                navigator.clipboard.writeText(formattedText);
                 alert('Copied to clipboard!');
               }
             }}
