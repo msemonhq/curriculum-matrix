@@ -3,4 +3,3 @@ dist/
 dist-ssr/
 .DS_Store
 *.local
-android/
