@@ -45,7 +45,7 @@ export default function DashboardScreen() {
   const nextPhase = phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed');
   const totalHoursMin = phases.reduce((acc, p) => acc + p.hoursMin, 0);
   const totalHoursMax = phases.reduce((acc, p) => acc + p.hoursMax, 0);
-  const hoursDisplay = totalHoursMin === totalHoursMax ? `~${totalHoursMin}` : `~${totalHoursMin}â€“${totalHoursMax}`;
+  const hoursDisplay = totalHoursMin === totalHoursMax ? `~${totalHoursMin}` : `~${totalHoursMin}-{totalHoursMax}`;
   const totalLogged = Object.values(timeTracking).reduce((sum, h) => sum + (h || 0), 0);
   const radius = 42;
   const circumference = 2 * Math.PI * radius;
@@ -207,5 +207,7 @@ export default function DashboardScreen() {
     </div>
   );
 }
+
+
 
 
