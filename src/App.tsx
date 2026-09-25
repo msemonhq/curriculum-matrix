@@ -1,6 +1,8 @@
-import React from 'react';
+﻿import React from 'react';
 import { HashRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { App as CapacitorApp } from '@capacitor/app';
+import { useProgressStore } from './hooks/useProgressStore';
+import curriculumData from './data/curriculumData.json';
 import { LayoutDashboard, Map, TestTube, Target } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import DashboardScreen from './screens/DashboardScreen';
@@ -27,11 +29,18 @@ function MainApp() {
   const tabs = [{ id: 'dashboard', path: '/', label: 'Dashboard', icon: LayoutDashboard }, { id: 'curriculum', path: '/curriculum', label: 'Roadmap', icon: Map }, { id: 'workbenches', path: '/workbenches', label: 'Workbenches', icon: TestTube }, { id: 'audit', path: '/audit', label: 'Audit', icon: Target }];
   const screenLabel = tabs.find(t => t.id === activeTab)?.label || 'Dashboard';
   const isInsideTool = location.pathname.startsWith('/workbenches/') && location.pathname.length > '/workbenches/'.length;
+  const phaseStatus = useProgressStore(state => state.phaseStatus);
+  const activePhase = curriculumData.phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed');
+  const contextStatus = activePhase ? `Phase ${activePhase.number}: In Progress` : 'Curriculum Complete';
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
   
   React.useEffect(() => { if (mainRef.current) mainRef.current.scrollTop = 0; }, [location.pathname]);
 
-  return <div className="flex flex-col h-screen bg-surface-base overflow-hidden text-ink-primary pb-safe"><header className="w-full bg-surface-elevated/85 backdrop-blur-md border-b border-line/60 rounded-b-3xl shadow-surface-lg z-20 pt-safe-top"><div className="px-5 py-4 flex items-center justify-between"><div className="flex items-center gap-3"><MatrixLogo activeTab={activeTab} /><AnimatePresence mode="wait"><motion.h1 key={screenLabel} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }} transition={{ duration: 0.18 }} className="text-title font-semibold text-ink-primary tracking-tight">{screenLabel}</motion.h1></AnimatePresence></div><div className="w-2 h-2 rounded-full bg-accent" aria-hidden="true" /></div></header>
+  return <div className="flex flex-col h-screen bg-surface-base overflow-hidden text-ink-primary pb-safe"><header className="w-full z-20 pt-safe-top"><div className="px-4 py-4 flex items-center justify-between"><div className="flex items-center gap-3"><MatrixLogo activeTab={activeTab} /><div className="flex flex-col justify-center"><span className="text-[13px] font-normal text-[#8E929B] leading-tight">{greeting}, User 👋🏽</span><span className="text-[20px] font-bold text-white leading-tight mt-0.5">{contextStatus}</span></div></div><div className="w-2 h-2 rounded-full bg-accent" aria-hidden="true" /></div></header>
     <main ref={mainRef} className="flex-1 overflow-y-auto scroll-smooth relative"><AnimatePresence mode="wait"><motion.div key={location.pathname} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22 }} className="h-full"><Routes location={location}><Route path="/" element={<DashboardScreen />} /><Route path="/curriculum" element={<CurriculumScreen />} /><Route path="/workbenches" element={<WorkbenchesScreen />} /><Route path="/workbenches/:toolId" element={<WorkbenchesScreen />} /><Route path="/audit" element={<AuditMatrixScreen />} /></Routes></motion.div></AnimatePresence></main>{!isInsideTool && <nav aria-label="Primary navigation" className="fixed bottom-0 w-full px-4 pb-4 safe-bottom z-30 pointer-events-none"><div className="pointer-events-auto bg-surface-elevated border border-line rounded-3xl shadow-surface-lg flex justify-around items-center h-16 px-2">{tabs.map(tab => { const Icon = tab.icon; const isActive = activeTab === tab.id; return <motion.button type="button" aria-current={isActive ? 'page' : undefined} aria-label={tab.label} key={tab.id} onClick={() => navigate(tab.path)} whileTap={{ scale: 0.96 }} className="flex flex-col items-center justify-center flex-1 h-full space-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 rounded-2xl"><div className={`relative px-4 py-1.5 rounded-2xl ${isActive ? 'bg-accent-dim' : ''}`}><Icon className={`w-5 h-5 ${isActive ? 'text-accent' : 'text-ink-tertiary'}`} strokeWidth={isActive ? 2.5 : 2} aria-hidden="true" /></div><span className={`text-micro uppercase tracking-wider ${isActive ? 'text-accent' : 'text-ink-tertiary'}`}>{tab.label}</span></motion.button>; })}</div></nav>}</div>;
 }
 
 export default function App() { return <Router><MainApp /></Router>; }
+
+

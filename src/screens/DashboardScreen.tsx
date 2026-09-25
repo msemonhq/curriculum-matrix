@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProgressStore } from '../hooks/useProgressStore';
 import curriculumData from '../data/curriculumData.json';
@@ -45,7 +45,7 @@ export default function DashboardScreen() {
   const nextPhase = phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed');
   const totalHoursMin = phases.reduce((acc, p) => acc + p.hoursMin, 0);
   const totalHoursMax = phases.reduce((acc, p) => acc + p.hoursMax, 0);
-  const hoursDisplay = totalHoursMin === totalHoursMax ? `~${totalHoursMin}` : `~${totalHoursMin}–${totalHoursMax}`;
+  const hoursDisplay = totalHoursMin === totalHoursMax ? `~${totalHoursMin}` : `~${totalHoursMin}â€“${totalHoursMax}`;
   const totalLogged = Object.values(timeTracking).reduce((sum, h) => sum + (h || 0), 0);
   const radius = 42;
   const circumference = 2 * Math.PI * radius;
@@ -91,7 +91,7 @@ export default function DashboardScreen() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto p-5 space-y-5 pb-app-nav">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-app-nav">
       {toast && <Toast message={toast.message} tone={toast.tone} onClose={dismissToast} />}
       <div className="flex items-center justify-between">
         <div><p className="text-caption text-ink-secondary uppercase tracking-wider">Overview</p><h2 className="text-heading text-ink-primary">Your curriculum</h2></div>
@@ -116,7 +116,7 @@ export default function DashboardScreen() {
         </div>
       </Card>
 
-      <div className="grid grid-cols-2 gap-5">
+      <div className="grid grid-cols-2 gap-4">
         <Card className="flex flex-col gap-3">
           <div className="w-9 h-9 rounded-xl bg-success-dim flex items-center justify-center">
             <CheckCircle2 className="text-success w-5 h-5" aria-hidden="true" />
