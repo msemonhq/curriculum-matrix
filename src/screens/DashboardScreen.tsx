@@ -28,7 +28,7 @@ function AnimatedNumber({ value, suffix = '' }: { value: number; suffix?: string
 
 export default function DashboardScreen() {
   const navigate = useNavigate();
-  const { phaseStatus, deliverables, timeTracking, importProgress, resetProgress } = useProgressStore();
+  const { activePhaseId, phaseStatus, deliverables, timeTracking, importProgress, resetProgress } = useProgressStore();
   const { toast, showToast, dismissToast } = useToast();
   const [showImportSheet, setShowImportSheet] = useState(false);
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
@@ -37,12 +37,12 @@ export default function DashboardScreen() {
   const [importError, setImportError] = useState('');
   const [winsExpanded, setWinsExpanded] = useState(false);
 
-  const completedPhases = Object.values(phaseStatus).filter(s => s === 'completed').length;
+  const completedPhases = phases.filter(phase => phaseStatus[phase.id] === 'completed').length;
   const completedDeliverables = Object.values(deliverables).filter(Boolean).length;
   const totalPhases = phases.length;
   const progressPercent = Math.round((completedPhases / totalPhases) * 100) || 0;
   const isComplete = progressPercent === 100;
-  const nextPhase = phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed');
+  const nextPhase = activePhaseId ? (phases.find(phase => phase.id === activePhaseId && phaseStatus[phase.id] !== 'completed') || phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed')) : phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed');
   const totalHoursMin = phases.reduce((acc, p) => acc + p.hoursMin, 0);
   const totalHoursMax = phases.reduce((acc, p) => acc + p.hoursMax, 0);
   const hoursDisplay = totalHoursMin === totalHoursMax ? `~${totalHoursMin}` : `~${totalHoursMin}-{totalHoursMax}`;
@@ -207,6 +207,9 @@ export default function DashboardScreen() {
     </div>
   );
 }
+
+
+
 
 
 

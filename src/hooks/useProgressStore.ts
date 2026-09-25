@@ -3,12 +3,14 @@ import { persist } from 'zustand/middleware';
 import { PhaseStatus, WorkbenchData } from '../types';
 
 interface ProgressState {
+  activePhaseId: string | null;
   phaseStatus: Record<string, PhaseStatus>;
   deliverables: Record<string, boolean>;
   workbench: WorkbenchData;
   timeTracking: Record<string, number>;
   notes: Record<string, string>;
   completedModules: Record<string, boolean>;
+  setActivePhase: (phaseId: string | null) => void;
   setPhaseStatus: (phaseId: string, status: PhaseStatus) => void;
   toggleDeliverable: (phaseId: string) => void;
   toggleModule: (phaseId: string, moduleIndex: number) => void;
@@ -59,7 +61,9 @@ export const useProgressStore = create<ProgressState>()(
       notes: {},
       completedModules: {},
 
-      setPhaseStatus: (phaseId, status) => set((state) => ({ phaseStatus: { ...state.phaseStatus, [phaseId]: status } })),
+      activePhaseId: null,
+      setActivePhase: (phaseId) => set({ activePhaseId: phaseId }),
+      setPhaseStatus: (phaseId, status) => set((state) => ({ phaseStatus: { ...state.phaseStatus, [phaseId]: status }, activePhaseId: status === 'in_progress' ? phaseId : (status === 'completed' && state.activePhaseId === phaseId ? null : state.activePhaseId) })),
       toggleDeliverable: (phaseId) => set((state) => ({ deliverables: { ...state.deliverables, [phaseId]: !state.deliverables[phaseId] } })),
       toggleModule: (phaseId, moduleIndex) => set((state) => {
         const key = `${phaseId}_${moduleIndex}`;
@@ -81,8 +85,12 @@ export const useProgressStore = create<ProgressState>()(
         };
       }),
 
-      resetProgress: () => set({ phaseStatus: {}, deliverables: {}, workbench: {}, timeTracking: {}, notes: {}, completedModules: {} }),
+      resetProgress: () => set({ activePhaseId: null, phaseStatus: {}, deliverables: {}, workbench: {}, timeTracking: {}, notes: {}, completedModules: {} }),
     }),
     { name: 'bspr-curriculum-storage' },
   ),
 );
+
+
+
+
