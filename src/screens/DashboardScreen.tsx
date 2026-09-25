@@ -4,7 +4,7 @@ import { useProgressStore } from '../hooks/useProgressStore';
 import curriculumData from '../data/curriculumData.json';
 const { phases } = curriculumData;
 import { CheckCircle2, AlertTriangle, Clock, Settings, Upload, ChevronDown, ArrowRight } from 'lucide-react';
-import { motion, useSpring, useTransform } from 'framer-motion';
+import { motion, useSpring } from 'framer-motion';
 import { Button } from '../components/Button';
 import { TextArea } from '../components/TextArea';
 import { IconButton } from '../components/IconButton';
@@ -14,16 +14,22 @@ import { Sheet } from '../components/Sheet';
 // Animated number counter
 function AnimatedNumber({ value, suffix = '' }: { value: number; suffix?: string }) {
   const spring = useSpring(0, { stiffness: 80, damping: 20 });
-  const display = useTransform(spring, (v) => Math.round(v).toString());
+  const [display, setDisplay] = useState('0');
 
   React.useEffect(() => {
     spring.set(value);
   }, [spring, value]);
 
+  React.useEffect(() => {
+    return spring.on('change', (latest) => {
+      setDisplay(Math.round(latest).toString());
+    });
+  }, [spring]);
+
   return (
-    <motion.span className="tabular">
+    <span className="tabular">
       {display}{suffix}
-    </motion.span>
+    </span>
   );
 }
 
