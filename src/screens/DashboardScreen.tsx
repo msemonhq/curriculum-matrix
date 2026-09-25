@@ -4,7 +4,7 @@ import { useProgressStore } from '../hooks/useProgressStore';
 import curriculumData from '../data/curriculumData.json';
 const { phases } = curriculumData;
 import { CheckCircle2, Zap, Clock, Settings, Upload, ChevronDown, ArrowRight, Download, RotateCcw } from 'lucide-react';
-import { motion, useSpring } from 'framer-motion';
+import { motion, animate, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/Button';
 import { TextArea } from '../components/TextArea';
 import { IconButton } from '../components/IconButton';
@@ -14,10 +14,15 @@ import { Toast } from '../components/Toast';
 import { useToast } from '../hooks/useToast';
 
 function AnimatedNumber({ value, suffix = '' }: { value: number; suffix?: string }) {
-  const spring = useSpring(0, { stiffness: 80, damping: 20 });
-  const [display, setDisplay] = useState('0');
-  useEffect(() => { spring.set(value); }, [spring, value]);
-  useEffect(() => spring.on('change', latest => setDisplay(Math.round(latest).toString())), [spring]);
+  const [display, setDisplay] = useState(0);
+  useEffect(() => {
+    const controls = animate(0, value, {
+      duration: 1.0,
+      ease: "linear",
+      onUpdate: (latest) => setDisplay(Math.round(latest))
+    });
+    return () => controls.stop();
+  }, [value]);
   return <span className="tabular">{display}{suffix}</span>;
 }
 
@@ -143,25 +148,55 @@ export default function DashboardScreen() {
             <h3 className="text-body font-semibold text-ink-primary">Momentum Boosters</h3>
             <p className="text-caption text-warning/90">{priorityWins.length} quick ways to speed up your progress</p>
           </div>
-          <ChevronDown className={`w-4 h-4 text-ink-tertiary transition-transform ${winsExpanded ? 'rotate-180' : ''}`} aria-hidden="true" />
+          <motion.div animate={{ rotate: winsExpanded ? 180 : 0 }} transition={{ duration: 0.2, ease: [0.25, 1, 0.5, 1] }}>
+            <ChevronDown className="w-4 h-4 text-ink-tertiary" aria-hidden="true" />
+          </motion.div>
         </button>
-        {winsExpanded && (
-          <ul className="px-4 pb-4 space-y-2">
-            {priorityWins.map(win => (
-              <li key={win.phase} className="flex">
-                <button type="button" className="w-full flex items-center justify-between text-left bg-surface-elevated/40 hover:bg-surface-elevated/60 p-3 rounded-lg border border-warning/10 active:scale-[0.98] transition-transform duration-100" onClick={() => navigate('/curriculum')}>
-                  <div className="flex-1 pr-3">
-                    <p className="text-caption text-ink-primary font-medium leading-snug">{win.text}</p>
-                    <p className="text-micro text-warning/80 mt-1 uppercase tracking-wider">Phase {win.phase}</p>
-                  </div>
-                  <div className="w-6 h-6 rounded-full bg-warning/15 flex items-center justify-center shrink-0">
-                    <ArrowRight className="w-3.5 h-3.5 text-warning" aria-hidden="true" />
-                  </div>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+        <AnimatePresence initial={false}>
+          {winsExpanded && (
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              variants={{
+                hidden: { height: 0, opacity: 0, transition: { height: { duration: 0.3 }, opacity: { duration: 0.2 } } },
+                visible: {
+                  height: 'auto',
+                  opacity: 1,
+                  transition: {
+                    height: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
+                    opacity: { duration: 0.3, delay: 0.1 },
+                    staggerChildren: 0.06
+                  }
+                }
+              }}
+              className="overflow-hidden"
+            >
+              <ul className="px-4 pb-4 space-y-2">
+                {priorityWins.map(win => (
+                  <motion.li
+                    key={win.phase}
+                    variants={{
+                      hidden: { opacity: 0, y: 12 },
+                      visible: { opacity: 1, y: 0, transition: { duration: 0.25, ease: [0.25, 1, 0.5, 1] } }
+                    }}
+                    className="flex"
+                  >
+                    <button type="button" className="w-full flex items-center justify-between text-left bg-surface-elevated/40 hover:bg-surface-elevated/60 p-3 rounded-lg border border-warning/10 active:scale-[0.98] transition-transform duration-100" onClick={() => navigate('/curriculum')}>
+                      <div className="flex-1 pr-3">
+                        <p className="text-caption text-ink-primary font-medium leading-snug">{win.text}</p>
+                        <p className="text-micro text-warning/80 mt-1 uppercase tracking-wider">Phase {win.phase}</p>
+                      </div>
+                      <div className="w-6 h-6 rounded-full bg-warning/15 flex items-center justify-center shrink-0">
+                        <ArrowRight className="w-3.5 h-3.5 text-warning" aria-hidden="true" />
+                      </div>
+                    </button>
+                  </motion.li>
+                ))}
+              </ul>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
       <Button fullWidth onClick={() => navigate('/curriculum')} className="gap-2">Open Curriculum <ArrowRight className="w-4 h-4" aria-hidden="true" /></Button>
 
@@ -172,3 +207,5 @@ export default function DashboardScreen() {
     </div>
   );
 }
+
+

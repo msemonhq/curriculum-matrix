@@ -28,8 +28,15 @@ export function Button({
   return (
     <motion.button
       type={props.type || 'button'}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.1 }}
+      whileTap={{
+        scale: variant === 'primary' ? 0.96 : 0.98,
+        transition: { duration: variant === 'primary' ? 0.08 : 0.1 }
+      }}
+      transition={
+        variant === 'primary'
+          ? { type: 'tween', ease: [0.34, 1.56, 0.64, 1], duration: 0.4 }
+          : { duration: 0.1 }
+      }
       className={`${base} ${variants[variant]} ${fullWidth ? 'w-full flex-1' : ''} ${className}`}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
