@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { CheckCircle2, X, XCircle } from 'lucide-react';
+import { CheckCircle2, Info, X, XCircle } from 'lucide-react';
 
 export type ToastTone = 'success' | 'danger' | 'info';
 
@@ -22,12 +22,15 @@ export function Toast({ message, tone = 'info', onClose, duration = 3200 }: Toas
     return () => window.clearTimeout(timer);
   }, [duration, onClose]);
 
+  const Icon = tone === 'success' ? CheckCircle2 : tone === 'danger' ? XCircle : Info;
+
   return (
     <div
       role={tone === 'danger' ? 'alert' : 'status'}
-      className={`fixed left-4 right-4 top-4 z-[60] flex items-center gap-3 rounded-xl border px-4 py-3 text-body shadow-surface-lg ${toneStyles[tone]}`}
+      aria-live={tone === 'danger' ? 'assertive' : 'polite'}
+      className={`fixed left-4 right-4 top-4 z-[60] flex items-center gap-3 rounded-xl border px-4 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))] text-body shadow-surface-lg ${toneStyles[tone]}`}
     >
-      {tone === 'success' ? <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden="true" /> : <XCircle className="h-5 w-5 shrink-0" aria-hidden="true" />}
+      <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
       <span className="min-w-0 flex-1">{message}</span>
       <button
         type="button"
