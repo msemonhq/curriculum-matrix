@@ -1,17 +1,19 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-type IconButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
+type IconButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  label?: string;
+};
 
-export function IconButton({ className = '', children, ...props }: IconButtonProps) {
+export function IconButton({ label, className = '', children, ...props }: IconButtonProps) {
   return (
     <motion.button
-      whileTap={{ scale: 0.90 }}
+      type={props.type || 'button'}
+      aria-label={label || props['aria-label']}
+      whileTap={{ scale: 0.96 }}
       transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-      className={`p-2 rounded-full bg-transparent hover:bg-surface-subtle text-ink-secondary hover:text-ink-primary transition-colors focus:outline-none ${
-        className
-      }`}
-      {...(props as any)}
+      className={`min-h-11 min-w-11 p-2.5 rounded-full bg-transparent hover:bg-surface-subtle text-ink-secondary hover:text-ink-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base disabled:opacity-40 ${className}`}
+      {...props}
     >
       {children}
     </motion.button>
