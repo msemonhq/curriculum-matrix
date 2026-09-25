@@ -2,8 +2,79 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap');
+
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
+    font-feature-settings: 'tnum' 1, 'kern' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Dark mode base — applied when <html class="dark"> */
+  :root {
+    --bg-base:      #0d0d0f;
+    --bg-elevated:  #18181b;
+    --bg-overlay:   #1f1f23;
+    --bg-subtle:    #27272a;
+    --accent:       #00c4db;
+    --accent-dim:   rgba(0,196,219,0.15);
+    --text-primary: #fafafa;
+    --text-secondary:#a1a1aa;
+    --border:       #3f3f46;
+  }
+
+  body {
+    @apply bg-surface-base text-ink-primary antialiased;
+    overflow: hidden;
+  }
+
+  /* Scrollbar styling for dark mode */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-line rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-ink-tertiary;
+  }
+
+  /* Range input dark styling */
+  input[type='range'] {
+    @apply accent-accent;
+  }
+
+  /* Selection color */
+  ::selection {
+    @apply bg-accent/20 text-ink-primary;
+  }
+}
+
+@layer utilities {
+  .safe-top    { padding-top:    env(safe-area-inset-top); }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  .pb-safe     { padding-bottom: env(safe-area-inset-bottom); }
+
+  /* Glass morphism utility */
+  .glass {
+    @apply bg-surface-elevated/80 backdrop-blur-md border border-line;
+  }
+
+  /* Gradient border trick */
+  .accent-border-top {
+    border-top: 1px solid;
+    border-image: linear-gradient(90deg, transparent, #00c4db, transparent) 1;
+  }
+
+  /* Numeric tabular figures */
+  .tabular {
+    font-feature-settings: 'tnum' 1;
+    font-variant-numeric: tabular-nums;
   }
 }

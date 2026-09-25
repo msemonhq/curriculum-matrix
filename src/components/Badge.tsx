@@ -1,19 +1,26 @@
 import React from 'react';
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  variant?: 'default' | 'success' | 'warning' | 'danger';
+  variant?: 'default' | 'success' | 'warning' | 'danger' | 'accent' | 'phase';
 }
 
 export function Badge({ variant = 'default', className = '', children, ...props }: BadgeProps) {
-  const variantClasses = {
-    default: 'bg-gray-100 text-gray-600',
-    success: 'bg-success-light text-success',
-    warning: 'bg-warning-light text-warning',
-    danger: 'bg-danger-light text-danger',
+  const variantClasses: Record<string, string> = {
+    default: 'bg-surface-subtle text-ink-secondary',
+    success: 'bg-success-dim text-success',
+    warning: 'bg-warning-dim text-warning',
+    danger:  'bg-danger-dim text-danger',
+    accent:  'bg-accent-dim text-accent',
+    phase:   'bg-accent-dim text-accent font-mono tracking-widest uppercase',
   };
 
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${variantClasses[variant]} ${className}`} {...props}>
+    <span
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-caption font-semibold ${
+        variantClasses[variant]
+      } ${className}`}
+      {...props}
+    >
       {children}
     </span>
   );

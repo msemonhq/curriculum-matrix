@@ -6,14 +6,14 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   plugins: {
     SplashScreen: {
-      backgroundColor: '#00a2b8',
+      backgroundColor: '#0d0d0f',
       launchShowDuration: 2000,
       showSpinner: true,
       androidSpinnerStyle: 'large',
-      spinnerColor: '#ffffff',
+      spinnerColor: '#00c4db',
     },
     StatusBar: {
-      backgroundColor: '#00a2b8',
+      backgroundColor: '#18181b',
       style: 'DARK',
     }
   }

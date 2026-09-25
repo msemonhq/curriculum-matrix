@@ -1,504 +1,497 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Network, Search, Table, Calculator, Calendar, GitCompare, TestTube, Presentation, ArrowLeft, Plus, Check, X, Share2 } from 'lucide-react';
+import {
+  Network, Search, Table, Calculator, Calendar, GitCompare,
+  TestTube, Presentation, ArrowLeft, Plus, Check, X, Share2,
+} from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useProgressStore } from '../hooks/useProgressStore';
+import { Button } from '../components/Button';
 
+// ─── Tool definitions ────────────────────────────────────────────────
 interface Tool {
-  id: string;
-  title: string;
-  icon: React.ElementType;
-  phase: string;
-  color: string;
+  id:          string;
+  title:       string;
+  icon:        React.ElementType;
+  phase:       string;
+  accentColor: string;       // Tailwind text color class
+  bgColor:     string;       // Tailwind bg for icon container
   description: string;
 }
 
+const TOOLS: Tool[] = [
+  { id: '1', title: 'Issue Tree Builder',    icon: Network,      phase: 'Phase 1', accentColor: 'text-blue-400',   bgColor: 'bg-blue-400/15',   description: 'Break down complex problems into smaller, manageable components.' },
+  { id: '2', title: 'AI Verification Log',   icon: Search,       phase: 'Phase 2', accentColor: 'text-purple-400', bgColor: 'bg-purple-400/15', description: 'Log and verify AI outputs to ensure accuracy and compliance.' },
+  { id: '3', title: 'Formula Cheat-Sheet',   icon: Table,        phase: 'Phase 3', accentColor: 'text-green-400',  bgColor: 'bg-green-400/15',  description: 'Quick reference for commonly used formulas and calculations.' },
+  { id: '4', title: 'GA4 Discrepancy Calc',  icon: Calculator,   phase: 'Phase 4', accentColor: 'text-orange-400', bgColor: 'bg-orange-400/15', description: 'Calculate and analyze data discrepancies between GA4 and CRM.' },
+  { id: '5', title: 'Demand Calendar',       icon: Calendar,     phase: 'Phase 5', accentColor: 'text-red-400',    bgColor: 'bg-red-400/15',    description: 'Plan and schedule demand generation activities over time.' },
+  { id: '6', title: 'Strategy Canvas',       icon: GitCompare,   phase: 'Phase 6', accentColor: 'text-indigo-400', bgColor: 'bg-indigo-400/15', description: 'Visualize and compare strategic initiatives against competitors.' },
+  { id: '7', title: 'A/B Test Generator',    icon: TestTube,     phase: 'Phase 7', accentColor: 'text-pink-400',   bgColor: 'bg-pink-400/15',   description: 'Design and generate parameters for A/B testing.' },
+  { id: '8', title: 'Brief Builder',         icon: Presentation, phase: 'Phase 8', accentColor: 'text-accent',     bgColor: 'bg-accent-dim',    description: 'Create comprehensive briefs for campaigns and projects.' },
+];
 
-interface IssueTreeBuilderProps {
-  issues: string[];
-  setIssues: React.Dispatch<React.SetStateAction<string[]>>;
-  newIssue: string;
-  setNewIssue: React.Dispatch<React.SetStateAction<string>>;
-}
-const IssueTreeBuilder: React.FC<IssueTreeBuilderProps> = ({ issues, setIssues, newIssue, setNewIssue }) => {
+// ─── Tool sub-components (all dark-styled) ────────────────────────────
+
+function ToolInput({
+  placeholder, value, onChange, type = 'text',
+}: {
+  placeholder?: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+}) {
   return (
-    <div className="w-full max-w-md text-left">
-      <h4 className="font-bold text-gray-800 mb-4">Core Issues</h4>
+    <input
+      type={type}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="w-full bg-surface-subtle border border-line rounded-xl px-3 py-2.5 text-body text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-line-focus focus:ring-2 focus:ring-accent/20 transition-all"
+    />
+  );
+}
+
+function ToolTextArea({ placeholder, value, onChange, rows = 2 }: { placeholder?: string; value: string; onChange: (v: string) => void; rows?: number }) {
+  return (
+    <textarea
+      rows={rows}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="w-full bg-surface-subtle border border-line rounded-xl px-3 py-2.5 text-body text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-line-focus focus:ring-2 focus:ring-accent/20 transition-all resize-none"
+    />
+  );
+}
+
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <h4 className="text-caption text-ink-secondary font-semibold uppercase tracking-wider mb-3">
+      {children}
+    </h4>
+  );
+}
+
+// Tool 1
+interface IssueTreeProps { issues: string[]; setIssues: React.Dispatch<React.SetStateAction<string[]>>; newIssue: string; setNewIssue: React.Dispatch<React.SetStateAction<string>>; }
+function IssueTreeBuilder({ issues, setIssues, newIssue, setNewIssue }: IssueTreeProps) {
+  return (
+    <div className="w-full text-left">
+      <SectionHeading>Core Issues</SectionHeading>
       <ul className="space-y-2 mb-4">
         {issues.map((issue, idx) => (
-          <li key={idx} className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 flex items-center gap-2">
-            <Network className="w-4 h-4 text-blue-500" /> {issue}
+          <li key={idx} className="flex items-center gap-2 p-3 bg-surface-subtle border border-line rounded-xl text-body text-ink-primary">
+            <Network className="w-4 h-4 text-blue-400 shrink-0" />
+            {issue}
           </li>
         ))}
       </ul>
       <div className="flex gap-2">
-        <input 
-          type="text" 
-          value={newIssue}
-          onChange={(e) => setNewIssue(e.target.value)}
-          placeholder="Add new issue..." 
-          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-        />
-        <button 
-          onClick={() => { if(newIssue) { setIssues([...issues, newIssue]); setNewIssue(''); } }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700"
-        >
+        <ToolInput value={newIssue} onChange={setNewIssue} placeholder="Add new issue..." />
+        <Button variant="outline" onClick={() => { if (newIssue) { setIssues([...issues, newIssue]); setNewIssue(''); } }} className="shrink-0 px-4">
           Add
-        </button>
+        </Button>
       </div>
     </div>
   );
-};
+}
 
-interface Log {
-  id: number;
-  text: string;
-  status: string;
-}
-interface AIVerificationLogProps {
-  logs: Log[];
-  setLogs: React.Dispatch<React.SetStateAction<Log[]>>;
-  newLog: string;
-  setNewLog: React.Dispatch<React.SetStateAction<string>>;
-}
-const AIVerificationLog: React.FC<AIVerificationLogProps> = ({ logs, setLogs, newLog, setNewLog }) => {
+// Tool 2
+interface Log { id: number; text: string; status: string; }
+interface AIVerifProps { logs: Log[]; setLogs: React.Dispatch<React.SetStateAction<Log[]>>; newLog: string; setNewLog: React.Dispatch<React.SetStateAction<string>>; }
+function AIVerificationLog({ logs, setLogs, newLog, setNewLog }: AIVerifProps) {
   return (
-    <div className="w-full max-w-md text-left">
-      <h4 className="font-bold text-gray-800 mb-4">Recent Verifications</h4>
+    <div className="w-full text-left">
+      <SectionHeading>Recent Verifications</SectionHeading>
       <ul className="space-y-2 mb-4">
-        {logs.map((log) => (
-          <li key={log.id} className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm flex items-center justify-between">
-            <span className="text-gray-700">{log.text}</span>
-            {log.status === 'pass' ? <Check className="w-4 h-4 text-green-500" /> : <X className="w-4 h-4 text-red-500" />}
+        {logs.map(log => (
+          <li key={log.id} className="flex items-center justify-between p-3 bg-surface-subtle border border-line rounded-xl text-body text-ink-primary">
+            <span>{log.text}</span>
+            {log.status === 'pass'
+              ? <Check className="w-4 h-4 text-success shrink-0" />
+              : <X className="w-4 h-4 text-danger shrink-0" />}
           </li>
         ))}
       </ul>
       <div className="flex gap-2">
-        <input 
-          type="text" 
-          value={newLog}
-          onChange={(e) => setNewLog(e.target.value)}
-          placeholder="Log item to verify..." 
-          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500"
-        />
-        <button 
-          onClick={() => { if(newLog) { setLogs([...logs, { id: Date.now(), text: newLog, status: 'pass' }]); setNewLog(''); } }}
-          className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700"
-        >
+        <ToolInput value={newLog} onChange={setNewLog} placeholder="Log item to verify..." />
+        <Button variant="outline" onClick={() => { if (newLog) { setLogs([...logs, { id: Date.now(), text: newLog, status: 'pass' }]); setNewLog(''); } }} className="shrink-0 px-4">
           Verify
-        </button>
+        </Button>
       </div>
     </div>
   );
-};
+}
 
-const FormulaCheatSheet = () => {
+// Tool 3
+function FormulaCheatSheet() {
   const formulas = [
-    { name: 'ROI', formula: '(Revenue - Cost) / Cost × 100' },
-    { name: 'CPA', formula: 'Total Cost / Total Conversions' },
+    { name: 'ROI',  formula: '(Revenue − Cost) / Cost × 100' },
+    { name: 'CPA',  formula: 'Total Cost / Total Conversions' },
     { name: 'ROAS', formula: 'Revenue / Ad Spend' },
   ];
   return (
-    <div className="w-full max-w-md text-left">
-      <h4 className="font-bold text-gray-800 mb-4">Marketing Formulas</h4>
+    <div className="w-full text-left">
+      <SectionHeading>Marketing Formulas</SectionHeading>
       <div className="space-y-3">
         {formulas.map((f, i) => (
-          <div key={i} className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
-            <div className="text-xs font-bold text-green-600 uppercase mb-1">{f.name}</div>
-            <div className="font-mono text-sm text-gray-800">{f.formula}</div>
+          <div key={i} className="p-3 bg-surface-subtle border border-line rounded-xl">
+            <div className="text-micro text-success uppercase tracking-wider mb-1">{f.name}</div>
+            <div className="font-mono text-body text-ink-primary">{f.formula}</div>
           </div>
         ))}
       </div>
     </div>
   );
-};
-
-interface GA4DiscrepancyCalcProps {
-  ga4: string;
-  setGa4: React.Dispatch<React.SetStateAction<string>>;
-  other: string;
-  setOther: React.Dispatch<React.SetStateAction<string>>;
 }
-const GA4DiscrepancyCalc: React.FC<GA4DiscrepancyCalcProps> = ({ ga4, setGa4, other, setOther }) => {
+
+// Tool 4
+interface GA4Props { ga4: string; setGa4: (v: string) => void; other: string; setOther: (v: string) => void; }
+function GA4DiscrepancyCalc({ ga4, setGa4, other, setOther }: GA4Props) {
   const diff = ga4 && other ? ((Number(ga4) - Number(other)) / Number(other) * 100).toFixed(2) : null;
-  
+  const isBig = diff !== null && Math.abs(Number(diff)) > 10;
   return (
-    <div className="w-full max-w-md text-left">
-      <h4 className="font-bold text-gray-800 mb-4">Discrepancy Calculator</h4>
+    <div className="w-full text-left">
+      <SectionHeading>Discrepancy Calculator</SectionHeading>
       <div className="space-y-4">
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">GA4 Conversions</label>
-          <input type="number" value={ga4} onChange={e => setGa4(e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500" />
+          <label className="block text-caption text-ink-secondary mb-1.5">GA4 Conversions</label>
+          <ToolInput type="number" value={ga4} onChange={setGa4} />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">CRM/Other System</label>
-          <input type="number" value={other} onChange={e => setOther(e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500" />
+          <label className="block text-caption text-ink-secondary mb-1.5">CRM / Other System</label>
+          <ToolInput type="number" value={other} onChange={setOther} />
         </div>
         {diff !== null && (
-          <div className={`p-4 rounded-lg font-bold text-center ${Math.abs(Number(diff)) > 10 ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className={`p-4 rounded-xl font-bold text-center tabular ${isBig ? 'bg-danger-dim text-danger border border-danger/25' : 'bg-success-dim text-success border border-success/25'}`}
+          >
             Discrepancy: {diff}%
-          </div>
+          </motion.div>
         )}
       </div>
     </div>
   );
-};
+}
 
-interface Event {
-  date: string;
-  title: string;
-}
-interface DemandCalendarProps {
-  events: Event[];
-  setEvents: React.Dispatch<React.SetStateAction<Event[]>>;
-  isAdding: boolean;
-  setIsAdding: React.Dispatch<React.SetStateAction<boolean>>;
-  newDate: string;
-  setNewDate: React.Dispatch<React.SetStateAction<string>>;
-  newTitle: string;
-  setNewTitle: React.Dispatch<React.SetStateAction<string>>;
-}
-const DemandCalendar: React.FC<DemandCalendarProps> = ({ events, setEvents, isAdding, setIsAdding, newDate, setNewDate, newTitle, setNewTitle }) => {
+// Tool 5
+interface Event { date: string; title: string; }
+interface CalendarProps { events: Event[]; setEvents: React.Dispatch<React.SetStateAction<Event[]>>; isAdding: boolean; setIsAdding: React.Dispatch<React.SetStateAction<boolean>>; newDate: string; setNewDate: (v: string) => void; newTitle: string; setNewTitle: (v: string) => void; }
+function DemandCalendar({ events, setEvents, isAdding, setIsAdding, newDate, setNewDate, newTitle, setNewTitle }: CalendarProps) {
   const handleAdd = () => {
     if (newDate && newTitle) {
       setEvents([...events, { date: newDate, title: newTitle }]);
-      setNewDate('');
-      setNewTitle('');
-      setIsAdding(false);
+      setNewDate(''); setNewTitle(''); setIsAdding(false);
     }
   };
-
   return (
-    <div className="w-full max-w-md text-left">
-      <h4 className="font-bold text-gray-800 mb-4">Upcoming Campaigns</h4>
-      <ul className="space-y-3 mb-4">
+    <div className="w-full text-left">
+      <SectionHeading>Upcoming Campaigns</SectionHeading>
+      <ul className="space-y-2 mb-4">
         {events.map((e, idx) => (
-          <li key={idx} className="flex gap-4 p-3 bg-gray-50 border border-gray-200 rounded-lg items-center">
-            <div className="font-bold text-red-600 text-sm shrink-0 w-12">{e.date}</div>
-            <div className="text-sm font-semibold text-gray-800">{e.title}</div>
+          <li key={idx} className="flex gap-4 p-3 bg-surface-subtle border border-line rounded-xl items-center">
+            <span className="font-mono text-caption text-danger font-bold shrink-0 tabular">{e.date}</span>
+            <span className="text-body text-ink-primary">{e.title}</span>
           </li>
         ))}
       </ul>
       {isAdding ? (
-        <div className="flex gap-2 mb-4">
-          <input type="text" placeholder="Date (e.g. Oct 15)" value={newDate} onChange={e => setNewDate(e.target.value)} className="w-1/3 border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-red-500" />
-          <input type="text" placeholder="Campaign Title" value={newTitle} onChange={e => setNewTitle(e.target.value)} className="flex-1 border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-red-500" />
-          <button onClick={handleAdd} className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm font-semibold hover:bg-red-600">Add</button>
+        <div className="flex gap-2 mb-3">
+          <ToolInput value={newDate} onChange={setNewDate} placeholder="Oct 15" />
+          <ToolInput value={newTitle} onChange={setNewTitle} placeholder="Campaign title" />
+          <Button variant="outline" onClick={handleAdd} className="shrink-0 px-3">Add</Button>
         </div>
       ) : (
-        <button onClick={() => setIsAdding(true)} className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 border border-red-200 py-2 rounded-lg text-sm font-semibold hover:bg-red-100">
+        <Button variant="ghost" fullWidth onClick={() => setIsAdding(true)} className="gap-2 border border-line rounded-xl">
           <Plus className="w-4 h-4" /> Add Campaign
-        </button>
+        </Button>
       )}
     </div>
   );
-};
+}
 
-// Task 5: Add real interactivity to Strategy Canvas (sliders instead of fixed bars)
-const StrategyCanvas = () => {
-  const workbenchData = useProgressStore(state => state.workbench);
-  const updateWorkbench = useProgressStore(state => state.updateWorkbench);
-
+// Tool 6
+function StrategyCanvas() {
+  const workbenchData  = useProgressStore(s => s.workbench);
+  const updateWorkbench = useProgressStore(s => s.updateWorkbench);
   const defaultFactors = [
-    { name: 'Price', you: 60, comp: 40 },
+    { name: 'Price',   you: 60, comp: 40 },
     { name: 'Quality', you: 80, comp: 50 },
-    { name: 'Speed', you: 40, comp: 70 },
+    { name: 'Speed',   you: 40, comp: 70 },
   ];
-  
   const factors = workbenchData['6']?.factors || defaultFactors;
-
-  const updateFactor = (index: number, key: 'you' | 'comp', value: number) => {
-    const newFactors = [...factors];
-    newFactors[index] = { ...newFactors[index], [key]: value };
-    updateWorkbench('6', { factors: newFactors });
+  const update = (index: number, key: 'you' | 'comp', value: number) => {
+    const nf = [...factors];
+    nf[index] = { ...nf[index], [key]: value };
+    updateWorkbench('6', { factors: nf });
   };
-
   return (
-    <div className="w-full max-w-md text-left">
-      <h4 className="font-bold text-gray-800 mb-4">Value Curve</h4>
+    <div className="w-full text-left">
+      <SectionHeading>Value Curve</SectionHeading>
       <div className="space-y-6">
-        {factors.map((factor: { name: string, you: number, comp: number }, idx: number) => (
+        {factors.map((factor: { name: string; you: number; comp: number }, idx: number) => (
           <div key={factor.name} className="space-y-2">
-            <label className="flex justify-between text-xs font-semibold text-gray-600 mb-1">
-              <span>{factor.name}</span>
-            </label>
-            
+            <span className="text-caption text-ink-secondary font-semibold">{factor.name}</span>
             <div className="flex items-center gap-3">
-              <span className="text-xs text-indigo-600 font-medium w-16">You: {factor.you}%</span>
-              <input 
-                type="range" 
-                min="0" max="100" 
-                value={factor.you} 
-                onChange={(e) => updateFactor(idx, 'you', parseInt(e.target.value))}
-                className="flex-1 accent-indigo-500" 
-              />
+              <span className="text-caption text-accent font-mono w-16 tabular">You: {factor.you}%</span>
+              <input type="range" min="0" max="100" value={factor.you} onChange={e => update(idx, 'you', +e.target.value)} className="flex-1 accent-accent" />
             </div>
-            
             <div className="flex items-center gap-3">
-              <span className="text-xs text-gray-500 font-medium w-16">Comp: {factor.comp}%</span>
-              <input 
-                type="range" 
-                min="0" max="100" 
-                value={factor.comp} 
-                onChange={(e) => updateFactor(idx, 'comp', parseInt(e.target.value))}
-                className="flex-1 accent-gray-400" 
-              />
+              <span className="text-caption text-ink-tertiary font-mono w-16 tabular">Comp: {factor.comp}%</span>
+              <input type="range" min="0" max="100" value={factor.comp} onChange={e => update(idx, 'comp', +e.target.value)} className="flex-1 accent-ink-tertiary" />
             </div>
           </div>
         ))}
       </div>
     </div>
   );
-};
-
-interface ABTestGeneratorProps {
-  variable: string;
-  setVariable: React.Dispatch<React.SetStateAction<string>>;
-  control: string;
-  setControl: React.Dispatch<React.SetStateAction<string>>;
-  variant: string;
-  setVariant: React.Dispatch<React.SetStateAction<string>>;
-  hypothesis: string;
-  setHypothesis: React.Dispatch<React.SetStateAction<string>>;
 }
-const ABTestGenerator: React.FC<ABTestGeneratorProps> = ({ variable, setVariable, control, setControl, variant, setVariant, hypothesis, setHypothesis }) => {
-  const generateHypothesis = () => {
+
+// Tool 7
+interface ABProps { variable: string; setVariable: (v: string) => void; control: string; setControl: (v: string) => void; variant: string; setVariant: (v: string) => void; hypothesis: string; setHypothesis: (v: string) => void; }
+function ABTestGenerator({ variable, setVariable, control, setControl, variant, setVariant, hypothesis, setHypothesis }: ABProps) {
+  const generate = () => {
     if (variable && control && variant) {
       setHypothesis(`If we change the ${variable} from '${control}' to '${variant}', we expect to see an improvement in our primary metric because it better addresses user needs.`);
     }
   };
-
   return (
-    <div className="w-full max-w-md text-left">
-      <h4 className="font-bold text-gray-800 mb-4">Test Hypothesis</h4>
+    <div className="w-full text-left">
+      <SectionHeading>Test Hypothesis</SectionHeading>
       <div className="space-y-3">
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">Variable</label>
-          <input type="text" value={variable} onChange={e => setVariable(e.target.value)} placeholder="e.g. CTA Button Color" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500" />
+          <label className="block text-caption text-ink-secondary mb-1.5">Variable</label>
+          <ToolInput value={variable} onChange={setVariable} placeholder="e.g. CTA Button Color" />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Control</label>
-            <input type="text" value={control} onChange={e => setControl(e.target.value)} placeholder="Blue" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500" />
+            <label className="block text-caption text-ink-secondary mb-1.5">Control</label>
+            <ToolInput value={control} onChange={setControl} placeholder="Blue" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Variant</label>
-            <input type="text" value={variant} onChange={e => setVariant(e.target.value)} placeholder="Green" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500" />
+            <label className="block text-caption text-ink-secondary mb-1.5">Variant</label>
+            <ToolInput value={variant} onChange={setVariant} placeholder="Green" />
           </div>
         </div>
-        <button onClick={generateHypothesis} className="w-full mt-2 bg-pink-600 text-white font-semibold py-2 rounded-lg text-sm hover:bg-pink-700">
-          Generate Hypothesis
-        </button>
+        <Button variant="primary" fullWidth onClick={generate}>Generate Hypothesis</Button>
         {hypothesis && (
-          <div className="mt-4 p-4 bg-pink-50 text-pink-800 rounded-lg text-sm italic">
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 bg-accent-dim border border-accent/25 rounded-xl text-body text-ink-primary italic"
+          >
             "{hypothesis}"
-          </div>
+          </motion.div>
         )}
       </div>
     </div>
   );
-};
-
-interface BriefBuilderProps {
-  campaignName: string;
-  setCampaignName: React.Dispatch<React.SetStateAction<string>>;
-  targetAudience: string;
-  setTargetAudience: React.Dispatch<React.SetStateAction<string>>;
-  isSaved: boolean;
-  setIsSaved: React.Dispatch<React.SetStateAction<boolean>>;
 }
-const BriefBuilder: React.FC<BriefBuilderProps> = ({ campaignName, setCampaignName, targetAudience, setTargetAudience, isSaved, setIsSaved }) => {
+
+// Tool 8
+interface BriefProps { campaignName: string; setCampaignName: (v: string) => void; targetAudience: string; setTargetAudience: (v: string) => void; isSaved: boolean; setIsSaved: (v: boolean) => void; }
+function BriefBuilder({ campaignName, setCampaignName, targetAudience, setTargetAudience, isSaved, setIsSaved }: BriefProps) {
   return (
-    <div className="w-full max-w-md text-left">
-      <h4 className="font-bold text-gray-800 mb-4">Campaign Brief</h4>
+    <div className="w-full text-left">
+      <SectionHeading>Campaign Brief</SectionHeading>
       <div className="space-y-3">
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">Campaign Name</label>
-          <input type="text" value={campaignName} onChange={e => { setCampaignName(e.target.value); setIsSaved(false); }} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal-500" />
+          <label className="block text-caption text-ink-secondary mb-1.5">Campaign Name</label>
+          <ToolInput value={campaignName} onChange={v => { setCampaignName(v); setIsSaved(false); }} placeholder="Q4 Seasonal Push" />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">Target Audience</label>
-          <textarea rows={2} value={targetAudience} onChange={e => { setTargetAudience(e.target.value); setIsSaved(false); }} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal-500" />
+          <label className="block text-caption text-ink-secondary mb-1.5">Target Audience</label>
+          <ToolTextArea rows={3} value={targetAudience} onChange={v => { setTargetAudience(v); setIsSaved(false); }} placeholder="Describe your target audience..." />
         </div>
-        <button onClick={() => setIsSaved(true)} className={`w-full mt-2 font-semibold py-2 rounded-lg text-sm transition-colors ${isSaved ? 'bg-green-600 hover:bg-green-700' : 'bg-teal-600 hover:bg-teal-700'} text-white`}>
-          {isSaved ? 'Brief Saved!' : 'Save Brief'}
-        </button>
+        <Button
+          variant={isSaved ? 'secondary' : 'primary'}
+          fullWidth
+          onClick={() => setIsSaved(true)}
+        >
+          {isSaved ? <><Check className="w-4 h-4" /> Brief Saved!</> : 'Save Brief'}
+        </Button>
       </div>
     </div>
   );
-};
+}
 
-
+// ─── Main screen ────────────────────────────────────────────────────────────
 export default function WorkbenchesScreen() {
   const { toolId } = useParams<{ toolId?: string }>();
-  const navigate = useNavigate();
-  
-  const workbenchData = useProgressStore(state => state.workbench);
-  const updateWorkbench = useProgressStore(state => state.updateWorkbench);
+  const navigate   = useNavigate();
 
-  const tools: Tool[] = [
-    { id: '1', title: 'Issue Tree Builder', icon: Network, phase: 'Phase 1', color: 'bg-blue-50 text-blue-600', description: 'Break down complex problems into smaller, manageable components.' },
-    { id: '2', title: 'AI Verification Log', icon: Search, phase: 'Phase 2', color: 'bg-purple-50 text-purple-600', description: 'Log and verify AI outputs to ensure accuracy and compliance.' },
-    { id: '3', title: 'Formula Cheat-sheet', icon: Table, phase: 'Phase 3', color: 'bg-green-50 text-green-600', description: 'Quick reference for commonly used formulas and calculations.' },
-    { id: '4', title: 'GA4 Discrepancy Calc', icon: Calculator, phase: 'Phase 4', color: 'bg-orange-50 text-orange-600', description: 'Calculate and analyze data discrepancies in GA4.' },
-    { id: '5', title: 'Demand Calendar', icon: Calendar, phase: 'Phase 5', color: 'bg-red-50 text-red-600', description: 'Plan and schedule demand generation activities over time.' },
-    { id: '6', title: 'Strategy Canvas', icon: GitCompare, phase: 'Phase 6', color: 'bg-indigo-50 text-indigo-600', description: 'Visualize and compare strategic initiatives against competitors.' },
-    { id: '7', title: 'A/B Test Generator', icon: TestTube, phase: 'Phase 7', color: 'bg-pink-50 text-pink-600', description: 'Design and generate parameters for A/B testing.' },
-    { id: '8', title: 'Brief Builder', icon: Presentation, phase: 'Phase 8', color: 'bg-teal-50 text-teal-600', description: 'Create comprehensive briefs for campaigns and projects.' },
-  ];
+  const workbenchData   = useProgressStore(s => s.workbench);
+  const updateWorkbench = useProgressStore(s => s.updateWorkbench);
 
-  const activeTool = toolId ? tools.find(t => t.id === toolId) : null;
+  const activeTool = toolId ? TOOLS.find(t => t.id === toolId) : null;
 
-  // Hoisted state for all tools
-  const [issues, setIssues] = useState<string[]>(workbenchData['1']?.issues || ['Low Conversion Rate', 'High Bounce Rate']);
-  const [newIssue, setNewIssue] = useState('');
-  
-  const [logs, setLogs] = useState<Log[]>(workbenchData['2']?.logs || [{ id: 1, text: 'Ad copy generation', status: 'pass' }]);
-  const [newLog, setNewLog] = useState('');
-
-  const [ga4, setGa4] = useState(workbenchData['4']?.ga4 || '');
-  const [other, setOther] = useState(workbenchData['4']?.other || '');
-  
-  const [events, setEvents] = useState<Event[]>(workbenchData['5']?.events || [{ date: 'Oct 15', title: 'Q4 Webinar' }]);
+  // Hoisted state — all tools
+  const [issues,     setIssues]     = useState<string[]>(workbenchData['1']?.issues || ['Low Conversion Rate', 'High Bounce Rate']);
+  const [newIssue,   setNewIssue]   = useState('');
+  const [logs,       setLogs]       = useState<Log[]>(workbenchData['2']?.logs || [{ id: 1, text: 'Ad copy generation', status: 'pass' }]);
+  const [newLog,     setNewLog]     = useState('');
+  const [ga4,        setGa4]        = useState(workbenchData['4']?.ga4 || '');
+  const [other,      setOther]      = useState(workbenchData['4']?.other || '');
+  const [events,     setEvents]     = useState<Event[]>(workbenchData['5']?.events || [{ date: 'Oct 15', title: 'Q4 Webinar' }]);
   const [isAddingEvent, setIsAddingEvent] = useState(false);
-  const [newDate, setNewDate] = useState('');
-  const [newTitle, setNewTitle] = useState('');
-
-  const [variable, setVariable] = useState(workbenchData['7']?.variable || '');
-  const [control, setControl] = useState(workbenchData['7']?.control || '');
-  const [variant, setVariant] = useState(workbenchData['7']?.variant || '');
+  const [newDate,    setNewDate]    = useState('');
+  const [newTitle,   setNewTitle]   = useState('');
+  const [variable,   setVariable]   = useState(workbenchData['7']?.variable || '');
+  const [control,    setControl]    = useState(workbenchData['7']?.control || '');
+  const [variant,    setVariant]    = useState(workbenchData['7']?.variant || '');
   const [hypothesis, setHypothesis] = useState(workbenchData['7']?.hypothesis || '');
-  
-  const [campaignName, setCampaignName] = useState(workbenchData['8']?.campaignName || '');
+  const [campaignName,   setCampaignName]   = useState(workbenchData['8']?.campaignName || '');
   const [targetAudience, setTargetAudience] = useState(workbenchData['8']?.targetAudience || '');
-  const [isSaved, setIsSaved] = useState(workbenchData['8']?.isSaved || false);
+  const [isSaved,    setIsSaved]    = useState(workbenchData['8']?.isSaved || false);
 
-  useEffect(() => {
-    updateWorkbench('1', { issues });
-  }, [issues, updateWorkbench]);
+  useEffect(() => { updateWorkbench('1', { issues }); },                          [issues, updateWorkbench]);
+  useEffect(() => { updateWorkbench('2', { logs }); },                            [logs, updateWorkbench]);
+  useEffect(() => { updateWorkbench('4', { ga4, other }); },                      [ga4, other, updateWorkbench]);
+  useEffect(() => { updateWorkbench('5', { events }); },                          [events, updateWorkbench]);
+  useEffect(() => { updateWorkbench('7', { variable, control, variant, hypothesis }); }, [variable, control, variant, hypothesis, updateWorkbench]);
+  useEffect(() => { updateWorkbench('8', { campaignName, targetAudience, isSaved }); }, [campaignName, targetAudience, isSaved, updateWorkbench]);
 
-  useEffect(() => {
-    updateWorkbench('2', { logs });
-  }, [logs, updateWorkbench]);
-
-  useEffect(() => {
-    updateWorkbench('4', { ga4, other });
-  }, [ga4, other, updateWorkbench]);
-
-  useEffect(() => {
-    updateWorkbench('5', { events });
-  }, [events, updateWorkbench]);
-
-  useEffect(() => {
-    updateWorkbench('7', { variable, control, variant, hypothesis });
-  }, [variable, control, variant, hypothesis, updateWorkbench]);
-
-  useEffect(() => {
-    updateWorkbench('8', { campaignName, targetAudience, isSaved });
-  }, [campaignName, targetAudience, isSaved, updateWorkbench]);
-
-  const renderActiveToolContent = (id: string) => {
+  const renderContent = (id: string) => {
     switch (id) {
-      case '1': return <IssueTreeBuilder issues={issues} setIssues={setIssues} newIssue={newIssue} setNewIssue={setNewIssue} />;
-      case '2': return <AIVerificationLog logs={logs} setLogs={setLogs} newLog={newLog} setNewLog={setNewLog} />;
+      case '1': return <IssueTreeBuilder    issues={issues} setIssues={setIssues} newIssue={newIssue} setNewIssue={setNewIssue} />;
+      case '2': return <AIVerificationLog   logs={logs} setLogs={setLogs} newLog={newLog} setNewLog={setNewLog} />;
       case '3': return <FormulaCheatSheet />;
-      case '4': return <GA4DiscrepancyCalc ga4={ga4} setGa4={setGa4} other={other} setOther={setOther} />;
-      case '5': return <DemandCalendar events={events} setEvents={setEvents} isAdding={isAddingEvent} setIsAdding={setIsAddingEvent} newDate={newDate} setNewDate={setNewDate} newTitle={newTitle} setNewTitle={setNewTitle} />;
+      case '4': return <GA4DiscrepancyCalc  ga4={ga4} setGa4={setGa4} other={other} setOther={setOther} />;
+      case '5': return <DemandCalendar      events={events} setEvents={setEvents} isAdding={isAddingEvent} setIsAdding={setIsAddingEvent} newDate={newDate} setNewDate={setNewDate} newTitle={newTitle} setNewTitle={setNewTitle} />;
       case '6': return <StrategyCanvas />;
-      case '7': return <ABTestGenerator variable={variable} setVariable={setVariable} control={control} setControl={setControl} variant={variant} setVariant={setVariant} hypothesis={hypothesis} setHypothesis={setHypothesis} />;
-      case '8': return <BriefBuilder campaignName={campaignName} setCampaignName={setCampaignName} targetAudience={targetAudience} setTargetAudience={setTargetAudience} isSaved={isSaved} setIsSaved={setIsSaved} />;
-      default: return null;
+      case '7': return <ABTestGenerator     variable={variable} setVariable={setVariable} control={control} setControl={setControl} variant={variant} setVariant={setVariant} hypothesis={hypothesis} setHypothesis={setHypothesis} />;
+      case '8': return <BriefBuilder        campaignName={campaignName} setCampaignName={setCampaignName} targetAudience={targetAudience} setTargetAudience={setTargetAudience} isSaved={isSaved} setIsSaved={setIsSaved} />;
+      default:  return null;
     }
   };
 
+  // ── Active tool view ───────────────────────────────────────────────
   if (activeTool) {
     const Icon = activeTool.icon;
-    return (
-      <div className="flex flex-col h-full bg-gray-50">
-        <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3">
-          <button 
-            onClick={() => navigate('/workbenches')}
-            className="p-2 -ml-2 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-          <div className={`p-2 rounded-lg ${activeTool.color} shrink-0`}>
-            <Icon className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="font-bold text-gray-900 leading-tight">{activeTool.title}</h2>
-            <span className="text-xs text-gray-500">{activeTool.phase} Workbench</span>
-          </div>
-          <button 
-            onClick={async () => {
-              const data = workbenchData[activeTool.id] || {};
-              let formattedText = '';
-              if (!data || Object.keys(data).length === 0) {
-                formattedText = 'No data recorded yet.';
-              } else {
-                switch(activeTool.id) {
-                  case '1': formattedText = `Core Issues:\n${(data.issues || []).map((i: string) => `- ${i}`).join('\n')}`; break;
-                  case '2': formattedText = `Recent Verifications:\n${(data.logs || []).map((l: any) => `- ${l.text} [${l.status.toUpperCase()}]`).join('\n')}`; break;
-                  case '4': formattedText = `GA4 Discrepancy:\nGA4 Conversions: ${data.ga4 || 0}\nCRM/Other: ${data.other || 0}`; break;
-                  case '5': formattedText = `Upcoming Campaigns:\n${(data.events || []).map((e: any) => `- ${e.date}: ${e.title}`).join('\n')}`; break;
-                  case '6': formattedText = `Strategy Canvas Factors:\n${(data.factors || []).map((f: any) => `- ${f.name} (You: ${f.you}%, Comp: ${f.comp}%)`).join('\n')}`; break;
-                  case '7': formattedText = `A/B Test Hypothesis:\n"If we change the ${data.variable || '[Variable]'} from '${data.control || '[Control]'}' to '${data.variant || '[Variant]'}', we expect to see an improvement in our primary metric because it better addresses user needs."`; break;
-                  case '8': formattedText = `Campaign Brief:\nName: ${data.campaignName || 'Untitled'}\nTarget Audience: ${data.targetAudience || 'Not specified'}`; break;
-                  default: formattedText = JSON.stringify(data, null, 2);
-                }
-              }
 
-              try {
-                const { Share } = await import('@capacitor/share');
-                await Share.share({ title: activeTool.title, text: formattedText, dialogTitle: 'Share Workbench Output' });
-              } catch {
-                navigator.clipboard.writeText(formattedText);
-                alert('Copied to clipboard!');
-              }
-            }}
-            className="ml-auto p-2 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
+    const handleShare = async () => {
+      const data = workbenchData[activeTool.id] || {};
+      let formattedText = '';
+      if (!data || Object.keys(data).length === 0) {
+        formattedText = 'No data recorded yet.';
+      } else {
+        switch (activeTool.id) {
+          case '1': formattedText = `Core Issues:\n${(data.issues || []).map((i: string) => `- ${i}`).join('\n')}`; break;
+          case '2': formattedText = `Recent Verifications:\n${(data.logs || []).map((l: any) => `- ${l.text} [${l.status.toUpperCase()}]`).join('\n')}`; break;
+          case '4': formattedText = `GA4 Discrepancy:\nGA4 Conversions: ${data.ga4 || 0}\nCRM/Other: ${data.other || 0}`; break;
+          case '5': formattedText = `Upcoming Campaigns:\n${(data.events || []).map((e: any) => `- ${e.date}: ${e.title}`).join('\n')}`; break;
+          case '6': formattedText = `Strategy Canvas Factors:\n${(data.factors || []).map((f: any) => `- ${f.name} (You: ${f.you}%, Comp: ${f.comp}%)`).join('\n')}`; break;
+          case '7': formattedText = `A/B Test Hypothesis:\n"If we change the ${data.variable || '[Variable]'} from '${data.control || '[Control]'}' to '${data.variant || '[Variant]'}', we expect to see an improvement."`; break;
+          case '8': formattedText = `Campaign Brief:\nName: ${data.campaignName || 'Untitled'}\nTarget Audience: ${data.targetAudience || 'Not specified'}`; break;
+          default: formattedText = JSON.stringify(data, null, 2);
+        }
+      }
+      try {
+        const { Share } = await import('@capacitor/share');
+        await Share.share({ title: activeTool.title, text: formattedText, dialogTitle: 'Share Workbench Output' });
+      } catch {
+        navigator.clipboard.writeText(formattedText);
+        alert('Copied to clipboard!');
+      }
+    };
+
+    return (
+      <div className="flex flex-col h-full bg-surface-base">
+        {/* Tool header */}
+        <header className="bg-surface-elevated border-b border-line px-4 py-3 flex items-center gap-3">
+          <motion.button
+            onClick={() => navigate('/workbenches')}
+            whileTap={{ scale: 0.90 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+            className="p-2 -ml-1 rounded-full hover:bg-surface-subtle text-ink-secondary hover:text-ink-primary transition-colors focus:outline-none"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </motion.button>
+
+          <div className={`p-2 rounded-xl ${activeTool.bgColor} shrink-0`}>
+            <Icon className={`w-5 h-5 ${activeTool.accentColor}`} />
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <h2 className="text-title text-ink-primary truncate">{activeTool.title}</h2>
+            <span className="text-caption text-ink-tertiary">{activeTool.phase} Workbench</span>
+          </div>
+
+          <motion.button
+            onClick={handleShare}
+            whileTap={{ scale: 0.90 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+            className="p-2 rounded-full hover:bg-surface-subtle text-ink-secondary hover:text-ink-primary transition-colors focus:outline-none"
           >
             <Share2 className="w-5 h-5" />
-          </button>
+          </motion.button>
         </header>
-        <div className="flex-1 p-6 flex flex-col items-center justify-start overflow-y-auto text-center">
-          <div className={`p-6 rounded-full ${activeTool.color} mb-4 opacity-80 shrink-0`}>
-            <Icon className="w-12 h-12" strokeWidth={1.5} />
+
+        {/* Tool content */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Hero icon + description */}
+          <div className="flex flex-col items-center pt-6 px-6 pb-4 text-center">
+            <div className={`p-5 rounded-3xl ${activeTool.bgColor} mb-4`}>
+              <Icon className={`w-10 h-10 ${activeTool.accentColor}`} strokeWidth={1.5} />
+            </div>
+            <p className="text-body text-ink-secondary max-w-xs">{activeTool.description}</p>
           </div>
-          <p className="text-gray-500 max-w-sm mb-8 text-sm">{activeTool.description}</p>
-          
-          <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm w-full max-w-md flex flex-col items-center">
-            {renderActiveToolContent(activeTool.id)}
+
+          {/* Tool content card */}
+          <div className="px-4 pb-28">
+            <div className="bg-surface-elevated border border-line rounded-2xl p-5 shadow-surface">
+              {renderContent(activeTool.id)}
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
+  // ── Grid view ─────────────────────────────────────────────────────
+  const stagger = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.05 } },
+  };
+  const item = {
+    hidden: { opacity: 0, scale: 0.95 },
+    show:   { opacity: 1, scale: 1, transition: { duration: 0.2 } },
+  };
+
   return (
-    <div className="p-4 overflow-y-auto h-full">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Interactive Workbenches</h2>
-        <p className="text-gray-500 mt-1 text-sm">Tools and templates to complete your deliverables.</p>
+    <div className="p-4 pb-28">
+      <div className="mb-5">
+        <h2 className="text-heading text-ink-primary">Interactive Workbenches</h2>
+        <p className="text-body text-ink-secondary mt-1">Tools and templates to complete your deliverables.</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 pb-20">
-        {tools.map(tool => {
+      <motion.div
+        variants={stagger}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-2 gap-3"
+      >
+        {TOOLS.map(tool => {
           const Icon = tool.icon;
           return (
-            <button 
-              key={tool.id} 
+            <motion.button
+              key={tool.id}
+              variants={item}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               onClick={() => navigate(`/workbenches/${tool.id}`)}
-              className="bg-white border border-gray-200 rounded-2xl p-4 flex flex-col items-start text-left shadow-sm active:bg-gray-50 transition-all focus:outline-none focus:ring-2 focus:ring-teal-500/50"
+              className="bg-surface-elevated border border-line rounded-2xl p-4 flex flex-col items-start text-left shadow-surface hover:border-line/80 hover:-translate-y-px transition-all focus:outline-none focus:ring-2 focus:ring-accent/30"
             >
-              <div className={`p-3 rounded-xl ${tool.color} mb-3`}>
-                <Icon className="w-6 h-6" />
+              <div className={`p-3 rounded-xl ${tool.bgColor} mb-3`}>
+                <Icon className={`w-5 h-5 ${tool.accentColor}`} />
               </div>
-              <span className="text-xs font-semibold text-gray-400">{tool.phase}</span>
-              <h3 className="font-bold text-gray-800 leading-tight mt-1 text-sm">{tool.title}</h3>
-            </button>
-          )
+              <span className="text-micro text-ink-tertiary uppercase tracking-wider">{tool.phase}</span>
+              <h3 className="text-body font-semibold text-ink-primary leading-tight mt-1">{tool.title}</h3>
+            </motion.button>
+          );
         })}
-      </div>
+      </motion.div>
     </div>
   );
 }
