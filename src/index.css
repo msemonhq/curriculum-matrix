@@ -12,15 +12,15 @@
 
   :root {
     color-scheme: dark;
-    --bg-base: #0d0d0f;
-    --bg-elevated: #18181b;
+    --bg-base: #090A0C;
+    --bg-elevated: #16171E;
     --bg-overlay: #1f1f23;
     --bg-subtle: #27272a;
     --accent: #00c4db;
     --accent-dim: rgba(0,196,219,0.15);
     --text-primary: #fafafa;
     --text-secondary: #a1a1aa;
-    --border: #3f3f46;
+    --border: rgba(255, 255, 255, 0.05);
   }
 
   body {

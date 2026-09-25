@@ -28,8 +28,8 @@ export function Button({
   return (
     <motion.button
       type={props.type || 'button'}
-      whileTap={{ scale: 0.97 }}
-      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.1 }}
       className={`${base} ${variants[variant]} ${fullWidth ? 'w-full flex-1' : ''} ${className}`}
       disabled={disabled || loading}
       aria-busy={loading || undefined}

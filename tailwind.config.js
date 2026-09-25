@@ -8,13 +8,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        surface: { base: '#0d0d0f', elevated: '#18181b', overlay: '#1f1f23', subtle: '#27272a' },
+        surface: { base: '#090A0C', elevated: '#16171E', overlay: '#1f1f23', subtle: '#27272a' },
         accent: { DEFAULT: '#00c4db', dim: 'rgba(0,196,219,0.15)', glow: 'rgba(0,196,219,0.33)' },
         success: { DEFAULT: '#22c55e', dim: 'rgba(34,197,94,0.15)' },
         warning: { DEFAULT: '#f59e0b', dim: 'rgba(245,158,11,0.15)' },
         danger: { DEFAULT: '#f87171', dim: 'rgba(248,113,113,0.15)' },
         ink: { primary: '#fafafa', secondary: '#a1a1aa', tertiary: '#71717a' },
-        line: { DEFAULT: '#3f3f46', focus: '#00c4db' },
+        line: { DEFAULT: 'rgba(255,255,255,0.05)', focus: '#00c4db' },
         rokomari: { teal: '#00c4db', darkTeal: '#009ab0', orange: '#f7941e', darkOrange: '#c67618' },
       },
       fontFamily: {
@@ -39,7 +39,7 @@ export default {
       boxShadow: {
         'glow-accent': '0 0 16px rgba(0,196,219,0.35)',
         'glow-sm': '0 0 8px rgba(0,196,219,0.25)',
-        surface: '0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.24)',
+        surface: '0px 8px 24px rgba(0, 0, 0, 0.5)',
         'surface-lg': '0 8px 32px rgba(0,0,0,0.5)',
       },
       keyframes: {

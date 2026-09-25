@@ -23,7 +23,7 @@ export function Card({
     inset: 'bg-surface-subtle border-0',
   };
   const interactionClasses = interactive
-    ? 'hover:border-line/80 hover:-translate-y-px cursor-pointer'
+    ? 'hover:border-line/80 hover:-translate-y-px cursor-pointer active:scale-[0.98] active:duration-100'
     : '';
 
   return (
