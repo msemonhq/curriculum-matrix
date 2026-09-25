@@ -27,7 +27,6 @@ function MainApp() {
   const getActiveTab = () => { const path = location.pathname; if (path.startsWith('/curriculum')) return 'curriculum'; if (path.startsWith('/workbenches')) return 'workbenches'; if (path.startsWith('/audit')) return 'audit'; return 'dashboard'; };
   const activeTab = getActiveTab();
   const tabs = [{ id: 'dashboard', path: '/', label: 'Dashboard', icon: LayoutDashboard }, { id: 'curriculum', path: '/curriculum', label: 'Roadmap', icon: Map }, { id: 'workbenches', path: '/workbenches', label: 'Workbenches', icon: TestTube }, { id: 'audit', path: '/audit', label: 'Audit', icon: Target }];
-  const screenLabel = tabs.find(t => t.id === activeTab)?.label || 'Dashboard';
   const isInsideTool = location.pathname.startsWith('/workbenches/') && location.pathname.length > '/workbenches/'.length;
   const phaseStatus = useProgressStore(state => state.phaseStatus);
   const activePhase = curriculumData.phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed');
