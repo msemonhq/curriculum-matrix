@@ -8,8 +8,10 @@ interface ProgressState {
   workbench: WorkbenchData;
   timeTracking: Record<string, number>;
   notes: Record<string, string>;
+  completedModules: Record<string, boolean>;
   setPhaseStatus: (phaseId: string, status: PhaseStatus) => void;
   toggleDeliverable: (phaseId: string) => void;
+  toggleModule: (phaseId: string, moduleIndex: number) => void;
   updateWorkbench: (phaseId: string, data: Record<string, unknown>) => void;
   setPhaseTime: (phaseId: string, hours: number) => void;
   setPhaseNote: (phaseId: string, note: string) => void;
@@ -25,6 +27,7 @@ export const useProgressStore = create<ProgressState>()(
       workbench: {},
       timeTracking: {},
       notes: {},
+      completedModules: {},
       
       setPhaseStatus: (phaseId, status) => set((state) => ({
         phaseStatus: { ...state.phaseStatus, [phaseId]: status }
@@ -33,6 +36,16 @@ export const useProgressStore = create<ProgressState>()(
       toggleDeliverable: (phaseId) => set((state) => ({
         deliverables: { ...state.deliverables, [phaseId]: !state.deliverables[phaseId] }
       })),
+
+      toggleModule: (phaseId, moduleIndex) => set((state) => {
+        const key = `${phaseId}_${moduleIndex}`;
+        return {
+          completedModules: {
+            ...state.completedModules,
+            [key]: !state.completedModules[key]
+          }
+        };
+      }),
       
       updateWorkbench: (phaseId, data) => set((state) => ({
         workbench: {
@@ -55,9 +68,10 @@ export const useProgressStore = create<ProgressState>()(
         workbench: data.workbench || state.workbench,
         timeTracking: data.timeTracking || state.timeTracking,
         notes: data.notes || state.notes,
+        completedModules: data.completedModules || state.completedModules,
       })),
       
-      resetProgress: () => set({ phaseStatus: {}, deliverables: {}, workbench: {}, timeTracking: {}, notes: {} }),
+      resetProgress: () => set({ phaseStatus: {}, deliverables: {}, workbench: {}, timeTracking: {}, notes: {}, completedModules: {} }),
     }),
     {
       name: 'bspr-curriculum-storage',

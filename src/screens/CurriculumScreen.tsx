@@ -28,6 +28,52 @@ const staggerItem = {
   show:   { opacity: 1, y: 0, transition: { duration: 0.25 } },
 };
 
+function ModuleCheckmark({ isChecked, onClick }: { isChecked: boolean; onClick: () => void }) {
+  return (
+    <motion.button
+      type="button"
+      whileTap={{ scale: 0.8 }}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      className={`relative w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 transition-all duration-300 focus:outline-none ${
+        isChecked
+          ? 'bg-accent/20 border border-accent shadow-glow-sm'
+          : 'bg-surface-base border border-line/70 hover:border-line'
+      }`}
+      aria-label={isChecked ? 'Mark module incomplete' : 'Mark module complete'}
+    >
+      <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
+        <motion.path
+          d="M3.5 8.5L6.5 11.5L12.5 5"
+          stroke={isChecked ? '#00c4db' : 'transparent'}
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          initial={false}
+          animate={{
+            pathLength: isChecked ? 1 : 0,
+            opacity: isChecked ? 1 : 0,
+          }}
+          transition={{
+            pathLength: { type: 'spring', stiffness: 450, damping: 28 },
+            opacity: { duration: 0.15 },
+          }}
+        />
+      </svg>
+      {isChecked && (
+        <motion.div
+          initial={{ scale: 0.6, opacity: 0.9 }}
+          animate={{ scale: 1.6, opacity: 0 }}
+          transition={{ duration: 0.35, ease: 'easeOut' }}
+          className="absolute inset-0 rounded-md bg-accent/40 pointer-events-none"
+        />
+      )}
+    </motion.button>
+  );
+}
+
 export default function CurriculumScreen() {
   const navigate = useNavigate();
   const [expandedId, setExpandedId]   = useState<string | null>(null);
@@ -36,6 +82,7 @@ export default function CurriculumScreen() {
 
   const {
     phaseStatus, deliverables, timeTracking, notes, workbench,
+    completedModules, toggleModule,
     setPhaseStatus, toggleDeliverable, setPhaseTime, setPhaseNote,
   } = useProgressStore();
 
@@ -198,16 +245,29 @@ export default function CurriculumScreen() {
                               animate="show"
                               className="mt-2 space-y-1.5"
                             >
-                              {phase.modules.map((mod, i) => (
-                                <motion.li
-                                  key={i}
-                                  variants={staggerItem}
-                                  className="text-caption text-ink-secondary bg-surface-subtle border border-line/50 px-3 py-1.5 rounded-lg flex items-start gap-2"
-                                >
-                                  <span className="text-accent mt-0.5">·</span>
-                                  {mod}
-                                </motion.li>
-                              ))}
+                              {phase.modules.map((mod, i) => {
+                                const isChecked = completedModules[`${phase.id}_${i}`] ?? (status === 'completed');
+                                return (
+                                  <motion.li
+                                    key={i}
+                                    variants={staggerItem}
+                                    onClick={() => toggleModule(phase.id, i)}
+                                    className={`cursor-pointer text-caption px-3 py-2 rounded-xl flex items-start gap-2.5 transition-all duration-200 border ${
+                                      isChecked
+                                        ? 'bg-accent-dim/30 border-accent/30 text-ink-primary'
+                                        : 'bg-surface-subtle border-line/50 text-ink-secondary hover:border-line'
+                                    }`}
+                                  >
+                                    <ModuleCheckmark
+                                      isChecked={isChecked}
+                                      onClick={() => toggleModule(phase.id, i)}
+                                    />
+                                    <span className={`flex-1 leading-relaxed ${isChecked ? 'text-ink-primary font-medium' : ''}`}>
+                                      {mod}
+                                    </span>
+                                  </motion.li>
+                                );
+                              })}
                             </motion.ul>
                           </div>
 
