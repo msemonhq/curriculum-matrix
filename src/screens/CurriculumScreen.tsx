@@ -115,7 +115,7 @@ export default function CurriculumScreen() {
   return (
     <div className="flex flex-col h-full">
       {/* Sticky search + filter bar */}
-      <div className="px-4 pt-3 pb-3 space-y-3 bg-surface-base/80 backdrop-blur-md sticky top-0 z-10 border-b border-line/50">
+      <div className="px-5 pt-3 pb-3 space-y-3 bg-surface-base/80 backdrop-blur-md sticky top-0 z-10 border-b border-line/50">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-tertiary" />
           <input
@@ -146,7 +146,7 @@ export default function CurriculumScreen() {
       </div>
 
       {/* Phase list */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-28">
+      <div className="flex-1 overflow-y-auto p-5 space-y-4 pb-28">
         {filteredPhases.length === 0 && (
           <div className="mt-8">
             <EmptyState title="No phases found" description="Try adjusting your search or filters." />

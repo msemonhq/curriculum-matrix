@@ -85,7 +85,8 @@ export default function DashboardScreen() {
   ];
 
   return (
-    <div className="p-4 space-y-4 pb-app-nav">
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto p-5 space-y-5 pb-app-nav">
       {toast && <Toast message={toast.message} tone={toast.tone} onClose={dismissToast} />}
       <div className="flex items-center justify-between">
         <div><p className="text-caption text-ink-secondary uppercase tracking-wider">Overview</p><h2 className="text-heading text-ink-primary">Your curriculum</h2></div>
@@ -94,9 +95,9 @@ export default function DashboardScreen() {
 
       {nextPhase ? <Card variant="glass" padding="large" className="border-accent/30"><div className="flex items-start gap-3"><div className="w-10 h-10 rounded-xl bg-accent-dim flex items-center justify-center shrink-0"><ArrowRight className="w-5 h-5 text-accent" aria-hidden="true" /></div><div className="min-w-0 flex-1"><p className="text-micro text-accent uppercase tracking-wider">Next recommended step</p><h3 className="text-title text-ink-primary mt-1">Phase {nextPhase.number}: {nextPhase.title}</h3><p className="text-caption text-ink-secondary mt-1">Start this phase to keep your momentum.</p><Button fullWidth onClick={() => navigate('/curriculum')} className="mt-7">Open Phase <ArrowRight className="w-4 h-4" aria-hidden="true" /></Button></div></div></Card> : <Card variant="glass" padding="large" className="border-success/30"><div className="flex items-center gap-3"><CheckCircle2 className="w-8 h-8 text-success" aria-hidden="true" /><div><h3 className="text-title text-ink-primary">Curriculum complete</h3><p className="text-caption text-ink-secondary">You have completed every phase.</p></div></div></Card>}
 
-      <Card padding="large" glow={isComplete} className="flex flex-col items-center justify-center py-6">
+      <Card padding="none" glow={isComplete} className="flex items-center justify-center py-8">
         <div className="relative w-56 h-56 flex items-center justify-center">
-          <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100" role="img" aria-label={`${progressPercent}% of curriculum complete`}>
+          <svg className="w-full h-full -rotate-90 block" viewBox="0 0 100 100" role="img" aria-label={`${progressPercent}% of curriculum complete`}>
             <circle cx="50" cy="50" r={radius} fill="transparent" className="text-[#00D4FF]/[0.06]" stroke="currentColor" strokeWidth="7" />
             <motion.circle cx="50" cy="50" r={radius} fill="transparent" className="text-accent" stroke="currentColor" strokeWidth="7" strokeLinecap="round" strokeDasharray={circumference} initial={{ strokeDashoffset: circumference }} animate={{ strokeDashoffset: circumference - (circumference * progressPercent) / 100 }} transition={{ duration: 1.2 }} />
           </svg>
@@ -110,7 +111,7 @@ export default function DashboardScreen() {
         </div>
       </Card>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-5">
         <Card className="flex flex-col gap-3">
           <div className="w-9 h-9 rounded-xl bg-success-dim flex items-center justify-center">
             <CheckCircle2 className="text-success w-5 h-5" aria-hidden="true" />
@@ -167,6 +168,7 @@ export default function DashboardScreen() {
       <Sheet isOpen={showImportSheet} onClose={() => setShowImportSheet(false)} title="Import progress"><div className="space-y-4"><div className="flex items-center gap-2 text-caption text-ink-secondary"><Upload className="w-4 h-4" aria-hidden="true" />Paste your exported backup JSON below</div><TextArea rows={6} placeholder="Paste JSON here..." value={importData} onChange={e => { setImportData(e.target.value); setImportError(''); }} />{importError && <p role="alert" className="text-caption text-danger">{importError}</p>}<div className="flex gap-3"><Button variant="ghost" fullWidth onClick={() => setShowImportSheet(false)}>Cancel</Button><Button fullWidth onClick={handleImport}>Import</Button></div></div></Sheet>
       <Sheet isOpen={showSettingsSheet} onClose={() => setShowSettingsSheet(false)} title="Settings"><div className="space-y-3"><Button variant="secondary" fullWidth onClick={handleExport}><Download className="w-4 h-4" aria-hidden="true" /> Export backup</Button><Button variant="secondary" fullWidth onClick={() => { setShowSettingsSheet(false); setShowImportSheet(true); }}><Upload className="w-4 h-4" aria-hidden="true" /> Import backup</Button><div className="p-4 mt-4 bg-danger-dim border border-danger/25 rounded-xl"><h4 className="text-body font-semibold text-danger mb-1">Danger zone</h4><p className="text-caption text-ink-secondary mb-3">Permanently deletes all progress, tracked hours, and workbench data.</p><Button variant="danger" fullWidth onClick={() => setShowResetSheet(true)}><RotateCcw className="w-4 h-4" aria-hidden="true" /> Reset all progress</Button></div></div></Sheet>
       <Sheet isOpen={showResetSheet} onClose={() => setShowResetSheet(false)} title="Reset all progress?"><div className="space-y-4"><p className="text-body text-ink-secondary">This permanently deletes your phases, deliverables, notes, hours, and workbench data. This cannot be undone.</p><div className="flex gap-3"><Button variant="ghost" fullWidth onClick={() => setShowResetSheet(false)}>Cancel</Button><Button variant="danger" fullWidth onClick={handleReset}>Reset everything</Button></div></div></Sheet>
+      </div>
     </div>
   );
 }
