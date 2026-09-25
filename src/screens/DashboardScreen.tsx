@@ -92,7 +92,7 @@ export default function DashboardScreen() {
         <IconButton label="Open settings" onClick={() => setShowSettingsSheet(true)}><Settings className="w-5 h-5" aria-hidden="true" /></IconButton>
       </div>
 
-      {nextPhase ? <Card variant="glass" padding="large" className="border-accent/30"><div className="flex items-start gap-3"><div className="w-10 h-10 rounded-xl bg-accent-dim flex items-center justify-center shrink-0"><ArrowRight className="w-5 h-5 text-accent" aria-hidden="true" /></div><div className="min-w-0 flex-1"><p className="text-micro text-accent uppercase tracking-wider">Next recommended step</p><h3 className="text-title text-ink-primary mt-1">Phase {nextPhase.number}: {nextPhase.title}</h3><p className="text-caption text-ink-secondary mt-1">Start this phase to keep your momentum.</p><Button fullWidth onClick={() => navigate('/curriculum')} className="mt-4">Open Phase <ArrowRight className="w-4 h-4" aria-hidden="true" /></Button></div></div></Card> : <Card variant="glass" padding="large" className="border-success/30"><div className="flex items-center gap-3"><CheckCircle2 className="w-8 h-8 text-success" aria-hidden="true" /><div><h3 className="text-title text-ink-primary">Curriculum complete</h3><p className="text-caption text-ink-secondary">You have completed every phase.</p></div></div></Card>}
+      {nextPhase ? <Card variant="glass" padding="large" className="border-accent/30"><div className="flex items-start gap-3"><div className="w-10 h-10 rounded-xl bg-accent-dim flex items-center justify-center shrink-0"><ArrowRight className="w-5 h-5 text-accent" aria-hidden="true" /></div><div className="min-w-0 flex-1"><p className="text-micro text-accent uppercase tracking-wider">Next recommended step</p><h3 className="text-title text-ink-primary mt-1">Phase {nextPhase.number}: {nextPhase.title}</h3><p className="text-caption text-ink-secondary mt-1">Start this phase to keep your momentum.</p><Button fullWidth onClick={() => navigate('/curriculum')} className="mt-7">Open Phase <ArrowRight className="w-4 h-4" aria-hidden="true" /></Button></div></div></Card> : <Card variant="glass" padding="large" className="border-success/30"><div className="flex items-center gap-3"><CheckCircle2 className="w-8 h-8 text-success" aria-hidden="true" /><div><h3 className="text-title text-ink-primary">Curriculum complete</h3><p className="text-caption text-ink-secondary">You have completed every phase.</p></div></div></Card>}
 
       <Card padding="large" glow={isComplete} className="flex flex-col items-center justify-center py-6">
         <div className="relative w-56 h-56 flex items-center justify-center">
@@ -115,9 +115,9 @@ export default function DashboardScreen() {
           <div className="w-9 h-9 rounded-xl bg-success-dim flex items-center justify-center">
             <CheckCircle2 className="text-success w-5 h-5" aria-hidden="true" />
           </div>
-          <div className="flex flex-col">
+          <div className="flex items-baseline gap-1.5">
             <span className="text-[28px] font-bold text-white tabular leading-none">{completedDeliverables}</span>
-            <span className="text-[12px] font-normal text-[#8E929B] mt-1">/ {totalPhases}</span>
+            <span className="text-[12px] font-normal text-[#8E929B]">/ {totalPhases}</span>
           </div>
           <span className="text-[13px] font-medium text-[#A0A5B1]">Deliverables done</span>
         </Card>
@@ -125,9 +125,9 @@ export default function DashboardScreen() {
           <div className="w-9 h-9 rounded-xl bg-warning-dim flex items-center justify-center">
             <Clock className="text-warning w-5 h-5" aria-hidden="true" />
           </div>
-          <div className="flex flex-col">
+          <div className="flex items-baseline gap-1.5">
             <span className="text-[28px] font-bold text-white tabular leading-none">{totalLogged}</span>
-            <span className="text-[12px] font-normal text-[#8E929B] mt-1">/ {hoursDisplay}h</span>
+            <span className="text-[12px] font-normal text-[#8E929B]">/ {hoursDisplay}h</span>
           </div>
           <span className="text-[13px] font-medium text-[#A0A5B1]">Hours logged</span>
         </Card>
@@ -148,7 +148,7 @@ export default function DashboardScreen() {
           <ul className="px-4 pb-4 space-y-2">
             {priorityWins.map(win => (
               <li key={win.phase} className="flex">
-                <button type="button" className="w-full flex items-center justify-between text-left bg-surface-elevated/40 hover:bg-surface-elevated/60 p-3 rounded-xl border border-warning/10 active:scale-[0.98] transition-transform duration-100" onClick={() => navigate('/curriculum')}>
+                <button type="button" className="w-full flex items-center justify-between text-left bg-surface-elevated/40 hover:bg-surface-elevated/60 p-3 rounded-lg border border-warning/10 active:scale-[0.98] transition-transform duration-100" onClick={() => navigate('/curriculum')}>
                   <div className="flex-1 pr-3">
                     <p className="text-caption text-ink-primary font-medium leading-snug">{win.text}</p>
                     <p className="text-micro text-warning/80 mt-1 uppercase tracking-wider">Phase {win.phase}</p>
