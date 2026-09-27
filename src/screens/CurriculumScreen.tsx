@@ -245,13 +245,13 @@ export default function CurriculumScreen() {
                               animate="show"
                               className="mt-2 space-y-1.5"
                             >
-                              {phase.modules.map((mod, i) => {
-                                const isChecked = completedModules[`${phase.id}_${i}`] ?? (status === 'completed');
+                              {phase.modules.map((mod) => {
+                                const isChecked = completedModules[`${phase.id}_${mod.id}`] ?? (status === 'completed');
                                 return (
                                   <motion.li
-                                    key={i}
+                                    key={mod.id}
                                     variants={staggerItem}
-                                    onClick={() => toggleModule(phase.id, i)}
+                                    onClick={() => toggleModule(phase.id, mod.id)}
                                     className={`cursor-pointer text-caption px-3 py-2 rounded-xl flex items-start gap-2.5 transition-all duration-200 border ${
                                       isChecked
                                         ? 'bg-accent-dim/30 border-accent/30 text-ink-primary'
@@ -260,10 +260,11 @@ export default function CurriculumScreen() {
                                   >
                                     <ModuleCheckmark
                                       isChecked={isChecked}
-                                      onClick={() => toggleModule(phase.id, i)}
+                                      onClick={() => toggleModule(phase.id, mod.id)}
                                     />
                                     <span className={`flex-1 leading-relaxed ${isChecked ? 'text-ink-primary font-medium' : ''}`}>
-                                      {mod}
+                                      <span className="block">{mod.title}</span>
+                                      {mod.description && <span className="block text-ink-tertiary mt-0.5">{mod.description}</span>}
                                     </span>
                                   </motion.li>
                                 );

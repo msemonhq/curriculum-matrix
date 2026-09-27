@@ -6,12 +6,18 @@ export interface JDLine {
   type: 'Responsibility' | 'Competency';
 }
 
+export interface ModuleDetail {
+  id: string;
+  title: string;
+  description?: string;
+}
+
 export interface Phase {
   id: string;
   number: number | string; // e.g. 1, 2, "Optional 1"
   title: string;
   course: string;
-  modules: string[];
+  modules: ModuleDetail[];
   application: string;
   jdLinesServed: string[];
   deliverable: string;

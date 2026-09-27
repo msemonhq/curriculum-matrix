@@ -13,7 +13,7 @@ interface ProgressState {
   setActivePhase: (phaseId: string | null) => void;
   setPhaseStatus: (phaseId: string, status: PhaseStatus) => void;
   toggleDeliverable: (phaseId: string) => void;
-  toggleModule: (phaseId: string, moduleIndex: number) => void;
+  toggleModule: (phaseId: string, moduleId: string) => void;
   updateWorkbench: (phaseId: string, data: Record<string, unknown>) => void;
   setPhaseTime: (phaseId: string, hours: number) => void;
   setPhaseNote: (phaseId: string, note: string) => void;
