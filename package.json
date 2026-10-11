@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "cap:sync": "cap sync android",
+    "version:sync": "node scripts/sync-android-version.mjs",
+    "cap:sync": "node scripts/sync-android-version.mjs && cap sync android",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
