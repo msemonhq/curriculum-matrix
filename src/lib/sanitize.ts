@@ -172,7 +172,7 @@ export function parseBackup(text: string, phaseIds?: readonly string[]): ParsedB
   let parsed: unknown;
   try {
     // Strip a UTF-8 BOM so files saved by some editors still parse.
-    parsed = JSON.parse(text.replace(/^﻿/, ''));
+    parsed = JSON.parse(text.charCodeAt(0) === 0xfeff ? text.slice(1) : text);
   } catch {
     return { ok: false, error: 'The backup is not valid JSON.' };
   }

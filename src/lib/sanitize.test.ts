@@ -57,7 +57,7 @@ test('parseBackup reads a 3.2.0 export, migrating module keys', () => {
 });
 
 test('parseBackup accepts a bare state object and a BOM', () => {
-  const bare = '﻿' + JSON.stringify({ notes: { phase_1: 'hello' } });
+  const bare = String.fromCharCode(0xfeff) + JSON.stringify({ notes: { phase_1: 'hello' } });
   const result = parseBackup(bare, PHASES);
   assert.ok(result.ok);
   assert.equal(result.state.notes.phase_1, 'hello');
