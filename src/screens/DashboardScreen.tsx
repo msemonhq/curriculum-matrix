@@ -6,12 +6,13 @@ const { phases } = curriculumData;
 import { CheckCircle2, Zap, Clock, Settings, Upload, ChevronDown, ArrowRight, Download, RotateCcw } from 'lucide-react';
 import { motion, animate, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/Button';
-import { TextArea } from '../components/TextArea';
+import { ImportSheet } from '../components/ImportSheet';
 import { IconButton } from '../components/IconButton';
 import { Card } from '../components/Card';
 import { Sheet } from '../components/Sheet';
 import { Toast } from '../components/Toast';
 import { useToast } from '../hooks/useToast';
+import { buildBackup } from '../lib/sanitize';
 
 function AnimatedNumber({ value, suffix = '' }: { value: number; suffix?: string }) {
   const [display, setDisplay] = useState(0);
@@ -28,13 +29,11 @@ function AnimatedNumber({ value, suffix = '' }: { value: number; suffix?: string
 
 export default function DashboardScreen() {
   const navigate = useNavigate();
-  const { activePhaseId, phaseStatus, deliverables, timeTracking, importProgress, resetProgress } = useProgressStore();
+  const { activePhaseId, phaseStatus, deliverables, timeTracking, resetProgress } = useProgressStore();
   const { toast, showToast, dismissToast } = useToast();
   const [showImportSheet, setShowImportSheet] = useState(false);
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
   const [showResetSheet, setShowResetSheet] = useState(false);
-  const [importData, setImportData] = useState('');
-  const [importError, setImportError] = useState('');
   const [winsExpanded, setWinsExpanded] = useState(false);
 
   const completedPhases = phases.filter(phase => phaseStatus[phase.id] === 'completed').length;
@@ -50,21 +49,16 @@ export default function DashboardScreen() {
   const radius = 42;
   const circumference = 2 * Math.PI * radius;
 
-  const handleImport = () => {
-    setImportError('');
-    if (!importData.trim()) { setImportError('Paste a backup before importing.'); return; }
-    try {
-      const parsed = JSON.parse(importData);
-      if (!parsed?.state || typeof parsed.state !== 'object') { setImportError('This does not look like a Curriculum Matrix backup.'); return; }
-      importProgress(parsed.state);
-      setShowImportSheet(false);
-      setImportData('');
-      showToast('Progress imported successfully.', 'success');
-    } catch { setImportError('The backup is not valid JSON.'); }
+  const makeBackup = () => {
+    const state = useProgressStore.getState();
+    const hasData = Object.keys(state.phaseStatus).length + Object.keys(state.completedModules).length
+      + Object.keys(state.deliverables).length + Object.keys(state.notes).length
+      + Object.keys(state.timeTracking).length + Object.keys(state.workbench).length > 0;
+    return hasData ? buildBackup(state, __APP_VERSION__) : null;
   };
 
   const handleExport = async () => {
-    const data = localStorage.getItem('bspr-curriculum-storage');
+    const data = makeBackup();
     if (!data) { showToast('There is no progress data to export yet.', 'danger'); return; }
     try {
       const { Share } = await import('@capacitor/share');
@@ -74,6 +68,13 @@ export default function DashboardScreen() {
       try { await navigator.clipboard.writeText(data); showToast('Backup copied to clipboard.', 'success'); }
       catch { showToast('Could not export the backup.', 'danger'); }
     }
+  };
+
+  const handleCopyBackup = async () => {
+    const data = makeBackup();
+    if (!data) { showToast('There is no progress data to copy yet.', 'danger'); return; }
+    try { await navigator.clipboard.writeText(data); showToast('Backup copied to clipboard.', 'success'); }
+    catch { showToast('Could not copy the backup.', 'danger'); }
   };
 
   const handleReset = () => {
@@ -200,8 +201,8 @@ export default function DashboardScreen() {
       </div>
       <Button fullWidth onClick={() => navigate('/curriculum')} className="gap-2">Open Curriculum <ArrowRight className="w-4 h-4" aria-hidden="true" /></Button>
 
-      <Sheet isOpen={showImportSheet} onClose={() => setShowImportSheet(false)} title="Import progress"><div className="space-y-4"><div className="flex items-center gap-2 text-caption text-ink-secondary"><Upload className="w-4 h-4" aria-hidden="true" />Paste your exported backup JSON below</div><TextArea rows={6} placeholder="Paste JSON here..." value={importData} onChange={e => { setImportData(e.target.value); setImportError(''); }} />{importError && <p role="alert" className="text-caption text-danger">{importError}</p>}<div className="flex gap-3"><Button variant="ghost" fullWidth onClick={() => setShowImportSheet(false)}>Cancel</Button><Button fullWidth onClick={handleImport}>Import</Button></div></div></Sheet>
-      <Sheet isOpen={showSettingsSheet} onClose={() => setShowSettingsSheet(false)} title="Settings"><div className="space-y-3"><Button variant="secondary" fullWidth onClick={handleExport}><Download className="w-4 h-4" aria-hidden="true" /> Export backup</Button><Button variant="secondary" fullWidth onClick={() => { setShowSettingsSheet(false); setShowImportSheet(true); }}><Upload className="w-4 h-4" aria-hidden="true" /> Import backup</Button><div className="p-4 mt-4 bg-danger-dim border border-danger/25 rounded-xl"><h4 className="text-body font-semibold text-danger mb-1">Danger zone</h4><p className="text-caption text-ink-secondary mb-3">Permanently deletes all progress, tracked hours, and workbench data.</p><Button variant="danger" fullWidth onClick={() => setShowResetSheet(true)}><RotateCcw className="w-4 h-4" aria-hidden="true" /> Reset all progress</Button></div><p className="pt-2 text-center text-caption text-ink-secondary">BSPR Curriculum v{__APP_VERSION__}</p></div></Sheet>
+      <ImportSheet isOpen={showImportSheet} onClose={() => setShowImportSheet(false)} onImported={() => { setShowImportSheet(false); showToast('Progress imported successfully.', 'success'); }} />
+      <Sheet isOpen={showSettingsSheet} onClose={() => setShowSettingsSheet(false)} title="Settings"><div className="space-y-3"><Button variant="secondary" fullWidth onClick={handleExport}><Download className="w-4 h-4" aria-hidden="true" /> Export backup</Button><Button variant="secondary" fullWidth onClick={handleCopyBackup}><Download className="w-4 h-4" aria-hidden="true" /> Copy backup to clipboard</Button><Button variant="secondary" fullWidth onClick={() => { setShowSettingsSheet(false); setShowImportSheet(true); }}><Upload className="w-4 h-4" aria-hidden="true" /> Import backup</Button><div className="p-4 mt-4 bg-danger-dim border border-danger/25 rounded-xl"><h4 className="text-body font-semibold text-danger mb-1">Danger zone</h4><p className="text-caption text-ink-secondary mb-3">Permanently deletes all progress, tracked hours, and workbench data.</p><Button variant="danger" fullWidth onClick={() => setShowResetSheet(true)}><RotateCcw className="w-4 h-4" aria-hidden="true" /> Reset all progress</Button></div><p className="pt-2 text-center text-caption text-ink-secondary">BSPR Curriculum v{__APP_VERSION__}</p></div></Sheet>
       <Sheet isOpen={showResetSheet} onClose={() => setShowResetSheet(false)} title="Reset all progress?"><div className="space-y-4"><p className="text-body text-ink-secondary">This permanently deletes your phases, deliverables, notes, hours, and workbench data. This cannot be undone.</p><div className="flex gap-3"><Button variant="ghost" fullWidth onClick={() => setShowResetSheet(false)}>Cancel</Button><Button variant="danger" fullWidth onClick={handleReset}>Reset everything</Button></div></div></Sheet>
       </div>
     </div>

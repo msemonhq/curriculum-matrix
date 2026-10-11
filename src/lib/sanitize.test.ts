@@ -18,7 +18,7 @@ test('sanitizeState drops invalid values and unknown phases', () => {
     timeTracking: { phase_1: 3, phase_2: -1, phase_3: Number.NaN, phase_4: 1e9 },
     notes: { phase_1: 'ok', phase_2: 42 },
     completedModules: { phase_1_m1: true, phase_1_m2: 'x', phase_42_m1: true, loose: true },
-    workbench: { phase_1: { a: 1 }, phase_2: 'nope', phase_3: [1] },
+    workbench: { '5': { events: [] }, '8': { campaignName: 'x' }, '9': 'nope', 'bad key!': { a: 1 }, '7': [1] },
   }, PHASES);
   assert.equal(out.activePhaseId, null);
   assert.deepEqual(out.phaseStatus, { phase_1: 'completed' });
@@ -26,7 +26,8 @@ test('sanitizeState drops invalid values and unknown phases', () => {
   assert.deepEqual(out.timeTracking, { phase_1: 3, phase_4: 10_000 });
   assert.deepEqual(out.notes, { phase_1: 'ok' });
   assert.deepEqual(out.completedModules, { phase_1_m1: true });
-  assert.deepEqual(out.workbench, { phase_1: { a: 1 } });
+  // workbench is keyed by tool id ('1'..'8'), so it is not filtered by phase id
+  assert.deepEqual(out.workbench, { '5': { events: [] }, '8': { campaignName: 'x' } });
 });
 
 test('sanitizeState keeps a valid active phase and never throws on garbage', () => {

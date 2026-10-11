@@ -20,6 +20,7 @@ export const MAX_HOURS_PER_PHASE = 10_000;
 
 const STATUSES: ReadonlySet<string> = new Set(['not_started', 'in_progress', 'completed']);
 const BLOCKED_KEYS: ReadonlySet<string> = new Set(['__proto__', 'constructor', 'prototype']);
+const WORKBENCH_KEY = /^[A-Za-z0-9_-]{1,40}$/;
 const DATA_KEYS = [
   'activePhaseId', 'phaseStatus', 'deliverables', 'workbench', 'timeTracking', 'notes', 'completedModules',
 ] as const;
@@ -95,9 +96,10 @@ export function sanitizeState(raw: unknown, phaseIds?: readonly string[]): Progr
       knownPhase,
       (item) => (typeof item === 'boolean' ? item : undefined),
     ),
+    // Workbench data is keyed by tool id ('1'..'8'), not by phase id.
     workbench: filterRecord<Record<string, unknown>>(
       source.workbench,
-      knownPhase,
+      (key) => WORKBENCH_KEY.test(key),
       (item) => (isRecord(item) ? item : undefined),
     ),
     timeTracking: filterRecord<number>(
