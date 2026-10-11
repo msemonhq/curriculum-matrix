@@ -1,7 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+// These four DOM handlers have different signatures on motion components.
+type MotionConflicts = 'onAnimationStart' | 'onDrag' | 'onDragStart' | 'onDragEnd';
+
+interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, MotionConflicts> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'outline' | 'danger';
   fullWidth?: boolean;
   loading?: boolean;

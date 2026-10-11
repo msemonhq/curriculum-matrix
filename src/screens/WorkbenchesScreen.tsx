@@ -211,6 +211,13 @@ function DemandCalendar({ events, setEvents, isAdding, setIsAdding, newDate, set
   );
 }
 
+interface Factor { name: string; you: number; comp: number; }
+
+// Saved tool data is untyped JSON, so read it through one typed helper.
+function fromWorkbench<T>(data: Record<string, Record<string, unknown>>, tool: string, key: string, fallback: T): T {
+  return (data[tool]?.[key] as T | undefined) || fallback;
+}
+
 // Tool 6
 function StrategyCanvas() {
   const workbenchData  = useProgressStore(s => s.workbench);
@@ -220,7 +227,7 @@ function StrategyCanvas() {
     { name: 'Quality', you: 80, comp: 50 },
     { name: 'Speed',   you: 40, comp: 70 },
   ];
-  const factors = workbenchData['6']?.factors || defaultFactors;
+  const factors = fromWorkbench<Factor[]>(workbenchData, '6', 'factors', defaultFactors);
   const update = (index: number, key: 'you' | 'comp', value: number) => {
     const nf = [...factors];
     nf[index] = { ...nf[index], [key]: value };
@@ -327,23 +334,23 @@ export default function WorkbenchesScreen() {
   const activeTool = toolId ? TOOLS.find(t => t.id === toolId) : null;
 
   // Hoisted state — all tools
-  const [issues,     setIssues]     = useState<string[]>(workbenchData['1']?.issues || ['Low Conversion Rate', 'High Bounce Rate']);
+  const [issues,     setIssues]     = useState<string[]>(fromWorkbench<string[]>(workbenchData, '1', 'issues', ['Low Conversion Rate', 'High Bounce Rate']));
   const [newIssue,   setNewIssue]   = useState('');
-  const [logs,       setLogs]       = useState<Log[]>(workbenchData['2']?.logs || [{ id: 1, text: 'Ad copy generation', status: 'pass' }]);
+  const [logs,       setLogs]       = useState<Log[]>(fromWorkbench<Log[]>(workbenchData, '2', 'logs', [{ id: 1, text: 'Ad copy generation', status: 'pass' }]));
   const [newLog,     setNewLog]     = useState('');
-  const [ga4,        setGa4]        = useState(workbenchData['4']?.ga4 || '');
-  const [other,      setOther]      = useState(workbenchData['4']?.other || '');
-  const [events,     setEvents]     = useState<Event[]>(workbenchData['5']?.events || [{ date: 'Oct 15', title: 'Q4 Webinar' }]);
+  const [ga4,        setGa4]        = useState(fromWorkbench<string>(workbenchData, '4', 'ga4', ''));
+  const [other,      setOther]      = useState(fromWorkbench<string>(workbenchData, '4', 'other', ''));
+  const [events,     setEvents]     = useState<Event[]>(fromWorkbench<Event[]>(workbenchData, '5', 'events', [{ date: 'Oct 15', title: 'Q4 Webinar' }]));
   const [isAddingEvent, setIsAddingEvent] = useState(false);
   const [newDate,    setNewDate]    = useState('');
   const [newTitle,   setNewTitle]   = useState('');
-  const [variable,   setVariable]   = useState(workbenchData['7']?.variable || '');
-  const [control,    setControl]    = useState(workbenchData['7']?.control || '');
-  const [variant,    setVariant]    = useState(workbenchData['7']?.variant || '');
-  const [hypothesis, setHypothesis] = useState(workbenchData['7']?.hypothesis || '');
-  const [campaignName,   setCampaignName]   = useState(workbenchData['8']?.campaignName || '');
-  const [targetAudience, setTargetAudience] = useState(workbenchData['8']?.targetAudience || '');
-  const [isSaved,    setIsSaved]    = useState(workbenchData['8']?.isSaved || false);
+  const [variable,   setVariable]   = useState(fromWorkbench<string>(workbenchData, '7', 'variable', ''));
+  const [control,    setControl]    = useState(fromWorkbench<string>(workbenchData, '7', 'control', ''));
+  const [variant,    setVariant]    = useState(fromWorkbench<string>(workbenchData, '7', 'variant', ''));
+  const [hypothesis, setHypothesis] = useState(fromWorkbench<string>(workbenchData, '7', 'hypothesis', ''));
+  const [campaignName,   setCampaignName]   = useState(fromWorkbench<string>(workbenchData, '8', 'campaignName', ''));
+  const [targetAudience, setTargetAudience] = useState(fromWorkbench<string>(workbenchData, '8', 'targetAudience', ''));
+  const [isSaved,    setIsSaved]    = useState(fromWorkbench<boolean>(workbenchData, '8', 'isSaved', false));
 
   useEffect(() => { updateWorkbench('1', { issues }); },                          [issues, updateWorkbench]);
   useEffect(() => { updateWorkbench('2', { logs }); },                            [logs, updateWorkbench]);
@@ -372,18 +379,19 @@ export default function WorkbenchesScreen() {
 
     const handleShare = async () => {
       const data = workbenchData[activeTool.id] || {};
+      const d = data as { issues?: string[]; logs?: Log[]; ga4?: string | number; other?: string | number; events?: Event[]; factors?: Factor[]; variable?: string; control?: string; variant?: string; campaignName?: string; targetAudience?: string };
       let formattedText = '';
       if (!data || Object.keys(data).length === 0) {
         formattedText = 'No data recorded yet.';
       } else {
         switch (activeTool.id) {
-          case '1': formattedText = `Core Issues:\n${(data.issues || []).map((i: string) => `- ${i}`).join('\n')}`; break;
-          case '2': formattedText = `Recent Verifications:\n${(data.logs || []).map((l: any) => `- ${l.text} [${l.status.toUpperCase()}]`).join('\n')}`; break;
-          case '4': formattedText = `GA4 Discrepancy:\nGA4 Conversions: ${data.ga4 || 0}\nCRM/Other: ${data.other || 0}`; break;
-          case '5': formattedText = `Upcoming Campaigns:\n${(data.events || []).map((e: any) => `- ${e.date}: ${e.title}`).join('\n')}`; break;
-          case '6': formattedText = `Strategy Canvas Factors:\n${(data.factors || []).map((f: any) => `- ${f.name} (You: ${f.you}%, Comp: ${f.comp}%)`).join('\n')}`; break;
-          case '7': formattedText = `A/B Test Hypothesis:\n"If we change the ${data.variable || '[Variable]'} from '${data.control || '[Control]'}' to '${data.variant || '[Variant]'}', we expect to see an improvement."`; break;
-          case '8': formattedText = `Campaign Brief:\nName: ${data.campaignName || 'Untitled'}\nTarget Audience: ${data.targetAudience || 'Not specified'}`; break;
+          case '1': formattedText = `Core Issues:\n${(d.issues || []).map((i) => `- ${i}`).join('\n')}`; break;
+          case '2': formattedText = `Recent Verifications:\n${(d.logs || []).map((l) => `- ${l.text} [${l.status.toUpperCase()}]`).join('\n')}`; break;
+          case '4': formattedText = `GA4 Discrepancy:\nGA4 Conversions: ${d.ga4 || 0}\nCRM/Other: ${d.other || 0}`; break;
+          case '5': formattedText = `Upcoming Campaigns:\n${(d.events || []).map((e) => `- ${e.date}: ${e.title}`).join('\n')}`; break;
+          case '6': formattedText = `Strategy Canvas Factors:\n${(d.factors || []).map((f) => `- ${f.name} (You: ${f.you}%, Comp: ${f.comp}%)`).join('\n')}`; break;
+          case '7': formattedText = `A/B Test Hypothesis:\n"If we change the ${d.variable || '[Variable]'} from '${d.control || '[Control]'}' to '${d.variant || '[Variant]'}', we expect to see an improvement."`; break;
+          case '8': formattedText = `Campaign Brief:\nName: ${d.campaignName || 'Untitled'}\nTarget Audience: ${d.targetAudience || 'Not specified'}`; break;
           default: formattedText = JSON.stringify(data, null, 2);
         }
       }
