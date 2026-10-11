@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "version:sync": "node scripts/sync-android-version.mjs",
     "cap:sync": "node scripts/sync-android-version.mjs && cap sync android",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.node.json --noEmit",
     "test": "node --test \"src/**/*.test.ts\""
   },
   "dependencies": {

@@ -47,16 +47,35 @@ jobs:
       run: npm ci
 
     - name: Run Linter
+      id: lint
       run: npm run lint
 
+    - name: Report lint problems
+      if: failure() && steps.lint.outcome == 'failure'
+      run: |
+        npx eslint . --format json --output-file eslint-report.json || true
+        node scripts/ci-annotate.mjs eslint eslint-report.json
+
     - name: Type Check
+      id: typecheck
       run: npm run type-check
+
+    - name: Report type errors
+      if: failure() && steps.typecheck.outcome == 'failure'
+      run: |
+        { npx tsc -p tsconfig.app.json --noEmit --pretty false; npx tsc -p tsconfig.node.json --noEmit --pretty false; } > tsc-report.txt || true
+        node scripts/ci-annotate.mjs tsc tsc-report.txt
 
     - name: Run Tests
       run: npm test
 
     - name: Build Web Assets
-      run: npm run build
+      id: build
+      run: npm run build 2>&1 | tee build.log; exit "${PIPESTATUS[0]}"
+
+    - name: Report build errors
+      if: failure() && steps.build.outcome == 'failure'
+      run: node scripts/ci-annotate.mjs raw build.log
 
     - name: Check Android version is in sync
       run: node scripts/sync-android-version.mjs --check
