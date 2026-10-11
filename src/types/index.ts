@@ -6,10 +6,14 @@ export interface JDLine {
   type: 'Responsibility' | 'Competency';
 }
 
+/** `core` (default) counts toward progress; `optional` and `note` do not. */
+export type ModuleKind = 'core' | 'optional' | 'note';
+
 export interface ModuleDetail {
   id: string;
   title: string;
   description?: string;
+  kind?: ModuleKind;
 }
 
 export interface Phase {
