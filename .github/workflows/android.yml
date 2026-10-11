@@ -52,6 +52,9 @@ jobs:
     - name: Type Check
       run: npm run type-check
 
+    - name: Run Tests
+      run: npm test
+
     - name: Build Web Assets
       run: npm run build
 

@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "version:sync": "node scripts/sync-android-version.mjs",
     "cap:sync": "node scripts/sync-android-version.mjs && cap sync android",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "node --test \"src/**/*.test.ts\""
   },
   "dependencies": {
     "@capacitor/android": "^6.1.2",
