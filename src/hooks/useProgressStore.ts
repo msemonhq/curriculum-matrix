@@ -4,10 +4,11 @@ import { PhaseStatus } from '../types';
 import curriculumData from '../data/curriculumData.json';
 import { BACKUP_KEY, SCHEMA_VERSION, STORAGE_KEY } from '../lib/migrations';
 import { toggleModuleUpdate } from '../lib/progress';
-import { emptyProgress, normalizeState, pickProgressData } from '../lib/sanitize';
+import { MAX_NAME_CHARS, emptyProgress, normalizeState, pickProgressData } from '../lib/sanitize';
 import type { ProgressData, Reminder } from '../lib/sanitize';
 
 interface ProgressState extends ProgressData {
+  setDisplayName: (name: string) => void;
   setActivePhase: (phaseId: string | null) => void;
   setPhaseStatus: (phaseId: string, status: PhaseStatus) => void;
   toggleDeliverable: (phaseId: string) => void;
@@ -42,6 +43,7 @@ export const useProgressStore = create<ProgressState>()(
     (set) => ({
       ...emptyProgress(),
 
+      setDisplayName: (name) => set({ displayName: name.slice(0, MAX_NAME_CHARS) }),
       setActivePhase: (phaseId) => set({ activePhaseId: phaseId }),
       setPhaseStatus: (phaseId, status) => set((state) => ({ phaseStatus: { ...state.phaseStatus, [phaseId]: status }, activePhaseId: status === 'in_progress' ? phaseId : (status === 'completed' && state.activePhaseId === phaseId ? null : state.activePhaseId) })),
       toggleDeliverable: (phaseId) => set((state) => ({ deliverables: { ...state.deliverables, [phaseId]: !state.deliverables[phaseId] } })),

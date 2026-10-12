@@ -15,6 +15,7 @@ interface RawPhase {
 const data = JSON.parse(readFileSync(fileURLToPath(new URL('./curriculumData.json', import.meta.url)), 'utf8')) as {
   phases: RawPhase[];
   jdLines: Array<{ id: string }>;
+  priorityWins: Array<{ id: string; phaseId: string; text: string }>;
 };
 
 test('every module id the migration map points at exists in the curriculum', () => {
@@ -59,4 +60,14 @@ test('hours add up to the totals shown on the dashboard', () => {
   const max = data.phases.reduce((sum, p) => sum + p.hoursMax, 0);
   assert.equal(formatHours(min, max), '~87–92.5h');
   assert.equal(max, 92.5);
+});
+
+test('every priority win points at a real phase and has text', () => {
+  assert.ok(data.priorityWins.length > 0);
+  const ids = new Set(data.priorityWins.map((w) => w.id));
+  assert.equal(ids.size, data.priorityWins.length, 'win ids must be unique');
+  for (const win of data.priorityWins) {
+    assert.ok(data.phases.some((p) => p.id === win.phaseId), `${win.id} points at unknown ${win.phaseId}`);
+    assert.ok(win.text.trim().length > 0);
+  }
 });

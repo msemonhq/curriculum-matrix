@@ -13,6 +13,8 @@ export interface Reminder {
 
 /** The saved (non-function) part of the progress store. */
 export interface ProgressData {
+  /** Optional name used in the greeting; empty means greet without one. */
+  displayName: string;
   activePhaseId: string | null;
   phaseStatus: Record<string, PhaseStatus>;
   deliverables: Record<string, boolean>;
@@ -26,17 +28,19 @@ export interface ProgressData {
 export const MAX_BACKUP_CHARS = 5_000_000;
 export const MAX_NOTE_CHARS = 100_000;
 export const MAX_HOURS_PER_PHASE = 10_000;
+export const MAX_NAME_CHARS = 40;
 
 const STATUSES: ReadonlySet<string> = new Set(['not_started', 'in_progress', 'completed']);
 const BLOCKED_KEYS: ReadonlySet<string> = new Set(['__proto__', 'constructor', 'prototype']);
 const WORKBENCH_KEY = /^[A-Za-z0-9_-]{1,40}$/;
 const DATA_KEYS = [
-  'activePhaseId', 'phaseStatus', 'deliverables', 'workbench', 'timeTracking', 'notes', 'completedModules',
+  'displayName', 'activePhaseId', 'phaseStatus', 'deliverables', 'workbench', 'timeTracking', 'notes', 'completedModules',
 ] as const; // reminders are device-specific and never part of a backup
 const MAX_LABEL_CHARS = 200;
 
 export function emptyProgress(): ProgressData {
   return {
+    displayName: '',
     activePhaseId: null,
     phaseStatus: {},
     deliverables: {},
@@ -51,6 +55,7 @@ export function emptyProgress(): ProgressData {
 /** Picks only the saved fields from a store state (drops actions). */
 export function pickProgressData(state: ProgressData): ProgressData {
   return {
+    displayName: state.displayName,
     activePhaseId: state.activePhaseId,
     phaseStatus: state.phaseStatus,
     deliverables: state.deliverables,
@@ -97,6 +102,7 @@ export function sanitizeState(raw: unknown, phaseIds?: readonly string[]): Progr
     : null;
 
   return {
+    displayName: typeof source.displayName === 'string' ? source.displayName.slice(0, MAX_NAME_CHARS) : '',
     activePhaseId,
     phaseStatus: filterRecord<PhaseStatus>(
       source.phaseStatus,

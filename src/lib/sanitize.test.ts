@@ -150,3 +150,13 @@ test('reminders are validated on load but never travel in a backup', () => {
   assert.ok(imported.ok);
   assert.deepEqual(imported.state.reminders, {});
 });
+
+test('display name is a trimmed-length string; anything else becomes empty', () => {
+  assert.equal(sanitizeState({ displayName: 'Emon' }).displayName, 'Emon');
+  assert.equal(sanitizeState({ displayName: 'x'.repeat(100) }).displayName.length, 40);
+  assert.equal(sanitizeState({ displayName: 42 }).displayName, '');
+  assert.equal(sanitizeState({}).displayName, '');
+  const parsed = parseBackup(JSON.stringify({ state: { displayName: 'Emon', notes: { phase_1: 'x' } }, version: 1 }), PHASES);
+  assert.ok(parsed.ok);
+  assert.equal(parsed.state.displayName, 'Emon');
+});
