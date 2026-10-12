@@ -4,29 +4,9 @@
 // written by 3.x) and always return a complete, valid slice.
 import { isRecord } from './migrations.ts';
 import { parseYmd, toYmd } from './dates.ts';
+import { clean, idOf, lines, list, newId, pick, sameList, text } from './fields.ts';
 
-// ─── helpers ────────────────────────────────────────────────────────
-const MAX_TEXT = 4000;
-const MAX_ITEMS = 50;
-
-const text = (value: unknown, max = MAX_TEXT): string => (typeof value === 'string' ? value.slice(0, max) : '');
-const list = (value: unknown): unknown[] => (Array.isArray(value) ? value.slice(0, MAX_ITEMS) : []);
-const idOf = (value: unknown, prefix: string, index: number): string => {
-  const id = text(value, 60);
-  return id || `${prefix}${index + 1}`;
-};
-const pick = <T extends string>(value: unknown, allowed: readonly T[], fallback: T): T => (
-  typeof value === 'string' && (allowed as readonly string[]).includes(value) ? (value as T) : fallback
-);
-
-/** A short unique id for a new list item. */
-export function newId(now: number = Date.now(), random: number = Math.random()): string {
-  return `${now.toString(36)}${Math.floor(random * 1e6).toString(36)}`;
-}
-
-const sameList = (a: readonly string[], b: readonly string[]) => a.length === b.length && a.every((item, i) => item === b[i]);
-const clean = (value: string) => value.trim();
-const lines = (...parts: Array<string | null | undefined | false>): string => parts.filter((p): p is string => typeof p === 'string').join('\n');
+export { newId };
 
 // ─── Tool 1: issue tree ─────────────────────────────────────────────
 export interface Hypothesis {

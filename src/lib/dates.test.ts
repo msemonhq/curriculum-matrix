@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { asCalendarEvents, inDaysAtNine, looseDateToYmd, nextEvent, parseYmd, reminderTimeOn, toYmd } from './dates.ts';
+import { asCalendarEvents, daysUntil, inDaysAtNine, looseDateToYmd, nextEvent, parseYmd, reminderTimeOn, toYmd } from './dates.ts';
 
 const NOW = new Date(2026, 9, 12, 13, 0, 0); // Mon 12 Oct 2026, 13:00 local
 
@@ -71,4 +71,15 @@ test('asCalendarEvents tolerates untyped saved data', () => {
   ]);
   assert.deepEqual(asCalendarEvents(undefined), []);
   assert.deepEqual(asCalendarEvents({}), []);
+});
+
+test('daysUntil counts calendar days from today, across month ends and daylight-saving changes', () => {
+  assert.equal(daysUntil('2026-10-12', NOW), 0);
+  assert.equal(daysUntil('2026-10-13', NOW), 1);
+  assert.equal(daysUntil('2026-10-11', NOW), -1);
+  assert.equal(daysUntil('2026-11-01', NOW), 20);
+  assert.equal(daysUntil('2027-10-12', NOW), 365);
+  assert.equal(daysUntil('2026-03-29', new Date(2026, 2, 28, 23, 59)), 1);
+  assert.equal(daysUntil('', NOW), null);
+  assert.equal(daysUntil('2026-02-30', NOW), null);
 });

@@ -75,6 +75,16 @@ export function looseDateToYmd(text: unknown, now: Date): string {
   return '';
 }
 
+/** Whole calendar days from today to `ymd` (0 = today, negative = past); null when `ymd` is not a date. */
+export function daysUntil(ymd: string, now: Date): number | null {
+  const target = parseYmd(ymd);
+  if (!target) return null;
+  // Compare as UTC midnights so a daylight-saving change never makes a day 23 or 25 hours long.
+  const to = Date.UTC(target.year, target.month - 1, target.day);
+  const from = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((to - from) / 86_400_000);
+}
+
 /** 09:00 local time on a YYYY-MM-DD day, or null for an invalid day. */
 export function reminderTimeOn(ymd: string): Date | null {
   const parts = parseYmd(ymd);
