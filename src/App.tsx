@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { HashRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { App as CapacitorApp } from '@capacitor/app';
 import { useProgressStore } from './hooks/useProgressStore';

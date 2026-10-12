@@ -11,7 +11,8 @@
     "version:sync": "node scripts/sync-android-version.mjs",
     "cap:sync": "node scripts/sync-android-version.mjs && cap sync android",
     "type-check": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.node.json --noEmit",
-    "test": "node --test \"src/**/*.test.ts\""
+    "test": "node --test \"src/**/*.test.ts\" \"scripts/**/*.test.mjs\"",
+    "check:encoding": "node scripts/check-encoding.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^6.1.2",

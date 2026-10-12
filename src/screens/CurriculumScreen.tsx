@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { phases } from '../data/curriculum';
 import { useProgressStore } from '../hooks/useProgressStore';
@@ -31,21 +31,16 @@ const staggerItem = {
   show:   { opacity: 1, y: 0, transition: { duration: 0.25 } },
 };
 
-function ModuleCheckmark({ isChecked, onClick }: { isChecked: boolean; onClick: () => void }) {
+/** Visual only: the surrounding button carries the checkbox role and state. */
+function CheckMark({ isChecked }: { isChecked: boolean }) {
   return (
-    <motion.button
-      type="button"
-      whileTap={{ scale: 0.8 }}
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick();
-      }}
-      className={`relative w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 transition-all duration-300 focus:outline-none ${
+    <span
+      aria-hidden="true"
+      className={`relative w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 transition-all duration-300 ${
         isChecked
           ? 'bg-accent/20 border border-accent shadow-glow-sm'
-          : 'bg-surface-base border border-line/70 hover:border-line'
+          : 'bg-surface-base border border-line/70'
       }`}
-      aria-label={isChecked ? 'Mark module incomplete' : 'Mark module complete'}
     >
       <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
         <motion.path
@@ -66,16 +61,22 @@ function ModuleCheckmark({ isChecked, onClick }: { isChecked: boolean; onClick: 
         />
       </svg>
       {isChecked && (
-        <motion.div
+        <motion.span
           initial={{ scale: 0.6, opacity: 0.9 }}
           animate={{ scale: 1.6, opacity: 0 }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
           className="absolute inset-0 rounded-md bg-accent/40 pointer-events-none"
         />
       )}
-    </motion.button>
+    </span>
   );
 }
+
+const STATUS_LABEL: Record<PhaseStatus, string> = {
+  not_started: 'not started',
+  in_progress: 'in progress',
+  completed: 'completed',
+};
 
 export default function CurriculumScreen() {
   const navigate = useNavigate();
@@ -110,9 +111,9 @@ export default function CurriculumScreen() {
 
   const getStatusIcon = (status: string | undefined) => {
     switch (status) {
-      case 'completed':  return <CheckCircle2 className="text-success w-6 h-6" />;
-      case 'in_progress': return <PlayCircle className="text-accent w-6 h-6" />;
-      default:            return <Circle className="text-ink-tertiary w-6 h-6" />;
+      case 'completed':  return <CheckCircle2 className="text-success w-6 h-6" aria-hidden="true" />;
+      case 'in_progress': return <PlayCircle className="text-accent w-6 h-6" aria-hidden="true" />;
+      default:            return <Circle className="text-ink-tertiary w-6 h-6" aria-hidden="true" />;
     }
   };
 
@@ -178,17 +179,20 @@ export default function CurriculumScreen() {
                     className="p-4 flex items-center gap-3 cursor-pointer active:bg-surface-subtle transition-colors"
                     onClick={() => setExpandedId(isExpanded ? null : phase.id)}
                   >
-                    {/* Status icon â€” tap to cycle */}
-                    <motion.div
+                    {/* Status: a real button so it can be focused and is announced with its state */}
+                    <motion.button
+                      type="button"
                       whileTap={{ scale: 0.8 }}
                       transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                      aria-label={`Phase ${phase.number} status: ${STATUS_LABEL[status]}, tap to change`}
+                      className="-mx-2.5 -my-2 flex min-h-11 min-w-11 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
                       onClick={(e) => {
                         e.stopPropagation();
                         setPhaseStatus(phase.id, STATUS_CYCLE[status] || 'not_started');
                       }}
                     >
                       {getStatusIcon(status)}
-                    </motion.div>
+                    </motion.button>
 
                     <div className="flex-1 min-w-0">
                       {/* Phase number badge */}
@@ -269,25 +273,25 @@ export default function CurriculumScreen() {
                                 }
                                 const isChecked = isModuleChecked({ phaseStatus, completedModules }, phase.id, mod.id);
                                 return (
-                                  <motion.li
-                                    key={mod.id}
-                                    variants={staggerItem}
-                                    onClick={() => toggleModule(phase.id, mod.id)}
-                                    className={`cursor-pointer text-caption px-3 py-2 rounded-xl flex items-start gap-2.5 transition-all duration-200 border ${
-                                      isChecked
-                                        ? 'bg-accent-dim/30 border-accent/30 text-ink-primary'
-                                        : 'bg-surface-subtle border-line/50 text-ink-secondary hover:border-line'
-                                    }`}
-                                  >
-                                    <ModuleCheckmark
-                                      isChecked={isChecked}
+                                  <motion.li key={mod.id} variants={staggerItem}>
+                                    <button
+                                      type="button"
+                                      role="checkbox"
+                                      aria-checked={isChecked}
                                       onClick={() => toggleModule(phase.id, mod.id)}
-                                    />
-                                    <span className={`flex-1 leading-relaxed ${isChecked ? 'text-ink-primary font-medium' : ''}`}>
-                                      <span className="block">{mod.title}</span>
-                                      {mod.kind === 'optional' && <span className="block text-micro uppercase text-ink-tertiary mt-0.5">Optional (not counted in progress)</span>}
-                                      {mod.description && <span className="block text-ink-tertiary mt-0.5">{mod.description}</span>}
-                                    </span>
+                                      className={`w-full min-h-11 text-left text-caption px-3 py-2 rounded-xl flex items-start gap-2.5 transition-all duration-200 border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 ${
+                                        isChecked
+                                          ? 'bg-accent-dim/30 border-accent/30 text-ink-primary'
+                                          : 'bg-surface-subtle border-line/50 text-ink-secondary hover:border-line'
+                                      }`}
+                                    >
+                                      <CheckMark isChecked={isChecked} />
+                                      <span className={`flex-1 leading-relaxed ${isChecked ? 'text-ink-primary font-medium' : ''}`}>
+                                        <span className="block">{mod.title}</span>
+                                        {mod.kind === 'optional' && <span className="block text-micro uppercase text-ink-tertiary mt-0.5">Optional (not counted in progress)</span>}
+                                        {mod.description && <span className="block text-ink-tertiary mt-0.5">{mod.description}</span>}
+                                      </span>
+                                    </button>
                                   </motion.li>
                                 );
                               })}
