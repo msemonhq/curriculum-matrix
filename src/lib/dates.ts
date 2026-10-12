@@ -101,3 +101,13 @@ export function nextEvent(events: readonly CalendarEvent[], now: Date): (Calenda
   }
   return best;
 }
+
+/** Reads Demand Calendar events out of untyped saved workbench data. */
+export function asCalendarEvents(value: unknown): CalendarEvent[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (typeof item !== 'object' || item === null) return [];
+    const { date, title } = item as { date?: unknown; title?: unknown };
+    return [{ date: typeof date === 'string' ? date : '', title: typeof title === 'string' ? title : '' }];
+  });
+}

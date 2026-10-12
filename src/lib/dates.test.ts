@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { inDaysAtNine, looseDateToYmd, nextEvent, parseYmd, reminderTimeOn, toYmd } from './dates.ts';
+import { asCalendarEvents, inDaysAtNine, looseDateToYmd, nextEvent, parseYmd, reminderTimeOn, toYmd } from './dates.ts';
 
 const NOW = new Date(2026, 9, 12, 13, 0, 0); // Mon 12 Oct 2026, 13:00 local
 
@@ -62,4 +62,13 @@ test('nextEvent picks the soonest future event and skips past, empty and invalid
   assert.equal(toYmd(next!.at), '2026-10-15');
   assert.equal(nextEvent([], NOW), null);
   assert.equal(nextEvent([{ date: '2026-01-01', title: 'x' }], NOW), null);
+});
+
+test('asCalendarEvents tolerates untyped saved data', () => {
+  assert.deepEqual(asCalendarEvents([{ date: '2026-10-15', title: 'A' }, null, 'x', { date: 5 }]), [
+    { date: '2026-10-15', title: 'A' },
+    { date: '', title: '' },
+  ]);
+  assert.deepEqual(asCalendarEvents(undefined), []);
+  assert.deepEqual(asCalendarEvents({}), []);
 });

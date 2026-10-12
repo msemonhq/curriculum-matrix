@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useProgressStore } from '../hooks/useProgressStore';
+import { useToast } from '../hooks/useToast';
 import { Button } from '../components/Button';
 
 // ─── Tool definitions ────────────────────────────────────────────────
@@ -190,15 +191,22 @@ function DemandCalendar({ events, setEvents, isAdding, setIsAdding, newDate, set
       <SectionHeading>Upcoming Campaigns</SectionHeading>
       <ul className="space-y-2 mb-4">
         {events.map((e, idx) => (
-          <li key={idx} className="flex gap-4 p-3 bg-surface-subtle border border-line rounded-xl items-center">
-            <span className="font-mono text-caption text-danger font-bold shrink-0 tabular">{e.date}</span>
+          <li key={idx} className="flex gap-3 p-3 bg-surface-subtle border border-line rounded-xl items-center">
+            <input
+              type="date"
+              aria-label={`Date for ${e.title || 'campaign'}`}
+              value={e.date}
+              onChange={(ev) => setEvents(events.map((item, i) => (i === idx ? { ...item, date: ev.target.value } : item)))}
+              className={`shrink-0 min-h-11 bg-surface-base border rounded-lg px-2 text-caption font-mono tabular text-ink-primary ${e.date ? 'border-line' : 'border-danger'}`}
+            />
             <span className="text-body text-ink-primary">{e.title}</span>
+            {!e.date && <span className="text-caption text-danger shrink-0">Set a date</span>}
           </li>
         ))}
       </ul>
       {isAdding ? (
         <div className="flex gap-2 mb-3">
-          <ToolInput value={newDate} onChange={setNewDate} placeholder="Oct 15" />
+          <ToolInput type="date" value={newDate} onChange={setNewDate} />
           <ToolInput value={newTitle} onChange={setNewTitle} placeholder="Campaign title" />
           <Button variant="outline" onClick={handleAdd} className="shrink-0 px-3">Add</Button>
         </div>
@@ -327,6 +335,7 @@ function BriefBuilder({ campaignName, setCampaignName, targetAudience, setTarget
 export default function WorkbenchesScreen() {
   const { toolId } = useParams<{ toolId?: string }>();
   const navigate   = useNavigate();
+  const { showToast } = useToast();
 
   const workbenchData   = useProgressStore(s => s.workbench);
   const updateWorkbench = useProgressStore(s => s.updateWorkbench);
@@ -340,7 +349,7 @@ export default function WorkbenchesScreen() {
   const [newLog,     setNewLog]     = useState('');
   const [ga4,        setGa4]        = useState(fromWorkbench<string>(workbenchData, '4', 'ga4', ''));
   const [other,      setOther]      = useState(fromWorkbench<string>(workbenchData, '4', 'other', ''));
-  const [events,     setEvents]     = useState<Event[]>(fromWorkbench<Event[]>(workbenchData, '5', 'events', [{ date: 'Oct 15', title: 'Q4 Webinar' }]));
+  const [events,     setEvents]     = useState<Event[]>(fromWorkbench<Event[]>(workbenchData, '5', 'events', [{ date: '', title: 'Q4 Webinar' }]));
   const [isAddingEvent, setIsAddingEvent] = useState(false);
   const [newDate,    setNewDate]    = useState('');
   const [newTitle,   setNewTitle]   = useState('');
@@ -399,8 +408,12 @@ export default function WorkbenchesScreen() {
         const { Share } = await import('@capacitor/share');
         await Share.share({ title: activeTool.title, text: formattedText, dialogTitle: 'Share Workbench Output' });
       } catch {
-        navigator.clipboard.writeText(formattedText);
-        alert('Copied to clipboard!');
+        try {
+          await navigator.clipboard.writeText(formattedText);
+          showToast('Copied to clipboard.', 'success');
+        } catch {
+          showToast('Could not share or copy this output.', 'danger');
+        }
       }
     };
 

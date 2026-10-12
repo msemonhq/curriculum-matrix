@@ -7,13 +7,14 @@ import { formatHours, isModuleChecked } from '../lib/progress';
 import type { PhaseStatus } from '../types';
 import {
   ChevronDown, BookOpen, Clock, Target, FileCheck,
-  Circle, CheckCircle2, PlayCircle, TestTube, Search, Bell,
+  Circle, CheckCircle2, PlayCircle, TestTube, Search,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EmptyState } from '../components/EmptyState';
 import { Badge } from '../components/Badge';
 import { ProgressBar } from '../components/ProgressBar';
 import { Button } from '../components/Button';
+import { ReminderControl } from '../components/ReminderControl';
 
 const STATUS_CYCLE: Record<PhaseStatus, PhaseStatus> = {
   not_started: 'in_progress',
@@ -83,7 +84,7 @@ export default function CurriculumScreen() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const {
-    phaseStatus, deliverables, timeTracking, notes, workbench,
+    phaseStatus, deliverables, timeTracking, notes,
     completedModules, toggleModule,
     setPhaseStatus, toggleDeliverable, setPhaseTime, setPhaseNote,
   } = useProgressStore();
@@ -333,53 +334,8 @@ export default function CurriculumScreen() {
                             </div>
                           </div>
 
-                          {/* Remind Me */}
-                          <Button
-                            variant="ghost"
-                            fullWidth
-                            className="gap-2 text-caption"
-                            onClick={async () => {
-                              try {
-                                let targetDate = new Date(Date.now() + 1000 * 60 * 60 * 24);
-                                let alertMsg   = 'Reminder set for 24 hours from now.';
-                                const demandEvents = (workbench['5']?.events as Array<{ date: string; title: string }> | undefined) || [];
-                                if (demandEvents.length > 0) {
-                                  const now         = new Date();
-                                  const currentYear = now.getFullYear();
-                                  const validEvents = demandEvents
-                                    .flatMap((e) => {
-                                      const dThisYear = new Date(`${e.date} ${currentYear}`);
-                                      const dNextYear = new Date(`${e.date} ${currentYear + 1}`);
-                                      const options: Array<{ date: string; title: string; parsed: Date }> = [];
-                                      if (!isNaN(dThisYear.getTime()) && dThisYear.getTime() > now.getTime()) options.push({ ...e, parsed: dThisYear });
-                                      if (!isNaN(dNextYear.getTime()) && dNextYear.getTime() > now.getTime()) options.push({ ...e, parsed: dNextYear });
-                                      return options;
-                                    })
-                                    .sort((a, b) => a.parsed.getTime() - b.parsed.getTime());
-                                  if (validEvents.length > 0) {
-                                    targetDate = validEvents[0].parsed;
-                                    alertMsg   = `Reminder set for ${validEvents[0].title} on ${validEvents[0].date}.`;
-                                  }
-                                }
-                                const { LocalNotifications } = await import('@capacitor/local-notifications');
-                                await LocalNotifications.requestPermissions();
-                                await LocalNotifications.schedule({
-                                  notifications: [{
-                                    title: 'Curriculum Reminder',
-                                    body:  `Time to get back to ${phase.title}!`,
-                                    id:    Math.floor(Math.random() * 1000000),
-                                    schedule: { at: targetDate },
-                                  }],
-                                });
-                                alert(alertMsg);
-                              } catch {
-                                alert('Notifications not supported in browser context.');
-                              }
-                            }}
-                          >
-                            <Bell className="w-3.5 h-3.5" />
-                            Remind Me
-                          </Button>
+                          {/* Reminder */}
+                          <ReminderControl phaseId={phase.id} phaseTitle={phase.title} />
 
                           {/* Deliverable toggle */}
                           <div

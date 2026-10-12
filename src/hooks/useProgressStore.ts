@@ -5,7 +5,7 @@ import curriculumData from '../data/curriculumData.json';
 import { BACKUP_KEY, SCHEMA_VERSION, STORAGE_KEY } from '../lib/migrations';
 import { toggleModuleUpdate } from '../lib/progress';
 import { emptyProgress, normalizeState, pickProgressData } from '../lib/sanitize';
-import type { ProgressData } from '../lib/sanitize';
+import type { ProgressData, Reminder } from '../lib/sanitize';
 
 interface ProgressState extends ProgressData {
   setActivePhase: (phaseId: string | null) => void;
@@ -15,7 +15,9 @@ interface ProgressState extends ProgressData {
   updateWorkbench: (phaseId: string, data: Record<string, unknown>) => void;
   setPhaseTime: (phaseId: string, hours: number) => void;
   setPhaseNote: (phaseId: string, note: string) => void;
-  /** Replaces all saved progress with `data` (validated again here). */
+  /** Records (or clears, with null) the reminder scheduled on this device for a phase. */
+  setReminder: (phaseId: string, reminder: Reminder | null) => void;
+  /** Replaces all saved progress with `data` (validated again here). Reminders are kept: they belong to this device. */
   importProgress: (data: ProgressData) => void;
   resetProgress: () => void;
 }
@@ -48,7 +50,18 @@ export const useProgressStore = create<ProgressState>()(
       setPhaseTime: (phaseId, hours) => set((state) => ({ timeTracking: { ...state.timeTracking, [phaseId]: Math.max(0, Number.isFinite(hours) ? hours : 0) } })),
       setPhaseNote: (phaseId, note) => set((state) => ({ notes: { ...state.notes, [phaseId]: note } })),
 
-      importProgress: (data) => set({ ...emptyProgress(), ...normalizeState(data, SCHEMA_VERSION, PHASE_IDS) }),
+      setReminder: (phaseId, reminder) => set((state) => {
+        const reminders = { ...state.reminders };
+        if (reminder) reminders[phaseId] = reminder;
+        else delete reminders[phaseId];
+        return { reminders };
+      }),
+
+      importProgress: (data) => set((state) => ({
+        ...emptyProgress(),
+        ...normalizeState(data, SCHEMA_VERSION, PHASE_IDS),
+        reminders: state.reminders,
+      })),
 
       resetProgress: () => set(emptyProgress()),
     }),

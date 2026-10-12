@@ -9,9 +9,9 @@ import { ImportSheet } from '../components/ImportSheet';
 import { IconButton } from '../components/IconButton';
 import { Card } from '../components/Card';
 import { Sheet } from '../components/Sheet';
-import { Toast } from '../components/Toast';
 import { useToast } from '../hooks/useToast';
 import { buildBackup } from '../lib/sanitize';
+import { cancelAllReminders } from '../services/reminders';
 import { formatHours } from '../lib/progress';
 import { useProgress } from '../hooks/useProgress';
 
@@ -31,7 +31,7 @@ function AnimatedNumber({ value, suffix = '' }: { value: number; suffix?: string
 export default function DashboardScreen() {
   const navigate = useNavigate();
   const { activePhaseId, phaseStatus, deliverables, timeTracking, resetProgress } = useProgressStore();
-  const { toast, showToast, dismissToast } = useToast();
+  const { showToast } = useToast();
   const { overall } = useProgress();
   const [showImportSheet, setShowImportSheet] = useState(false);
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
@@ -82,6 +82,7 @@ export default function DashboardScreen() {
 
   const handleReset = () => {
     resetProgress();
+    void cancelAllReminders();
     setShowResetSheet(false);
     setShowSettingsSheet(false);
     showToast('All progress has been reset.', 'success');
@@ -96,7 +97,6 @@ export default function DashboardScreen() {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-app-nav">
-      {toast && <Toast message={toast.message} tone={toast.tone} onClose={dismissToast} />}
       <div className="flex items-center justify-between">
         <div><p className="text-caption text-ink-secondary uppercase tracking-wider">Overview</p><h2 className="text-heading text-ink-primary">Your curriculum</h2></div>
         <IconButton label="Open settings" onClick={() => setShowSettingsSheet(true)}><Settings className="w-5 h-5" aria-hidden="true" /></IconButton>
