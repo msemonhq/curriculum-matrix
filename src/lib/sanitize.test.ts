@@ -7,6 +7,7 @@ import {
 } from './sanitize.ts';
 import { SCHEMA_VERSION } from './migrations.ts';
 
+const NOW = new Date(2026, 9, 12, 13, 0, 0);
 const PHASES = ['phase_1', 'phase_2', 'phase_3', 'phase_4', 'phase_5', 'phase_6', 'phase_7', 'phase_8'];
 const fixture = (name: string) => readFileSync(fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url)), 'utf8');
 
@@ -43,9 +44,13 @@ test('sanitizeState blocks prototype-polluting keys', () => {
 });
 
 test('parseBackup reads a 3.2.0 export, migrating module keys', () => {
-  const result = parseBackup(fixture('backup-3.2.json'), PHASES);
+  const result = parseBackup(fixture('backup-3.2.json'), PHASES, NOW);
   assert.ok(result.ok);
   assert.equal(result.sourceVersion, 0);
+  assert.deepEqual(result.state.workbench['5'].events, [
+    { date: '2026-10-15', title: 'Q4 Webinar' },
+    { date: '', title: 'Eid sale' },
+  ]);
   assert.equal(result.state.activePhaseId, 'phase_2');
   assert.equal(result.state.completedModules.phase_3_m3, true);
   assert.equal(result.state.completedModules.phase_8_9, undefined);
@@ -53,7 +58,7 @@ test('parseBackup reads a 3.2.0 export, migrating module keys', () => {
   assert.equal(result.summary.phasesInProgress, 1);
   assert.equal(result.summary.hoursLogged, 6.75);
   assert.equal(result.summary.notes, 1);
-  assert.equal(result.summary.workbenchPhases, 1);
+  assert.equal(result.summary.workbenchPhases, 2);
 });
 
 test('parseBackup accepts a bare state object and a BOM', () => {
@@ -121,4 +126,27 @@ test('summarize counts only what is set', () => {
     phasesCompleted: 2, phasesInProgress: 1, modulesChecked: 2, deliverablesDone: 1,
     hoursLogged: 3.5, notes: 1, workbenchPhases: 1,
   });
+});
+
+test('reminders are validated on load but never travel in a backup', () => {
+  const kept = sanitizeState({
+    reminders: {
+      phase_1: { at: '2026-10-13T03:00:00.000Z', label: 'Tomorrow' },
+      phase_2: { at: 'not a date', label: 'x' },
+      phase_3: 'nope',
+      phase_99: { at: '2026-10-13T03:00:00.000Z', label: 'unknown phase' },
+      phase_4: { at: '2026-10-13T03:00:00.000Z' },
+    },
+  }, PHASES);
+  assert.deepEqual(kept.reminders, {
+    phase_1: { at: '2026-10-13T03:00:00.000Z', label: 'Tomorrow' },
+    phase_4: { at: '2026-10-13T03:00:00.000Z', label: '' },
+  });
+
+  const data = { ...emptyProgress(), notes: { phase_1: 'hi' }, reminders: kept.reminders };
+  assert.equal('reminders' in JSON.parse(buildBackup(data, '4.0.0')).state, false);
+
+  const imported = parseBackup(JSON.stringify({ state: data, version: 1 }), PHASES, NOW);
+  assert.ok(imported.ok);
+  assert.deepEqual(imported.state.reminders, {});
 });

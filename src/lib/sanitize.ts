@@ -3,6 +3,14 @@
 import type { PhaseStatus } from '../types/index.ts';
 import { SCHEMA_VERSION, isRecord, migrateState } from './migrations.ts';
 
+/** A scheduled study reminder. Device-specific: it describes a notification set on this phone. */
+export interface Reminder {
+  /** ISO timestamp the notification is scheduled for. */
+  at: string;
+  /** Why it was set, for display (for example "Tomorrow" or an event title). */
+  label: string;
+}
+
 /** The saved (non-function) part of the progress store. */
 export interface ProgressData {
   activePhaseId: string | null;
@@ -12,6 +20,7 @@ export interface ProgressData {
   timeTracking: Record<string, number>;
   notes: Record<string, string>;
   completedModules: Record<string, boolean>;
+  reminders: Record<string, Reminder>;
 }
 
 export const MAX_BACKUP_CHARS = 5_000_000;
@@ -23,7 +32,8 @@ const BLOCKED_KEYS: ReadonlySet<string> = new Set(['__proto__', 'constructor', '
 const WORKBENCH_KEY = /^[A-Za-z0-9_-]{1,40}$/;
 const DATA_KEYS = [
   'activePhaseId', 'phaseStatus', 'deliverables', 'workbench', 'timeTracking', 'notes', 'completedModules',
-] as const;
+] as const; // reminders are device-specific and never part of a backup
+const MAX_LABEL_CHARS = 200;
 
 export function emptyProgress(): ProgressData {
   return {
@@ -34,6 +44,7 @@ export function emptyProgress(): ProgressData {
     timeTracking: {},
     notes: {},
     completedModules: {},
+    reminders: {},
   };
 }
 
@@ -47,6 +58,7 @@ export function pickProgressData(state: ProgressData): ProgressData {
     timeTracking: state.timeTracking,
     notes: state.notes,
     completedModules: state.completedModules,
+    reminders: state.reminders,
   };
 }
 
@@ -121,12 +133,26 @@ export function sanitizeState(raw: unknown, phaseIds?: readonly string[]): Progr
       knownModuleKey,
       (item) => (typeof item === 'boolean' ? item : undefined),
     ),
+    reminders: filterRecord<Reminder>(
+      source.reminders,
+      knownPhase,
+      (item) => (
+        isRecord(item) && typeof item.at === 'string' && !Number.isNaN(Date.parse(item.at))
+          ? { at: item.at, label: typeof item.label === 'string' ? item.label.slice(0, MAX_LABEL_CHARS) : '' }
+          : undefined
+      ),
+    ),
   };
 }
 
 /** Migrate then sanitize: the one entry point for stored or imported state. */
-export function normalizeState(raw: unknown, fromVersion: number, phaseIds?: readonly string[]): ProgressData {
-  return sanitizeState(migrateState(raw, fromVersion), phaseIds);
+export function normalizeState(
+  raw: unknown,
+  fromVersion: number,
+  phaseIds?: readonly string[],
+  now: Date = new Date(),
+): ProgressData {
+  return sanitizeState(migrateState(raw, fromVersion, now), phaseIds);
 }
 
 export interface BackupSummary {
@@ -165,7 +191,7 @@ export type ParsedBackup =
  * Reads a backup file/paste. Accepts the full export (`{ state, version, ... }`, which is also
  * what the raw saved data looks like) or a bare state object. Never throws.
  */
-export function parseBackup(text: string, phaseIds?: readonly string[]): ParsedBackup {
+export function parseBackup(text: string, phaseIds?: readonly string[], now: Date = new Date()): ParsedBackup {
   if (typeof text !== 'string' || !text.trim()) return { ok: false, error: 'Paste or choose a backup first.' };
   if (text.length > MAX_BACKUP_CHARS) return { ok: false, error: 'This file is too large to be a backup.' };
 
@@ -195,7 +221,8 @@ export function parseBackup(text: string, phaseIds?: readonly string[]): ParsedB
     return { ok: false, error: 'This backup was made by a newer version of the app. Update the app, then try again.' };
   }
 
-  const state = normalizeState(rawState, sourceVersion, phaseIds);
+  // Reminders belong to this device's scheduled notifications, so a backup never carries them.
+  const state = { ...normalizeState(rawState, sourceVersion, phaseIds, now), reminders: {} };
   const summary = summarize(state);
   if (isEmptySummary(summary)) {
     return { ok: false, error: 'This backup has no progress in it, so importing it would only erase your data.' };
@@ -205,13 +232,15 @@ export function parseBackup(text: string, phaseIds?: readonly string[]): ParsedB
 
 /** Serializes the data in the export format (a superset of the persisted `{ state, version }`). */
 export function buildBackup(data: ProgressData, appVersion: string, now: Date = new Date()): string {
+  const portable: Partial<ProgressData> = { ...pickProgressData(data) };
+  delete portable.reminders;
   return JSON.stringify(
     {
       app: 'bspr-curriculum',
       version: SCHEMA_VERSION,
       appVersion,
       exportedAt: now.toISOString(),
-      state: pickProgressData(data),
+      state: portable,
     },
     null,
     2,

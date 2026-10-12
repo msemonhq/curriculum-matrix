@@ -1,5 +1,6 @@
 // Saved-data migrations. Pure functions only (no React, no browser APIs) so they can be
 // unit-tested with `node --test`. Relative imports use explicit .ts extensions for that reason.
+import { looseDateToYmd } from './dates.ts';
 
 /** Version of the persisted/exported data shape. 0 = anything saved before 4.0.0. */
 export const SCHEMA_VERSION = 1;
@@ -66,15 +67,35 @@ export function migrateCompletedModules(input: unknown): Record<string, boolean>
 }
 
 /**
+ * Demand Calendar events used free text ("Oct 15"). They are now YYYY-MM-DD from a date input:
+ * convert each to its next occurrence, and keep unreadable ones with an empty date to fix.
+ */
+export function migrateWorkbench(workbench: unknown, now: Date): unknown {
+  if (!isRecord(workbench)) return workbench;
+  const calendar = workbench['5'];
+  if (!isRecord(calendar) || !Array.isArray(calendar.events)) return workbench;
+  const events = calendar.events.filter(isRecord).map((event) => ({
+    ...event,
+    date: looseDateToYmd(event.date, now),
+    title: typeof event.title === 'string' ? event.title : '',
+  }));
+  return { ...workbench, '5': { ...calendar, events } };
+}
+
+/**
  * Brings a raw persisted/imported state up to the current schema. `fromVersion` is the
  * version the data was saved with (0 when unknown). Input is untrusted; the result still
  * has to go through the sanitizers before use.
  */
-export function migrateState(raw: unknown, fromVersion: number): Record<string, unknown> {
+export function migrateState(raw: unknown, fromVersion: number, now: Date = new Date()): Record<string, unknown> {
   let state: Record<string, unknown> = isRecord(raw) ? { ...raw } : {};
 
   if (fromVersion < 1) {
-    state = { ...state, completedModules: migrateCompletedModules(state.completedModules) };
+    state = {
+      ...state,
+      completedModules: migrateCompletedModules(state.completedModules),
+      workbench: migrateWorkbench(state.workbench, now),
+    };
   }
 
   return state;

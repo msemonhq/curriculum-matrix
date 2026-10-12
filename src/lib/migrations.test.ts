@@ -2,7 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { MODULE_KEY_MAP, migrateCompletedModules, migrateState } from './migrations.ts';
+import { MODULE_KEY_MAP, migrateCompletedModules, migrateState, migrateWorkbench } from './migrations.ts';
+
+const NOW = new Date(2026, 9, 12, 13, 0, 0);
 
 const fixture = (name: string) => readFileSync(fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url)), 'utf8');
 
@@ -74,7 +76,7 @@ test('migrateState only rewrites modules below schema 1 and keeps other fields',
 test('real 3.2.0-format fixture migrates as expected', () => {
   const { state, version } = JSON.parse(fixture('backup-3.2.json'));
   assert.equal(version, 0);
-  const out = migrateState(state, version);
+  const out = migrateState(state, version, NOW);
   assert.deepEqual(out.completedModules, {
     phase_1_m1: true,
     phase_1_m2: true,
@@ -87,4 +89,32 @@ test('real 3.2.0-format fixture migrates as expected', () => {
     phase_5_m4: true,
     phase_5_m5: true,
   });
+});
+
+test('Demand Calendar events move to YYYY-MM-DD; unreadable ones keep an empty date', () => {
+  const out = migrateWorkbench({
+    '5': { events: [{ date: 'Oct 15', title: 'Q4 Webinar' }, { date: 'sometime in Q4', title: 'Eid sale' }, 'junk', { date: 7 }] },
+    '8': { campaignName: 'x' },
+  }, NOW) as Record<string, Record<string, unknown>>;
+  assert.deepEqual(out['5'].events, [
+    { date: '2026-10-15', title: 'Q4 Webinar' },
+    { date: '', title: 'Eid sale' },
+    { date: '', title: '' },
+  ]);
+  assert.deepEqual(out['8'], { campaignName: 'x' });
+});
+
+test('workbench migration leaves other shapes alone and is idempotent', () => {
+  assert.equal(migrateWorkbench(undefined, NOW), undefined);
+  const noEvents = { '5': { other: 1 } };
+  assert.deepEqual(migrateWorkbench(noEvents, NOW), noEvents);
+  const once = migrateWorkbench({ '5': { events: [{ date: 'Oct 15', title: 'A' }] } }, NOW);
+  assert.deepEqual(migrateWorkbench(once, NOW), once);
+});
+
+test('migrateState converts workbench events below schema 1 only', () => {
+  const raw = { workbench: { '5': { events: [{ date: 'Oct 15', title: 'A' }] } } };
+  const v0 = migrateState(raw, 0, NOW) as typeof raw;
+  assert.equal(v0.workbench['5'].events[0].date, '2026-10-15');
+  assert.equal((migrateState(raw, 1, NOW) as typeof raw).workbench['5'].events[0].date, 'Oct 15');
 });

@@ -8,7 +8,8 @@
     },
     "deliverables": { "phase_1": true },
     "workbench": {
-      "4": { "ga4": { "sessions": 1200, "conversions": 36 } }
+      "4": { "ga4": { "sessions": 1200, "conversions": 36 } },
+      "5": { "events": [{ "date": "Oct 15", "title": "Q4 Webinar" }, { "date": "sometime in Q4", "title": "Eid sale" }] }
     },
     "timeTracking": { "phase_1": 5.5, "phase_2": 1.25 },
     "notes": { "phase_1": "Kickoff done, SOW agreed." },
