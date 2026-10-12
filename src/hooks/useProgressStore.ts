@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { PhaseStatus } from '../types';
 import curriculumData from '../data/curriculumData.json';
 import { BACKUP_KEY, SCHEMA_VERSION, STORAGE_KEY } from '../lib/migrations';
+import { toggleModuleUpdate } from '../lib/progress';
 import { emptyProgress, normalizeState, pickProgressData } from '../lib/sanitize';
 import type { ProgressData } from '../lib/sanitize';
 
@@ -42,10 +43,7 @@ export const useProgressStore = create<ProgressState>()(
       setActivePhase: (phaseId) => set({ activePhaseId: phaseId }),
       setPhaseStatus: (phaseId, status) => set((state) => ({ phaseStatus: { ...state.phaseStatus, [phaseId]: status }, activePhaseId: status === 'in_progress' ? phaseId : (status === 'completed' && state.activePhaseId === phaseId ? null : state.activePhaseId) })),
       toggleDeliverable: (phaseId) => set((state) => ({ deliverables: { ...state.deliverables, [phaseId]: !state.deliverables[phaseId] } })),
-      toggleModule: (phaseId, moduleIndex) => set((state) => {
-        const key = `${phaseId}_${moduleIndex}`;
-        return { completedModules: { ...state.completedModules, [key]: !state.completedModules[key] } };
-      }),
+      toggleModule: (phaseId, moduleId) => set((state) => toggleModuleUpdate(state, phaseId, moduleId)),
       updateWorkbench: (phaseId, data) => set((state) => ({ workbench: { ...state.workbench, [phaseId]: { ...(state.workbench[phaseId] || {}), ...data } } })),
       setPhaseTime: (phaseId, hours) => set((state) => ({ timeTracking: { ...state.timeTracking, [phaseId]: Math.max(0, Number.isFinite(hours) ? hours : 0) } })),
       setPhaseNote: (phaseId, note) => set((state) => ({ notes: { ...state.notes, [phaseId]: note } })),

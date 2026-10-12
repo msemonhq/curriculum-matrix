@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
-import curriculumData from '../data/curriculumData.json';
-const { jdLines, phases } = curriculumData;
+import { jdLines, phases } from '../data/curriculum';
+import { useProgress } from '../hooks/useProgress';
+import { ProgressBar } from '../components/ProgressBar';
 import { Target, AlertTriangle, CheckCircle2, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -14,13 +15,13 @@ function DonutChart({ covered, total }: { covered: number; total: number }) {
 
   return (
     <div className="relative w-36 h-36 flex items-center justify-center">
-      <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100" role="img" aria-label={`${pct}% of job description requirements covered`}>
+      <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100" role="img" aria-label={`${pct}% of job description requirements are covered by the curriculum design`}>
         <circle cx="50" cy="50" r={radius} fill="transparent" stroke="currentColor" className="text-surface-subtle" strokeWidth={stroke} />
         <motion.circle cx="50" cy="50" r={radius} fill="transparent" stroke={pct < 100 ? 'currentColor' : 'currentColor'} className={pct < 100 ? 'text-danger' : 'text-success'} strokeWidth={stroke} strokeLinecap="round" strokeDasharray={circumference} initial={{ strokeDashoffset: circumference }} animate={{ strokeDashoffset: circumference - circumference * percent }} transition={{ duration: 0.9 }} />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-2xl font-black text-ink-primary tabular leading-none">{pct}%</span>
-        <span className="text-micro text-ink-tertiary uppercase tracking-wider mt-0.5">covered</span>
+        <span className="text-micro text-ink-tertiary uppercase tracking-wider mt-0.5">coverage</span>
       </div>
     </div>
   );
@@ -28,6 +29,7 @@ function DonutChart({ covered, total }: { covered: number; total: number }) {
 
 export default function AuditMatrixScreen() {
   const navigate = useNavigate();
+  const { byJdLine } = useProgress();
   const servedIds = useMemo(() => new Set(phases.flatMap(p => p.jdLinesServed)), []);
   const coveredCount = jdLines.filter(line => servedIds.has(line.id)).length;
   const gaps = jdLines.filter(line => !servedIds.has(line.id));
@@ -39,9 +41,10 @@ export default function AuditMatrixScreen() {
         <div className="flex items-center gap-5">
           <DonutChart covered={coveredCount} total={jdLines.length} />
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2"><Target className="w-4 h-4 text-accent" aria-hidden="true" /><span className="text-caption text-ink-secondary font-semibold uppercase tracking-wider">JD coverage</span></div>
+            <div className="flex items-center gap-2"><Target className="w-4 h-4 text-accent" aria-hidden="true" /><span className="text-caption text-ink-secondary font-semibold uppercase tracking-wider">Curriculum coverage</span></div>
             <span className={`text-heading font-black tabular ${hasGaps ? 'text-danger' : 'text-success'}`}>{coveredCount}<span className="text-ink-tertiary font-normal"> / {jdLines.length}</span></span>
-            <span className="text-caption text-ink-secondary">{hasGaps ? `${gaps.length} gap${gaps.length === 1 ? '' : 's'} detected` : 'Full coverage'}</span>
+            <span className="text-caption text-ink-secondary">{hasGaps ? `${gaps.length} gap${gaps.length === 1 ? '' : 's'} detected` : 'Every JD line has a phase'}</span>
+            <span className="text-caption text-ink-tertiary">Design of the curriculum, not your progress</span>
           </div>
         </div>
         {hasGaps && <div className="mt-3 bg-danger-dim border border-danger/25 rounded-xl p-3 flex items-start gap-3" role="status"><AlertTriangle className="text-danger w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" /><div><p className="text-caption font-semibold text-danger">Coverage gap detected</p><p className="text-caption text-ink-secondary mt-0.5">Review the uncovered requirements below.</p></div></div>}
@@ -60,6 +63,17 @@ export default function AuditMatrixScreen() {
                   <div className="flex items-center gap-2 flex-wrap"><span className={`font-mono text-micro px-2 py-0.5 rounded-md font-bold ${isUnserved ? 'bg-danger/15 text-danger' : 'bg-accent-dim text-accent'}`}>{line.id}</span>{isUnserved && <span className="text-micro font-bold text-danger uppercase tracking-wider">Gap</span>}</div>
                   <p className={`text-body mt-1 leading-snug ${isUnserved ? 'text-danger/90' : 'text-ink-primary'}`}>{line.text}</p>
                   {servingPhases.length > 0 && <p className="text-caption text-accent mt-1.5 font-medium">Served by: {servingPhases.map(p => `Phase ${p.number}`).join(', ')}</p>}
+                  {servingPhases.length > 0 && (
+                    <div className="mt-2">
+                      <div className="flex items-center justify-between text-caption text-ink-secondary mb-1">
+                        <span>Your readiness</span>
+                        <span className="tabular">{byJdLine[line.id].percent}%</span>
+                      </div>
+                      <div role="progressbar" aria-label={`Readiness for ${line.id}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={byJdLine[line.id].percent}>
+                        <ProgressBar progress={byJdLine[line.id].percent} />
+                      </div>
+                    </div>
+                  )}
                   {isUnserved && <button type="button" onClick={() => navigate('/curriculum')} className="mt-2 inline-flex min-h-11 items-center gap-1 text-caption font-semibold text-danger underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70">Review roadmap <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" /></button>}
                 </div>
               </div>

@@ -1,8 +1,9 @@
 ﻿import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import curriculumData from '../data/curriculumData.json';
-const { phases } = curriculumData;
+import { phases } from '../data/curriculum';
 import { useProgressStore } from '../hooks/useProgressStore';
+import { useProgress } from '../hooks/useProgress';
+import { formatHours, isModuleChecked } from '../lib/progress';
 import type { PhaseStatus } from '../types';
 import {
   ChevronDown, BookOpen, Clock, Target, FileCheck,
@@ -86,6 +87,7 @@ export default function CurriculumScreen() {
     completedModules, toggleModule,
     setPhaseStatus, toggleDeliverable, setPhaseTime, setPhaseNote,
   } = useProgressStore();
+  const { byPhase } = useProgress();
 
   const statusFilters = [
     { value: 'all',         label: 'All' },
@@ -163,6 +165,7 @@ export default function CurriculumScreen() {
             const timeLogged    = timeTracking[phase.id] || 0;
             const note          = notes[phase.id] || '';
             const timePercent   = phase.hoursMax > 0 ? Math.min((timeLogged / phase.hoursMax) * 100, 100) : 0;
+            const moduleProgress = byPhase[phase.id];
 
             return (
               <motion.div key={phase.id} variants={staggerItem}>
@@ -197,7 +200,11 @@ export default function CurriculumScreen() {
                       <div className="flex items-center gap-3 mt-1.5 text-caption text-ink-tertiary">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
-                          {phase.hoursMin === phase.hoursMax ? `~${phase.hoursMin}h` : `~${phase.hoursMin}â€“${phase.hoursMax}h`}
+                          {formatHours(phase.hoursMin, phase.hoursMax)}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <FileCheck className="w-3 h-3" aria-hidden="true" />
+                          {moduleProgress.done}/{moduleProgress.total} modules
                         </span>
                         <span className="flex items-center gap-1">
                           <Target className="w-3 h-3" />
@@ -247,7 +254,19 @@ export default function CurriculumScreen() {
                               className="mt-2 space-y-1.5"
                             >
                               {phase.modules.map((mod) => {
-                                const isChecked = completedModules[`${phase.id}_${mod.id}`] ?? (status === 'completed');
+                                if (mod.kind === 'note') {
+                                  return (
+                                    <motion.li
+                                      key={mod.id}
+                                      variants={staggerItem}
+                                      className="text-caption px-3 py-2 rounded-xl border border-dashed border-line/60 text-ink-tertiary"
+                                    >
+                                      <span className="block">{mod.title}</span>
+                                      {mod.description && <span className="block mt-0.5">{mod.description}</span>}
+                                    </motion.li>
+                                  );
+                                }
+                                const isChecked = isModuleChecked({ phaseStatus, completedModules }, phase.id, mod.id);
                                 return (
                                   <motion.li
                                     key={mod.id}
@@ -265,6 +284,7 @@ export default function CurriculumScreen() {
                                     />
                                     <span className={`flex-1 leading-relaxed ${isChecked ? 'text-ink-primary font-medium' : ''}`}>
                                       <span className="block">{mod.title}</span>
+                                      {mod.kind === 'optional' && <span className="block text-micro uppercase text-ink-tertiary mt-0.5">Optional (not counted in progress)</span>}
                                       {mod.description && <span className="block text-ink-tertiary mt-0.5">{mod.description}</span>}
                                     </span>
                                   </motion.li>

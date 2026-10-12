@@ -1,8 +1,7 @@
 ﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProgressStore } from '../hooks/useProgressStore';
-import curriculumData from '../data/curriculumData.json';
-const { phases } = curriculumData;
+import { phases } from '../data/curriculum';
 import { CheckCircle2, Zap, Clock, Settings, Upload, ChevronDown, ArrowRight, Download, RotateCcw } from 'lucide-react';
 import { motion, animate, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/Button';
@@ -13,6 +12,8 @@ import { Sheet } from '../components/Sheet';
 import { Toast } from '../components/Toast';
 import { useToast } from '../hooks/useToast';
 import { buildBackup } from '../lib/sanitize';
+import { formatHours } from '../lib/progress';
+import { useProgress } from '../hooks/useProgress';
 
 function AnimatedNumber({ value, suffix = '' }: { value: number; suffix?: string }) {
   const [display, setDisplay] = useState(0);
@@ -31,6 +32,7 @@ export default function DashboardScreen() {
   const navigate = useNavigate();
   const { activePhaseId, phaseStatus, deliverables, timeTracking, resetProgress } = useProgressStore();
   const { toast, showToast, dismissToast } = useToast();
+  const { overall } = useProgress();
   const [showImportSheet, setShowImportSheet] = useState(false);
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
   const [showResetSheet, setShowResetSheet] = useState(false);
@@ -39,13 +41,14 @@ export default function DashboardScreen() {
   const completedPhases = phases.filter(phase => phaseStatus[phase.id] === 'completed').length;
   const completedDeliverables = Object.values(deliverables).filter(Boolean).length;
   const totalPhases = phases.length;
-  const progressPercent = Math.round((completedPhases / totalPhases) * 100) || 0;
-  const isComplete = progressPercent === 100;
+  // Weighted by each phase's hoursMax, so a 20-hour phase moves the ring more than a 2-hour one.
+  const progressPercent = overall.percent;
+  const isComplete = completedPhases === totalPhases;
   const nextPhase = activePhaseId ? (phases.find(phase => phase.id === activePhaseId && phaseStatus[phase.id] !== 'completed') || phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed')) : phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed');
   const totalHoursMin = phases.reduce((acc, p) => acc + p.hoursMin, 0);
   const totalHoursMax = phases.reduce((acc, p) => acc + p.hoursMax, 0);
-  const hoursDisplay = totalHoursMin === totalHoursMax ? `~${totalHoursMin}` : `~${totalHoursMin}-{totalHoursMax}`;
-  const totalLogged = Object.values(timeTracking).reduce((sum, h) => sum + (h || 0), 0);
+  const hoursDisplay = formatHours(totalHoursMin, totalHoursMax);
+  const totalLogged = Math.round(Object.values(timeTracking).reduce((sum, h) => sum + (h || 0), 0) * 10) / 10;
   const radius = 42;
   const circumference = 2 * Math.PI * radius;
 
@@ -111,8 +114,8 @@ export default function DashboardScreen() {
             <span className="text-[36px] font-extrabold text-white tabular leading-none">
               <AnimatedNumber value={progressPercent} suffix="%" />
             </span>
-            <span className="text-[10px] font-bold text-accent tracking-[0.12em] uppercase">Phases Complete</span>
-            <span className="text-[12px] font-normal text-[#727682]">{completedPhases} of {totalPhases} completed</span>
+            <span className="text-[10px] font-bold text-accent tracking-[0.12em] uppercase">Overall progress</span>
+            <span className="text-[12px] font-normal text-[#727682]">{completedPhases} of {totalPhases} phases completed</span>
           </div>
         </div>
       </Card>
@@ -134,7 +137,7 @@ export default function DashboardScreen() {
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="text-[28px] font-bold text-white tabular leading-none">{totalLogged}</span>
-            <span className="text-[12px] font-normal text-[#8E929B]">/ {hoursDisplay}h</span>
+            <span className="text-[12px] font-normal text-[#8E929B]">/ {hoursDisplay}</span>
           </div>
           <span className="text-[13px] font-medium text-[#A0A5B1]">Hours logged</span>
         </Card>
