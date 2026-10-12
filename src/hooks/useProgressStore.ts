@@ -13,7 +13,8 @@ interface ProgressState extends ProgressData {
   setPhaseStatus: (phaseId: string, status: PhaseStatus) => void;
   toggleDeliverable: (phaseId: string) => void;
   toggleModule: (phaseId: string, moduleId: string) => void;
-  updateWorkbench: (phaseId: string, data: Record<string, unknown>) => void;
+  /** Replaces everything saved for one workbench tool (keyed '1'..'8'). The tool is responsible for the shape. */
+  setWorkbench: (toolId: string, data: object) => void;
   setPhaseTime: (phaseId: string, hours: number) => void;
   setPhaseNote: (phaseId: string, note: string) => void;
   /** Records (or clears, with null) the reminder scheduled on this device for a phase. */
@@ -48,7 +49,7 @@ export const useProgressStore = create<ProgressState>()(
       setPhaseStatus: (phaseId, status) => set((state) => ({ phaseStatus: { ...state.phaseStatus, [phaseId]: status }, activePhaseId: status === 'in_progress' ? phaseId : (status === 'completed' && state.activePhaseId === phaseId ? null : state.activePhaseId) })),
       toggleDeliverable: (phaseId) => set((state) => ({ deliverables: { ...state.deliverables, [phaseId]: !state.deliverables[phaseId] } })),
       toggleModule: (phaseId, moduleId) => set((state) => toggleModuleUpdate(state, phaseId, moduleId)),
-      updateWorkbench: (phaseId, data) => set((state) => ({ workbench: { ...state.workbench, [phaseId]: { ...(state.workbench[phaseId] || {}), ...data } } })),
+      setWorkbench: (toolId, data) => set((state) => ({ workbench: { ...state.workbench, [toolId]: data as Record<string, unknown> } })),
       setPhaseTime: (phaseId, hours) => set((state) => ({ timeTracking: { ...state.timeTracking, [phaseId]: Math.max(0, Number.isFinite(hours) ? hours : 0) } })),
       setPhaseNote: (phaseId, note) => set((state) => ({ notes: { ...state.notes, [phaseId]: note } })),
 

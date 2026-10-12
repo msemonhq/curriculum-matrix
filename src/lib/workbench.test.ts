@@ -145,8 +145,7 @@ test('calendar sorts dated events first and highlights the next one on or after 
 // ─── tool 7 ──────────────────────────────────────────────────────────
 test('sample size matches the fixture: 4% baseline, +1 point, 95%/80% is about 6,740 per arm', () => {
   const n = sampleSizePerArm(0.04, 0.01);
-  assert.ok(n !== null);
-  assert.ok(Math.abs(n - 6740) <= 10, `got ${n}`);
+  assert.ok(Math.abs(Number(n) - 6740) <= 10, `got ${n}`);
   assert.equal(n, 6739);
   const fromFields = abSampleSize({ baselinePct: '4', mdePoints: '1' });
   assert.deepEqual(fromFields, { ok: true, perArm: 6739, total: 13478 });
