@@ -138,7 +138,7 @@ export default function CurriculumScreen() {
             <button
               key={f.value}
               onClick={() => setStatusFilter(f.value)}
-              className={`flex-1 py-1.5 rounded-xl text-caption font-semibold transition-all duration-200 ${
+              className={`flex-1 min-h-11 py-1.5 rounded-xl text-caption font-semibold transition-all duration-200 ${
                 statusFilter === f.value
                   ? 'bg-accent text-surface-base shadow-glow-sm'
                   : 'bg-surface-subtle text-ink-secondary hover:text-ink-primary'
