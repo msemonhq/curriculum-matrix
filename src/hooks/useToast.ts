@@ -1,14 +1,15 @@
-import { useCallback, useState } from 'react';
+import { createContext, useContext } from 'react';
 import type { ToastTone } from '../components/Toast';
 
-export function useToast() {
-  const [toast, setToast] = useState<{ message: string; tone: ToastTone } | null>(null);
+export interface ToastApi {
+  showToast: (message: string, tone?: ToastTone) => void;
+}
 
-  const showToast = useCallback((message: string, tone: ToastTone = 'info') => {
-    setToast({ message, tone });
-  }, []);
+export const ToastContext = createContext<ToastApi | null>(null);
 
-  const dismissToast = useCallback(() => setToast(null), []);
-
-  return { toast, showToast, dismissToast };
+/** Shows a toast through the app-level ToastProvider (one toast at a time, newest wins). */
+export function useToast(): ToastApi {
+  const api = useContext(ToastContext);
+  if (!api) throw new Error('useToast must be used inside <ToastProvider>');
+  return api;
 }

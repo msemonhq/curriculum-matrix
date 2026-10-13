@@ -1,0 +1,28 @@
+{
+  "state": {
+    "activePhaseId": "phase_2",
+    "phaseStatus": {
+      "phase_1": "completed",
+      "phase_2": "in_progress",
+      "phase_3": "not_started"
+    },
+    "deliverables": { "phase_1": true },
+    "workbench": {
+      "4": { "ga4": { "sessions": 1200, "conversions": 36 } },
+      "5": { "events": [{ "date": "Oct 15", "title": "Q4 Webinar" }, { "date": "sometime in Q4", "title": "Eid sale" }] }
+    },
+    "timeTracking": { "phase_1": 5.5, "phase_2": 1.25 },
+    "notes": { "phase_1": "Kickoff done, SOW agreed." },
+    "completedModules": {
+      "phase_1_0": true,
+      "phase_1_1": true,
+      "phase_1_2": false,
+      "phase_2_0": true,
+      "phase_3_0": true,
+      "phase_3_2": true,
+      "phase_5_3": true,
+      "phase_8_9": true
+    }
+  },
+  "version": 0
+}

@@ -3,14 +3,24 @@ name: Build Android APK
 on:
   push:
     branches: [ "main", "master" ]
+    tags: [ "v*" ]
   pull_request:
     branches: [ "main", "master" ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+    outputs:
+      version: ${{ steps.version.outputs.value }}
+
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
@@ -18,20 +28,60 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '22'
         cache: 'npm'
+
+    - name: Read app version
+      id: version
+      run: echo "value=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+    - name: Verify release tag matches package version
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: |
+        if [ "v${{ steps.version.outputs.value }}" != "${GITHUB_REF_NAME}" ]; then
+          echo "Tag ${GITHUB_REF_NAME} does not match package.json version v${{ steps.version.outputs.value }}"
+          exit 1
+        fi
 
     - name: Install NPM Dependencies
       run: npm ci
 
+    - name: Check file encoding
+      run: node scripts/check-encoding.mjs
+
     - name: Run Linter
+      id: lint
       run: npm run lint
 
+    - name: Report lint problems
+      if: failure() && steps.lint.outcome == 'failure'
+      run: |
+        npx eslint . --format json --output-file eslint-report.json || true
+        node scripts/ci-annotate.mjs eslint eslint-report.json
+
     - name: Type Check
+      id: typecheck
       run: npm run type-check
 
+    - name: Report type errors
+      if: failure() && steps.typecheck.outcome == 'failure'
+      run: |
+        { npx tsc -p tsconfig.app.json --noEmit --pretty false; npx tsc -p tsconfig.node.json --noEmit --pretty false; } > tsc-report.txt || true
+        node scripts/ci-annotate.mjs tsc tsc-report.txt
+
+    - name: Run Tests
+      run: npm test
+
     - name: Build Web Assets
-      run: npm run build
+      id: build
+      run: npm run build 2>&1 | tee build.log; exit "${PIPESTATUS[0]}"
+
+    - name: Report build errors
+      if: failure() && steps.build.outcome == 'failure'
+      run: node scripts/ci-annotate.mjs raw build.log
+
+    - name: Check Android version is in sync
+      run: node scripts/sync-android-version.mjs --check
 
     - name: Sync Web Assets to Android
       run: npm run cap:sync
@@ -48,23 +98,48 @@ jobs:
         path: |
           ~/.gradle/caches
           ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/*.json', 'src/**') }}
+        key: ${{ runner.os }}-gradle-${{ hashFiles('android/**/*.gradle*', 'android/gradle/wrapper/gradle-wrapper.properties') }}
         restore-keys: |
           ${{ runner.os }}-gradle-
 
-    - name: Generate Debug Keystore
-      working-directory: ./android/app
-      run: |
-        keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-
+    # The debug keystore is committed (android/app/debug.keystore) so every build is
+    # signed with the same key and installs as an in-place update over the previous APK.
     - name: Build APK
       working-directory: ./android
       run: |
         chmod +x ./gradlew
         ./gradlew clean assembleDebug
 
+    - name: Name APK with version
+      run: |
+        mkdir -p release
+        cp android/app/build/outputs/apk/debug/app-debug.apk "release/bspr-curriculum-app-v${{ steps.version.outputs.value }}.apk"
+
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: bspr-curriculum-app.apk
-        path: android/app/build/outputs/apk/debug/app-debug.apk
+        name: bspr-curriculum-app-v${{ steps.version.outputs.value }}
+        path: release/bspr-curriculum-app-v${{ steps.version.outputs.value }}.apk
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Download APK
+      uses: actions/download-artifact@v4
+      with:
+        name: bspr-curriculum-app-v${{ needs.build.outputs.version }}
+        path: release
+
+    - name: Create GitHub Release
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh release create "${GITHUB_REF_NAME}" \
+          "release/bspr-curriculum-app-v${{ needs.build.outputs.version }}.apk" \
+          --repo "${GITHUB_REPOSITORY}" \
+          --title "BSPR Curriculum ${GITHUB_REF_NAME}" \
+          --generate-notes

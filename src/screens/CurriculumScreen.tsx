@@ -1,19 +1,22 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import curriculumData from '../data/curriculumData.json';
-const { phases } = curriculumData;
+import { phases } from '../data/curriculum';
 import { useProgressStore } from '../hooks/useProgressStore';
+import { useProgress } from '../hooks/useProgress';
+import { formatHours, isModuleChecked } from '../lib/progress';
+import type { PhaseStatus } from '../types';
 import {
   ChevronDown, BookOpen, Clock, Target, FileCheck,
-  Circle, CheckCircle2, PlayCircle, TestTube, Search, Bell,
+  Circle, CheckCircle2, PlayCircle, TestTube, Search,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EmptyState } from '../components/EmptyState';
 import { Badge } from '../components/Badge';
 import { ProgressBar } from '../components/ProgressBar';
 import { Button } from '../components/Button';
+import { ReminderControl } from '../components/ReminderControl';
 
-const STATUS_CYCLE: Record<string, string> = {
+const STATUS_CYCLE: Record<PhaseStatus, PhaseStatus> = {
   not_started: 'in_progress',
   in_progress:  'completed',
   completed:    'not_started',
@@ -28,21 +31,16 @@ const staggerItem = {
   show:   { opacity: 1, y: 0, transition: { duration: 0.25 } },
 };
 
-function ModuleCheckmark({ isChecked, onClick }: { isChecked: boolean; onClick: () => void }) {
+/** Visual only: the surrounding button carries the checkbox role and state. */
+function CheckMark({ isChecked }: { isChecked: boolean }) {
   return (
-    <motion.button
-      type="button"
-      whileTap={{ scale: 0.8 }}
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick();
-      }}
-      className={`relative w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 transition-all duration-300 focus:outline-none ${
+    <span
+      aria-hidden="true"
+      className={`relative w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 transition-all duration-300 ${
         isChecked
           ? 'bg-accent/20 border border-accent shadow-glow-sm'
-          : 'bg-surface-base border border-line/70 hover:border-line'
+          : 'bg-surface-base border border-line/70'
       }`}
-      aria-label={isChecked ? 'Mark module incomplete' : 'Mark module complete'}
     >
       <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
         <motion.path
@@ -63,16 +61,22 @@ function ModuleCheckmark({ isChecked, onClick }: { isChecked: boolean; onClick: 
         />
       </svg>
       {isChecked && (
-        <motion.div
+        <motion.span
           initial={{ scale: 0.6, opacity: 0.9 }}
           animate={{ scale: 1.6, opacity: 0 }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
           className="absolute inset-0 rounded-md bg-accent/40 pointer-events-none"
         />
       )}
-    </motion.button>
+    </span>
   );
 }
+
+const STATUS_LABEL: Record<PhaseStatus, string> = {
+  not_started: 'not started',
+  in_progress: 'in progress',
+  completed: 'completed',
+};
 
 export default function CurriculumScreen() {
   const navigate = useNavigate();
@@ -81,10 +85,11 @@ export default function CurriculumScreen() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const {
-    phaseStatus, deliverables, timeTracking, notes, workbench,
+    phaseStatus, deliverables, timeTracking, notes,
     completedModules, toggleModule,
     setPhaseStatus, toggleDeliverable, setPhaseTime, setPhaseNote,
   } = useProgressStore();
+  const { byPhase } = useProgress();
 
   const statusFilters = [
     { value: 'all',         label: 'All' },
@@ -106,9 +111,9 @@ export default function CurriculumScreen() {
 
   const getStatusIcon = (status: string | undefined) => {
     switch (status) {
-      case 'completed':  return <CheckCircle2 className="text-success w-6 h-6" />;
-      case 'in_progress': return <PlayCircle className="text-accent w-6 h-6" />;
-      default:            return <Circle className="text-ink-tertiary w-6 h-6" />;
+      case 'completed':  return <CheckCircle2 className="text-success w-6 h-6" aria-hidden="true" />;
+      case 'in_progress': return <PlayCircle className="text-accent w-6 h-6" aria-hidden="true" />;
+      default:            return <Circle className="text-ink-tertiary w-6 h-6" aria-hidden="true" />;
     }
   };
 
@@ -162,6 +167,7 @@ export default function CurriculumScreen() {
             const timeLogged    = timeTracking[phase.id] || 0;
             const note          = notes[phase.id] || '';
             const timePercent   = phase.hoursMax > 0 ? Math.min((timeLogged / phase.hoursMax) * 100, 100) : 0;
+            const moduleProgress = byPhase[phase.id];
 
             return (
               <motion.div key={phase.id} variants={staggerItem}>
@@ -173,17 +179,20 @@ export default function CurriculumScreen() {
                     className="p-4 flex items-center gap-3 cursor-pointer active:bg-surface-subtle transition-colors"
                     onClick={() => setExpandedId(isExpanded ? null : phase.id)}
                   >
-                    {/* Status icon â€” tap to cycle */}
-                    <motion.div
+                    {/* Status: a real button so it can be focused and is announced with its state */}
+                    <motion.button
+                      type="button"
                       whileTap={{ scale: 0.8 }}
                       transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                      aria-label={`Phase ${phase.number} status: ${STATUS_LABEL[status]}, tap to change`}
+                      className="-mx-2.5 -my-2 flex min-h-11 min-w-11 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
                       onClick={(e) => {
                         e.stopPropagation();
                         setPhaseStatus(phase.id, STATUS_CYCLE[status] || 'not_started');
                       }}
                     >
                       {getStatusIcon(status)}
-                    </motion.div>
+                    </motion.button>
 
                     <div className="flex-1 min-w-0">
                       {/* Phase number badge */}
@@ -196,7 +205,11 @@ export default function CurriculumScreen() {
                       <div className="flex items-center gap-3 mt-1.5 text-caption text-ink-tertiary">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
-                          {phase.hoursMin === phase.hoursMax ? `~${phase.hoursMin}h` : `~${phase.hoursMin}â€“${phase.hoursMax}h`}
+                          {formatHours(phase.hoursMin, phase.hoursMax)}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <FileCheck className="w-3 h-3" aria-hidden="true" />
+                          {moduleProgress.done}/{moduleProgress.total} modules
                         </span>
                         <span className="flex items-center gap-1">
                           <Target className="w-3 h-3" />
@@ -246,26 +259,39 @@ export default function CurriculumScreen() {
                               className="mt-2 space-y-1.5"
                             >
                               {phase.modules.map((mod) => {
-                                const isChecked = completedModules[`${phase.id}_${mod.id}`] ?? (status === 'completed');
-                                return (
-                                  <motion.li
-                                    key={mod.id}
-                                    variants={staggerItem}
-                                    onClick={() => toggleModule(phase.id, mod.id)}
-                                    className={`cursor-pointer text-caption px-3 py-2 rounded-xl flex items-start gap-2.5 transition-all duration-200 border ${
-                                      isChecked
-                                        ? 'bg-accent-dim/30 border-accent/30 text-ink-primary'
-                                        : 'bg-surface-subtle border-line/50 text-ink-secondary hover:border-line'
-                                    }`}
-                                  >
-                                    <ModuleCheckmark
-                                      isChecked={isChecked}
-                                      onClick={() => toggleModule(phase.id, mod.id)}
-                                    />
-                                    <span className={`flex-1 leading-relaxed ${isChecked ? 'text-ink-primary font-medium' : ''}`}>
+                                if (mod.kind === 'note') {
+                                  return (
+                                    <motion.li
+                                      key={mod.id}
+                                      variants={staggerItem}
+                                      className="text-caption px-3 py-2 rounded-xl border border-dashed border-line/60 text-ink-tertiary"
+                                    >
                                       <span className="block">{mod.title}</span>
-                                      {mod.description && <span className="block text-ink-tertiary mt-0.5">{mod.description}</span>}
-                                    </span>
+                                      {mod.description && <span className="block mt-0.5">{mod.description}</span>}
+                                    </motion.li>
+                                  );
+                                }
+                                const isChecked = isModuleChecked({ phaseStatus, completedModules }, phase.id, mod.id);
+                                return (
+                                  <motion.li key={mod.id} variants={staggerItem}>
+                                    <button
+                                      type="button"
+                                      role="checkbox"
+                                      aria-checked={isChecked}
+                                      onClick={() => toggleModule(phase.id, mod.id)}
+                                      className={`w-full min-h-11 text-left text-caption px-3 py-2 rounded-xl flex items-start gap-2.5 transition-all duration-200 border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 ${
+                                        isChecked
+                                          ? 'bg-accent-dim/30 border-accent/30 text-ink-primary'
+                                          : 'bg-surface-subtle border-line/50 text-ink-secondary hover:border-line'
+                                      }`}
+                                    >
+                                      <CheckMark isChecked={isChecked} />
+                                      <span className={`flex-1 leading-relaxed ${isChecked ? 'text-ink-primary font-medium' : ''}`}>
+                                        <span className="block">{mod.title}</span>
+                                        {mod.kind === 'optional' && <span className="block text-micro uppercase text-ink-tertiary mt-0.5">Optional (not counted in progress)</span>}
+                                        {mod.description && <span className="block text-ink-tertiary mt-0.5">{mod.description}</span>}
+                                      </span>
+                                    </button>
                                   </motion.li>
                                 );
                               })}
@@ -312,53 +338,8 @@ export default function CurriculumScreen() {
                             </div>
                           </div>
 
-                          {/* Remind Me */}
-                          <Button
-                            variant="ghost"
-                            fullWidth
-                            className="gap-2 text-caption"
-                            onClick={async () => {
-                              try {
-                                let targetDate = new Date(Date.now() + 1000 * 60 * 60 * 24);
-                                let alertMsg   = 'Reminder set for 24 hours from now.';
-                                const demandEvents = workbench['5']?.events || [];
-                                if (demandEvents.length > 0) {
-                                  const now         = new Date();
-                                  const currentYear = now.getFullYear();
-                                  const validEvents = demandEvents
-                                    .flatMap((e: any) => {
-                                      const dThisYear = new Date(`${e.date} ${currentYear}`);
-                                      const dNextYear = new Date(`${e.date} ${currentYear + 1}`);
-                                      const options = [];
-                                      if (!isNaN(dThisYear.getTime()) && dThisYear.getTime() > now.getTime()) options.push({ ...e, parsed: dThisYear });
-                                      if (!isNaN(dNextYear.getTime()) && dNextYear.getTime() > now.getTime()) options.push({ ...e, parsed: dNextYear });
-                                      return options;
-                                    })
-                                    .sort((a: any, b: any) => a.parsed.getTime() - b.parsed.getTime());
-                                  if (validEvents.length > 0) {
-                                    targetDate = validEvents[0].parsed;
-                                    alertMsg   = `Reminder set for ${validEvents[0].title} on ${validEvents[0].date}.`;
-                                  }
-                                }
-                                const { LocalNotifications } = await import('@capacitor/local-notifications');
-                                await LocalNotifications.requestPermissions();
-                                await LocalNotifications.schedule({
-                                  notifications: [{
-                                    title: 'Curriculum Reminder',
-                                    body:  `Time to get back to ${phase.title}!`,
-                                    id:    Math.floor(Math.random() * 1000000),
-                                    schedule: { at: targetDate },
-                                  }],
-                                });
-                                alert(alertMsg);
-                              } catch {
-                                alert('Notifications not supported in browser context.');
-                              }
-                            }}
-                          >
-                            <Bell className="w-3.5 h-3.5" />
-                            Remind Me
-                          </Button>
+                          {/* Reminder */}
+                          <ReminderControl phaseId={phase.id} phaseTitle={phase.title} />
 
                           {/* Deliverable toggle */}
                           <div

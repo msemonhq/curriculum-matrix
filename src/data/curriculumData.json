@@ -81,7 +81,8 @@
         {
           "id": "m5",
           "title": "Note",
-          "description": "(Mod 1 is the overview; the Mod 6 reading on A/B testing feeds Phase 7; Mod 7 feeds Phase 8.)"
+          "description": "(Mod 1 is the overview; the Mod 6 reading on A/B testing feeds Phase 7; Mod 7 feeds Phase 8.)",
+          "kind": "note"
         }
       ],
       "application": "Take a vague brief (e.g., \"why did category conversion drop last month?\") and decompose it from first principles: revenue = traffic \u00d7 conversion rate \u00d7 average order value. Turn each branch into a testable hypothesis.",
@@ -117,7 +118,8 @@
         {
           "id": "m4",
           "title": "Note",
-          "description": "Tool-agnostic: the JD says \"AI tools\", not a product."
+          "description": "Tool-agnostic: the JD says \"AI tools\", not a product.",
+          "kind": "note"
         }
       ],
       "application": "Use AI to speed up desk research \u2014 landscape scans, question trees, summarising long sources \u2014 but treat every output as unverified until traced to a primary source.",
@@ -158,7 +160,8 @@
         },
         {
           "id": "m6",
-          "title": "Stretch only: ESB C4, Mod 5 (INDIRECT / ADDRESS / OFFSET). Excel Tables already extend automatically; INDIRECT and OFFSET recalculate on every edit."
+          "title": "Stretch only: ESB C4, Mod 5 (INDIRECT / ADDRESS / OFFSET). Excel Tables already extend automatically; INDIRECT and OFFSET recalculate on every edit.",
+          "kind": "optional"
         }
       ],
       "application": "Strip and normalise UTM parameters and campaign names from Meta Ads and GA4 exports into a table-driven intake sheet, pivot it by channel, and keep a Google Sheets twin.",
@@ -191,7 +194,8 @@
         },
         {
           "id": "m4",
-          "title": "Optional: GA 301 (use GA with other tools and data sources); Google Analytics Certification"
+          "title": "Optional: GA 301 (use GA with other tools and data sources); Google Analytics Certification",
+          "kind": "optional"
         },
         {
           "id": "m5",
@@ -359,7 +363,8 @@
         {
           "id": "m6",
           "title": "Optional: Looker Studio",
-          "description": "Connect GA4 and Google Sheets as data sources (Google tutorials) for a live one-page view"
+          "description": "Connect GA4 and Google Sheets as data sources (Google tutorials) for a live one-page view",
+          "kind": "optional"
         },
         {
           "id": "m7",
@@ -374,7 +379,8 @@
         {
           "id": "m9",
           "title": "Mod 4 (Power BI): deferred",
-          "description": "Covered by the separate Power BI Fundamentals matrix"
+          "description": "Covered by the separate Power BI Fundamentals matrix",
+          "kind": "optional"
         },
         {
           "id": "m10",
@@ -390,6 +396,23 @@
       "workbenchId": "8",
       "hoursMin": 20,
       "hoursMax": 20
+    }
+  ],
+  "priorityWins": [
+    {
+      "id": "win_competitor_signoff",
+      "phaseId": "phase_6",
+      "text": "Secure BSPR-lead sign-off on competitor set & category list"
+    },
+    {
+      "id": "win_analytics_access",
+      "phaseId": "phase_4",
+      "text": "Connect real or demo GA4 / Meta view access"
+    },
+    {
+      "id": "win_bangla_keywords",
+      "phaseId": "phase_5",
+      "text": "Verify Bangla-language keyword research tool"
     }
   ]
 }

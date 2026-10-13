@@ -1,96 +1,87 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { PhaseStatus, WorkbenchData } from '../types';
+import { PhaseStatus } from '../types';
+import curriculumData from '../data/curriculumData.json';
+import { BACKUP_KEY, SCHEMA_VERSION, STORAGE_KEY } from '../lib/migrations';
+import { toggleModuleUpdate } from '../lib/progress';
+import { MAX_NAME_CHARS, emptyProgress, normalizeState, pickProgressData } from '../lib/sanitize';
+import type { ProgressData, Reminder } from '../lib/sanitize';
 
-interface ProgressState {
-  activePhaseId: string | null;
-  phaseStatus: Record<string, PhaseStatus>;
-  deliverables: Record<string, boolean>;
-  workbench: WorkbenchData;
-  timeTracking: Record<string, number>;
-  notes: Record<string, string>;
-  completedModules: Record<string, boolean>;
+interface ProgressState extends ProgressData {
+  setDisplayName: (name: string) => void;
   setActivePhase: (phaseId: string | null) => void;
   setPhaseStatus: (phaseId: string, status: PhaseStatus) => void;
   toggleDeliverable: (phaseId: string) => void;
   toggleModule: (phaseId: string, moduleId: string) => void;
-  updateWorkbench: (phaseId: string, data: Record<string, unknown>) => void;
+  /** Replaces everything saved for one workbench tool (keyed '1'..'8'). The tool is responsible for the shape. */
+  setWorkbench: (toolId: string, data: object) => void;
   setPhaseTime: (phaseId: string, hours: number) => void;
   setPhaseNote: (phaseId: string, note: string) => void;
-  importProgress: (data: Partial<ProgressState>) => void;
+  /** Records (or clears, with null) the reminder scheduled on this device for a phase. */
+  setReminder: (phaseId: string, reminder: Reminder | null) => void;
+  /** Replaces all saved progress with `data` (validated again here). Reminders are kept: they belong to this device. */
+  importProgress: (data: ProgressData) => void;
   resetProgress: () => void;
 }
 
-const isRecord = (value: unknown): value is Record<string, unknown> => (
-  typeof value === 'object' && value !== null && !Array.isArray(value)
-);
+const PHASE_IDS = curriculumData.phases.map((phase) => phase.id);
 
-const validStatuses = new Set<PhaseStatus>(['not_started', 'in_progress', 'completed']);
-
-function sanitizeStatus(value: unknown): Record<string, PhaseStatus> {
-  if (!isRecord(value)) return {};
-  return Object.fromEntries(
-    Object.entries(value).filter(([, status]) => typeof status === 'string' && validStatuses.has(status as PhaseStatus)),
-  ) as Record<string, PhaseStatus>;
-}
-
-function sanitizeBooleans(value: unknown): Record<string, boolean> {
-  if (!isRecord(value)) return {};
-  return Object.fromEntries(Object.entries(value).filter(([, item]) => typeof item === 'boolean')) as Record<string, boolean>;
-}
-
-function sanitizeNumbers(value: unknown): Record<string, number> {
-  if (!isRecord(value)) return {};
-  return Object.fromEntries(
-    Object.entries(value).filter(([, item]) => typeof item === 'number' && Number.isFinite(item) && item >= 0),
-  ) as Record<string, number>;
-}
-
-function sanitizeNotes(value: unknown): Record<string, string> {
-  if (!isRecord(value)) return {};
-  return Object.fromEntries(Object.entries(value).filter(([, item]) => typeof item === 'string')) as Record<string, string>;
+/**
+ * Keeps a copy of the data exactly as it was before a schema migration rewrites it, so a bad
+ * migration can never be the only copy. Best effort: storage problems must not block loading.
+ */
+function snapshotBeforeMigration() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) localStorage.setItem(BACKUP_KEY, raw);
+  } catch {
+    // Storage unavailable or full: carry on without a snapshot.
+  }
 }
 
 export const useProgressStore = create<ProgressState>()(
   persist(
     (set) => ({
-      phaseStatus: {},
-      deliverables: {},
-      workbench: {},
-      timeTracking: {},
-      notes: {},
-      completedModules: {},
+      ...emptyProgress(),
 
-      activePhaseId: null,
+      setDisplayName: (name) => set({ displayName: name.slice(0, MAX_NAME_CHARS) }),
       setActivePhase: (phaseId) => set({ activePhaseId: phaseId }),
       setPhaseStatus: (phaseId, status) => set((state) => ({ phaseStatus: { ...state.phaseStatus, [phaseId]: status }, activePhaseId: status === 'in_progress' ? phaseId : (status === 'completed' && state.activePhaseId === phaseId ? null : state.activePhaseId) })),
       toggleDeliverable: (phaseId) => set((state) => ({ deliverables: { ...state.deliverables, [phaseId]: !state.deliverables[phaseId] } })),
-      toggleModule: (phaseId, moduleIndex) => set((state) => {
-        const key = `${phaseId}_${moduleIndex}`;
-        return { completedModules: { ...state.completedModules, [key]: !state.completedModules[key] } };
-      }),
-      updateWorkbench: (phaseId, data) => set((state) => ({ workbench: { ...state.workbench, [phaseId]: { ...(state.workbench[phaseId] || {}), ...data } } })),
+      toggleModule: (phaseId, moduleId) => set((state) => toggleModuleUpdate(state, phaseId, moduleId)),
+      setWorkbench: (toolId, data) => set((state) => ({ workbench: { ...state.workbench, [toolId]: data as Record<string, unknown> } })),
       setPhaseTime: (phaseId, hours) => set((state) => ({ timeTracking: { ...state.timeTracking, [phaseId]: Math.max(0, Number.isFinite(hours) ? hours : 0) } })),
       setPhaseNote: (phaseId, note) => set((state) => ({ notes: { ...state.notes, [phaseId]: note } })),
 
-      importProgress: (data) => set((state) => {
-        const incoming = isRecord(data) ? data : {};
-        return {
-          phaseStatus: Object.keys(sanitizeStatus(incoming.phaseStatus)).length ? sanitizeStatus(incoming.phaseStatus) : state.phaseStatus,
-          deliverables: Object.keys(sanitizeBooleans(incoming.deliverables)).length ? sanitizeBooleans(incoming.deliverables) : state.deliverables,
-          workbench: isRecord(incoming.workbench) ? incoming.workbench as WorkbenchData : state.workbench,
-          timeTracking: Object.keys(sanitizeNumbers(incoming.timeTracking)).length ? sanitizeNumbers(incoming.timeTracking) : state.timeTracking,
-          notes: Object.keys(sanitizeNotes(incoming.notes)).length ? sanitizeNotes(incoming.notes) : state.notes,
-          completedModules: Object.keys(sanitizeBooleans(incoming.completedModules)).length ? sanitizeBooleans(incoming.completedModules) : state.completedModules,
-        };
+      setReminder: (phaseId, reminder) => set((state) => {
+        const reminders = { ...state.reminders };
+        if (reminder) reminders[phaseId] = reminder;
+        else delete reminders[phaseId];
+        return { reminders };
       }),
 
-      resetProgress: () => set({ activePhaseId: null, phaseStatus: {}, deliverables: {}, workbench: {}, timeTracking: {}, notes: {}, completedModules: {} }),
+      importProgress: (data) => set((state) => ({
+        ...emptyProgress(),
+        ...normalizeState(data, SCHEMA_VERSION, PHASE_IDS),
+        reminders: state.reminders,
+      })),
+
+      resetProgress: () => set(emptyProgress()),
     }),
-    { name: 'bspr-curriculum-storage' },
+    {
+      name: STORAGE_KEY,
+      version: SCHEMA_VERSION,
+      // Persist data only, so exports contain no functions and stay stable.
+      partialize: (state) => pickProgressData(state),
+      migrate: (persisted, fromVersion) => {
+        snapshotBeforeMigration();
+        return normalizeState(persisted, fromVersion, PHASE_IDS);
+      },
+      // Validate on every load so a hand-edited or corrupted entry can't crash the app.
+      merge: (persisted, current) => ({
+        ...current,
+        ...normalizeState(persisted, SCHEMA_VERSION, PHASE_IDS),
+      }),
+    },
   ),
 );
-
-
-
-

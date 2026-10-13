@@ -6,10 +6,14 @@ export interface JDLine {
   type: 'Responsibility' | 'Competency';
 }
 
+/** `core` (default) counts toward progress; `optional` and `note` do not. */
+export type ModuleKind = 'core' | 'optional' | 'note';
+
 export interface ModuleDetail {
   id: string;
   title: string;
   description?: string;
+  kind?: ModuleKind;
 }
 
 export interface Phase {
@@ -25,6 +29,13 @@ export interface Phase {
   hoursMax: number;
   isOptional?: boolean;
   workbenchId?: string;
+}
+
+/** A quick win shown on the dashboard until its phase is completed. */
+export interface PriorityWin {
+  id: string;
+  phaseId: string;
+  text: string;
 }
 
 export interface WorkbenchData {

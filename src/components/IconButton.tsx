@@ -1,7 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-type IconButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+// These four DOM handlers have different signatures on motion components.
+type MotionConflicts = 'onAnimationStart' | 'onDrag' | 'onDragStart' | 'onDragEnd';
+
+type IconButtonProps = Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, MotionConflicts> & {
   label?: string;
 };
 
