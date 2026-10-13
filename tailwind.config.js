@@ -8,7 +8,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        surface: { base: '#090A0C', elevated: '#16171E', overlay: '#1f1f23', subtle: '#27272a' },
+        surface: { base: '#0B0D10', elevated: '#16171E', overlay: '#1f1f23', subtle: '#27272a' },
         accent: { DEFAULT: '#00c4db', dim: 'rgba(0,196,219,0.15)', glow: 'rgba(0,196,219,0.33)' },
         success: { DEFAULT: '#22c55e', dim: 'rgba(34,197,94,0.15)' },
         warning: { DEFAULT: '#f59e0b', dim: 'rgba(245,158,11,0.15)' },
