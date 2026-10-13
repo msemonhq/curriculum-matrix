@@ -13,7 +13,7 @@ export default {
         success: { DEFAULT: '#22c55e', dim: 'rgba(34,197,94,0.15)' },
         warning: { DEFAULT: '#f59e0b', dim: 'rgba(245,158,11,0.15)' },
         danger: { DEFAULT: '#f87171', dim: 'rgba(248,113,113,0.15)' },
-        ink: { primary: '#fafafa', secondary: '#a1a1aa', tertiary: '#71717a' },
+        ink: { primary: '#fafafa', secondary: '#a1a1aa', tertiary: '#8F8F94' },
         line: { DEFAULT: 'rgba(255,255,255,0.05)', focus: '#00c4db' },
         rokomari: { teal: '#00c4db', darkTeal: '#009ab0', orange: '#f7941e', darkOrange: '#c67618' },
       },

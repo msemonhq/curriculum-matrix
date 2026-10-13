@@ -76,7 +76,7 @@ function MainApp() {
           <div className="flex items-center gap-4">
             <MatrixLogo activeTab={activeTab} />
             <div className="flex flex-col justify-center">
-              <span className="text-[13px] font-normal text-[#8E929B] leading-none mb-1.5">
+              <span className="text-[13px] font-normal text-ink-tertiary leading-none mb-1.5">
                 {greeting}
                 {displayName ? `, ${displayName}` : ''} 👋🏽
               </span>

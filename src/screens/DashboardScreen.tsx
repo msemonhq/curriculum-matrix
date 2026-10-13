@@ -141,7 +141,7 @@ export default function DashboardScreen() {
               <AnimatedNumber value={progressPercent} suffix="%" />
             </span>
             <span className="text-[10px] font-bold text-accent tracking-[0.12em] uppercase">Overall progress</span>
-            <span className="text-[12px] font-normal text-[#727682]">{completedPhases} of {totalPhases} phases completed</span>
+            <span className="text-[12px] font-normal text-ink-tertiary">{completedPhases} of {totalPhases} phases completed</span>
           </div>
         </div>
       </Card>
@@ -153,9 +153,9 @@ export default function DashboardScreen() {
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="text-[28px] font-bold text-white tabular leading-none">{completedDeliverables}</span>
-            <span className="text-[12px] font-normal text-[#8E929B]">/ {totalPhases}</span>
+            <span className="text-[12px] font-normal text-ink-tertiary">/ {totalPhases}</span>
           </div>
-          <span className="text-[13px] font-medium text-[#A0A5B1]">Deliverables done</span>
+          <span className="text-[13px] font-medium text-ink-secondary">Deliverables done</span>
         </Card>
         <Card className="flex flex-col gap-3">
           <div className="w-9 h-9 rounded-xl bg-warning-dim flex items-center justify-center">
@@ -163,9 +163,9 @@ export default function DashboardScreen() {
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="text-[28px] font-bold text-white tabular leading-none">{totalLogged}</span>
-            <span className="text-[12px] font-normal text-[#8E929B]">/ {hoursDisplay}</span>
+            <span className="text-[12px] font-normal text-ink-tertiary">/ {hoursDisplay}</span>
           </div>
-          <span className="text-[13px] font-medium text-[#A0A5B1]">Hours logged</span>
+          <span className="text-[13px] font-medium text-ink-secondary">Hours logged</span>
         </Card>
       </div>
 
