@@ -100,7 +100,35 @@ export default function DashboardScreen() {
         <IconButton label="Open settings" onClick={() => setShowSettingsSheet(true)}><Settings className="w-5 h-5" aria-hidden="true" /></IconButton>
       </div>
 
-      {nextPhase ? <Card variant="glass" padding="large" className="border-accent/30"><div className="flex items-start gap-3"><div className="w-10 h-10 rounded-xl bg-accent-dim flex items-center justify-center shrink-0"><ArrowRight className="w-5 h-5 text-accent" aria-hidden="true" /></div><div className="min-w-0 flex-1"><p className="text-micro text-accent uppercase tracking-wider">Next recommended step</p><h3 className="text-title text-ink-primary mt-1">Phase {nextPhase.number}: {nextPhase.title}</h3><p className="text-caption text-ink-secondary mt-1">Start this phase to keep your momentum.</p><Button fullWidth onClick={() => navigate('/curriculum')} className="mt-7">Open Phase <ArrowRight className="w-4 h-4" aria-hidden="true" /></Button></div></div></Card> : <Card variant="glass" padding="large" className="border-success/30"><div className="flex items-center gap-3"><CheckCircle2 className="w-8 h-8 text-success" aria-hidden="true" /><div><h3 className="text-title text-ink-primary">Curriculum complete</h3><p className="text-caption text-ink-secondary">You have completed every phase.</p></div></div></Card>}
+      {nextPhase ? (
+        <Card variant="glass" padding="large" className="border-accent/30">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-accent-dim flex items-center justify-center shrink-0">
+              <ArrowRight className="w-5 h-5 text-accent" aria-hidden="true" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-micro text-accent uppercase tracking-wider">Next recommended step</p>
+              <h3 className="text-title text-ink-primary mt-1">
+                Phase {nextPhase.number}: {nextPhase.title}
+              </h3>
+              <p className="text-caption text-ink-secondary mt-1">Start this phase to keep your momentum.</p>
+              <Button fullWidth onClick={() => navigate('/curriculum')} className="mt-7">
+                Open Phase <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              </Button>
+            </div>
+          </div>
+        </Card>
+      ) : (
+        <Card variant="glass" padding="large" className="border-success/30">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="w-8 h-8 text-success" aria-hidden="true" />
+            <div>
+              <h3 className="text-title text-ink-primary">Curriculum complete</h3>
+              <p className="text-caption text-ink-secondary">You have completed every phase.</p>
+            </div>
+          </div>
+        </Card>
+      )}
 
       <Card padding="none" glow={isComplete} className="flex items-center justify-center py-8">
         <div className="relative w-56 h-56 flex items-center justify-center">
@@ -205,8 +233,60 @@ export default function DashboardScreen() {
       <Button fullWidth onClick={() => navigate('/curriculum')} className="gap-2">Open Curriculum <ArrowRight className="w-4 h-4" aria-hidden="true" /></Button>
 
       <ImportSheet isOpen={showImportSheet} onClose={() => setShowImportSheet(false)} onImported={() => { setShowImportSheet(false); showToast('Progress imported successfully.', 'success'); }} />
-      <Sheet isOpen={showSettingsSheet} onClose={() => setShowSettingsSheet(false)} title="Settings"><div className="space-y-3"><TextInput id="display-name" label="Your name (optional)" placeholder="Used in the greeting" value={displayName} maxLength={40} autoComplete="given-name" onChange={(e) => setDisplayName(e.target.value)} /><Button variant="secondary" fullWidth onClick={handleExport}><Download className="w-4 h-4" aria-hidden="true" /> Export backup</Button><Button variant="secondary" fullWidth onClick={handleCopyBackup}><Download className="w-4 h-4" aria-hidden="true" /> Copy backup to clipboard</Button><Button variant="secondary" fullWidth onClick={() => { setShowSettingsSheet(false); setShowImportSheet(true); }}><Upload className="w-4 h-4" aria-hidden="true" /> Import backup</Button><div className="p-4 mt-4 bg-danger-dim border border-danger/25 rounded-xl"><h4 className="text-body font-semibold text-danger mb-1">Danger zone</h4><p className="text-caption text-ink-secondary mb-3">Permanently deletes all progress, tracked hours, and workbench data.</p><Button variant="danger" fullWidth onClick={() => setShowResetSheet(true)}><RotateCcw className="w-4 h-4" aria-hidden="true" /> Reset all progress</Button></div><p className="pt-2 text-center text-caption text-ink-secondary">BSPR Curriculum v{__APP_VERSION__}</p></div></Sheet>
-      <Sheet isOpen={showResetSheet} onClose={() => setShowResetSheet(false)} title="Reset all progress?"><div className="space-y-4"><p className="text-body text-ink-secondary">This permanently deletes your phases, deliverables, notes, hours, and workbench data. This cannot be undone.</p><div className="flex gap-3"><Button variant="ghost" fullWidth onClick={() => setShowResetSheet(false)}>Cancel</Button><Button variant="danger" fullWidth onClick={handleReset}>Reset everything</Button></div></div></Sheet>
+      <Sheet isOpen={showSettingsSheet} onClose={() => setShowSettingsSheet(false)} title="Settings">
+        <div className="space-y-3">
+          <TextInput
+            id="display-name"
+            label="Your name (optional)"
+            placeholder="Used in the greeting"
+            value={displayName}
+            maxLength={40}
+            autoComplete="given-name"
+            onChange={(e) => setDisplayName(e.target.value)}
+          />
+          <Button variant="secondary" fullWidth onClick={handleExport}>
+            <Download className="w-4 h-4" aria-hidden="true" /> Export backup
+          </Button>
+          <Button variant="secondary" fullWidth onClick={handleCopyBackup}>
+            <Download className="w-4 h-4" aria-hidden="true" /> Copy backup to clipboard
+          </Button>
+          <Button
+            variant="secondary"
+            fullWidth
+            onClick={() => {
+              setShowSettingsSheet(false);
+              setShowImportSheet(true);
+            }}
+          >
+            <Upload className="w-4 h-4" aria-hidden="true" /> Import backup
+          </Button>
+          <div className="p-4 mt-4 bg-danger-dim border border-danger/25 rounded-xl">
+            <h4 className="text-body font-semibold text-danger mb-1">Danger zone</h4>
+            <p className="text-caption text-ink-secondary mb-3">
+              Permanently deletes all progress, tracked hours, and workbench data.
+            </p>
+            <Button variant="danger" fullWidth onClick={() => setShowResetSheet(true)}>
+              <RotateCcw className="w-4 h-4" aria-hidden="true" /> Reset all progress
+            </Button>
+          </div>
+          <p className="pt-2 text-center text-caption text-ink-secondary">BSPR Curriculum v{__APP_VERSION__}</p>
+        </div>
+      </Sheet>
+      <Sheet isOpen={showResetSheet} onClose={() => setShowResetSheet(false)} title="Reset all progress?">
+        <div className="space-y-4">
+          <p className="text-body text-ink-secondary">
+            This permanently deletes your phases, deliverables, notes, hours, and workbench data. This cannot be undone.
+          </p>
+          <div className="flex gap-3">
+            <Button variant="ghost" fullWidth onClick={() => setShowResetSheet(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" fullWidth onClick={handleReset}>
+              Reset everything
+            </Button>
+          </div>
+        </div>
+      </Sheet>
       </div>
     </div>
   );
