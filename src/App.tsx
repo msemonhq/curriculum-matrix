@@ -133,7 +133,7 @@ function MainApp() {
                     />
                   </div>
                   <span
-                    className={`text-micro uppercase tracking-wider ${isActive ? 'text-accent' : 'text-ink-tertiary'}`}
+                    className={`text-micro tracking-normal ${isActive ? 'text-accent' : 'text-ink-tertiary'}`}
                   >
                     {tab.label}
                   </span>

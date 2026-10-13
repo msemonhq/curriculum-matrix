@@ -140,7 +140,7 @@ export default function DashboardScreen() {
             <span className="text-[36px] font-extrabold text-white tabular leading-none">
               <AnimatedNumber value={progressPercent} suffix="%" />
             </span>
-            <span className="text-[10px] font-bold text-accent tracking-[0.12em] uppercase">Overall progress</span>
+            <span className="text-[12px] font-bold text-accent tracking-[0.12em] uppercase">Overall progress</span>
             <span className="text-[12px] font-normal text-ink-tertiary">{completedPhases} of {totalPhases} phases completed</span>
           </div>
         </div>
