@@ -1,0 +1,29 @@
+name: Auto Commit
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Add any steps here that make automated changes to the repository
+      # - name: Make automated changes
+      #   run: npm run some-script-that-modifies-files
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "Jules"
+          git config --global user.email "jules-bot@yourdomain.com"
+          git add .
+          # Only commit if there are changes
+          git diff-index --quiet HEAD || git commit -m "chore: automated commit"
+          git push
