@@ -97,8 +97,8 @@ export default function WorkbenchesScreen() {
   return (
     <div className="p-4 pb-28">
       <div className="mb-5">
-        <h2 className="text-heading text-ink-primary">Interactive Workbenches</h2>
-        <p className="text-body text-ink-secondary mt-1">Tools and templates to complete your deliverables.</p>
+        <h2 className="text-heading text-ink-primary">Workbenches</h2>
+        <p className="text-body text-ink-secondary mt-1">Working tools for each phase.</p>
       </div>
 
       <motion.div

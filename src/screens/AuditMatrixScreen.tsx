@@ -56,7 +56,7 @@ export default function AuditMatrixScreen() {
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2"><Target className="w-4 h-4 text-accent" aria-hidden="true" /><span className="text-caption text-ink-secondary font-semibold uppercase tracking-wider">Curriculum coverage</span></div>
             <span className={`text-heading font-black tabular ${hasGaps ? 'text-danger' : 'text-success'}`}>{coveredCount}<span className="text-ink-tertiary font-normal"> / {jdLines.length}</span></span>
-            <span className="text-caption text-ink-secondary">{hasGaps ? `${gaps.length} gap${gaps.length === 1 ? '' : 's'} detected` : 'Every JD line has a phase'}</span>
+            <span className="text-caption text-ink-secondary">{hasGaps ? `${gaps.length} gap${gaps.length === 1 ? '' : 's'} detected` : `All ${jdLines.length} job-description lines are covered`}</span>
             <span className="text-caption text-ink-tertiary">Design of the curriculum, not your progress</span>
           </div>
         </div>

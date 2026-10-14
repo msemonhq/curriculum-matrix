@@ -33,7 +33,7 @@ export default function DashboardScreen() {
   const navigate = useNavigate();
   const { activePhaseId, phaseStatus, deliverables, timeTracking, displayName, setDisplayName, resetProgress } = useProgressStore();
   const { showToast } = useToast();
-  const { overall } = useProgress();
+  const { overall, byPhase } = useProgress();
   const [showImportSheet, setShowImportSheet] = useState(false);
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
   const [showResetSheet, setShowResetSheet] = useState(false);
@@ -46,6 +46,9 @@ export default function DashboardScreen() {
   const progressPercent = overall.percent;
   const isComplete = completedPhases === totalPhases;
   const nextPhase = activePhaseId ? (phases.find(phase => phase.id === activePhaseId && phaseStatus[phase.id] !== 'completed') || phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed')) : phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed');
+  // Whether the recommended phase is already under way decides what the card says and offers.
+  const nextProgress = nextPhase ? byPhase[nextPhase.id] : undefined;
+  const nextStarted = !!nextPhase && (phaseStatus[nextPhase.id] === 'in_progress' || (nextProgress?.done ?? 0) > 0);
   const totalHoursMin = phases.reduce((acc, p) => acc + p.hoursMin, 0);
   const totalHoursMax = phases.reduce((acc, p) => acc + p.hoursMax, 0);
   const hoursDisplay = formatHours(totalHoursMin, totalHoursMax);
@@ -107,13 +110,17 @@ export default function DashboardScreen() {
               <ArrowRight className="w-5 h-5 text-accent" aria-hidden="true" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-micro text-accent uppercase tracking-wider">Next recommended step</p>
+              <p className="text-micro text-accent uppercase tracking-wider">Up next</p>
               <h3 className="text-title text-ink-primary mt-1">
                 Phase {nextPhase.number}: {nextPhase.title}
               </h3>
-              <p className="text-caption text-ink-secondary mt-1">Start this phase to keep your momentum.</p>
+              {nextProgress && nextProgress.total > 0 && (
+                <p className="text-caption text-ink-secondary mt-1">
+                  {nextStarted ? `${nextProgress.done} of ${nextProgress.total} modules done` : `${nextProgress.total} modules to go`}
+                </p>
+              )}
               <Button fullWidth onClick={() => navigate('/curriculum')} className="mt-7">
-                Open Phase <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                {nextStarted ? 'Continue' : 'Start'} Phase {nextPhase.number} <ArrowRight className="w-4 h-4" aria-hidden="true" />
               </Button>
             </div>
           </div>
@@ -176,8 +183,7 @@ export default function DashboardScreen() {
             <Zap className="text-warning w-4 h-4" aria-hidden="true" />
           </div>
           <div className="flex-1">
-            <h3 className="text-body font-semibold text-ink-primary">Momentum Boosters</h3>
-            <p className="text-caption text-warning/90">{openWins.length} quick way{openWins.length === 1 ? '' : 's'} to speed up your progress</p>
+            <h3 className="text-body font-semibold text-ink-primary">Quick wins</h3>
           </div>
           <motion.div animate={{ rotate: winsExpanded ? 180 : 0 }} transition={{ duration: 0.2, ease: [0.25, 1, 0.5, 1] }}>
             <ChevronDown className="w-4 h-4 text-ink-tertiary" aria-hidden="true" />
@@ -230,7 +236,6 @@ export default function DashboardScreen() {
         </AnimatePresence>
       </div>
       )}
-      <Button fullWidth onClick={() => navigate('/curriculum')} className="gap-2">Open Curriculum <ArrowRight className="w-4 h-4" aria-hidden="true" /></Button>
 
       <ImportSheet isOpen={showImportSheet} onClose={() => setShowImportSheet(false)} onImported={() => { setShowImportSheet(false); showToast('Progress imported successfully.', 'success'); }} />
       <Sheet isOpen={showSettingsSheet} onClose={() => setShowSettingsSheet(false)} title="Settings">
