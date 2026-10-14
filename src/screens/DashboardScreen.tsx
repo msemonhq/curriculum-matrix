@@ -33,7 +33,7 @@ export default function DashboardScreen() {
   const navigate = useNavigate();
   const { activePhaseId, phaseStatus, deliverables, timeTracking, displayName, setDisplayName, resetProgress } = useProgressStore();
   const { showToast } = useToast();
-  const { overall } = useProgress();
+  const { overall, byPhase } = useProgress();
   const [showImportSheet, setShowImportSheet] = useState(false);
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
   const [showResetSheet, setShowResetSheet] = useState(false);
@@ -46,6 +46,9 @@ export default function DashboardScreen() {
   const progressPercent = overall.percent;
   const isComplete = completedPhases === totalPhases;
   const nextPhase = activePhaseId ? (phases.find(phase => phase.id === activePhaseId && phaseStatus[phase.id] !== 'completed') || phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed')) : phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed');
+  // Whether the recommended phase is already under way decides what the card says and offers.
+  const nextProgress = nextPhase ? byPhase[nextPhase.id] : undefined;
+  const nextStarted = !!nextPhase && (phaseStatus[nextPhase.id] === 'in_progress' || (nextProgress?.done ?? 0) > 0);
   const totalHoursMin = phases.reduce((acc, p) => acc + p.hoursMin, 0);
   const totalHoursMax = phases.reduce((acc, p) => acc + p.hoursMax, 0);
   const hoursDisplay = formatHours(totalHoursMin, totalHoursMax);
@@ -100,7 +103,39 @@ export default function DashboardScreen() {
         <IconButton label="Open settings" onClick={() => setShowSettingsSheet(true)}><Settings className="w-5 h-5" aria-hidden="true" /></IconButton>
       </div>
 
-      {nextPhase ? <Card variant="glass" padding="large" className="border-accent/30"><div className="flex items-start gap-3"><div className="w-10 h-10 rounded-xl bg-accent-dim flex items-center justify-center shrink-0"><ArrowRight className="w-5 h-5 text-accent" aria-hidden="true" /></div><div className="min-w-0 flex-1"><p className="text-micro text-accent uppercase tracking-wider">Next recommended step</p><h3 className="text-title text-ink-primary mt-1">Phase {nextPhase.number}: {nextPhase.title}</h3><p className="text-caption text-ink-secondary mt-1">Start this phase to keep your momentum.</p><Button fullWidth onClick={() => navigate('/curriculum')} className="mt-7">Open Phase <ArrowRight className="w-4 h-4" aria-hidden="true" /></Button></div></div></Card> : <Card variant="glass" padding="large" className="border-success/30"><div className="flex items-center gap-3"><CheckCircle2 className="w-8 h-8 text-success" aria-hidden="true" /><div><h3 className="text-title text-ink-primary">Curriculum complete</h3><p className="text-caption text-ink-secondary">You have completed every phase.</p></div></div></Card>}
+      {nextPhase ? (
+        <Card variant="glass" padding="large" className="border-accent/30">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-accent-dim flex items-center justify-center shrink-0">
+              <ArrowRight className="w-5 h-5 text-accent" aria-hidden="true" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-micro text-accent uppercase tracking-wider">Up next</p>
+              <h3 className="text-title text-ink-primary mt-1">
+                Phase {nextPhase.number}: {nextPhase.title}
+              </h3>
+              {nextProgress && nextProgress.total > 0 && (
+                <p className="text-caption text-ink-secondary mt-1">
+                  {nextStarted ? `${nextProgress.done} of ${nextProgress.total} modules done` : `${nextProgress.total} modules to go`}
+                </p>
+              )}
+              <Button fullWidth onClick={() => navigate('/curriculum')} className="mt-7">
+                {nextStarted ? 'Continue' : 'Start'} Phase {nextPhase.number} <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              </Button>
+            </div>
+          </div>
+        </Card>
+      ) : (
+        <Card variant="glass" padding="large" className="border-success/30">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="w-8 h-8 text-success" aria-hidden="true" />
+            <div>
+              <h3 className="text-title text-ink-primary">Curriculum complete</h3>
+              <p className="text-caption text-ink-secondary">You have completed every phase.</p>
+            </div>
+          </div>
+        </Card>
+      )}
 
       <Card padding="none" glow={isComplete} className="flex items-center justify-center py-8">
         <div className="relative w-56 h-56 flex items-center justify-center">
@@ -112,8 +147,8 @@ export default function DashboardScreen() {
             <span className="text-[36px] font-extrabold text-white tabular leading-none">
               <AnimatedNumber value={progressPercent} suffix="%" />
             </span>
-            <span className="text-[10px] font-bold text-accent tracking-[0.12em] uppercase">Overall progress</span>
-            <span className="text-[12px] font-normal text-[#727682]">{completedPhases} of {totalPhases} phases completed</span>
+            <span className="text-[12px] font-bold text-accent tracking-[0.12em] uppercase">Overall progress</span>
+            <span className="text-[12px] font-normal text-ink-tertiary">{completedPhases} of {totalPhases} phases completed</span>
           </div>
         </div>
       </Card>
@@ -125,19 +160,19 @@ export default function DashboardScreen() {
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="text-[28px] font-bold text-white tabular leading-none">{completedDeliverables}</span>
-            <span className="text-[12px] font-normal text-[#8E929B]">/ {totalPhases}</span>
+            <span className="text-[12px] font-normal text-ink-tertiary">/ {totalPhases}</span>
           </div>
-          <span className="text-[13px] font-medium text-[#A0A5B1]">Deliverables done</span>
+          <span className="text-[13px] font-medium text-ink-secondary">Deliverables done</span>
         </Card>
         <Card className="flex flex-col gap-3">
           <div className="w-9 h-9 rounded-xl bg-warning-dim flex items-center justify-center">
             <Clock className="text-warning w-5 h-5" aria-hidden="true" />
           </div>
-          <div className="flex items-baseline gap-1.5">
+          <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
             <span className="text-[28px] font-bold text-white tabular leading-none">{totalLogged}</span>
-            <span className="text-[12px] font-normal text-[#8E929B]">/ {hoursDisplay}</span>
+            <span className="whitespace-nowrap text-[12px] font-normal text-ink-tertiary">/ {hoursDisplay}</span>
           </div>
-          <span className="text-[13px] font-medium text-[#A0A5B1]">Hours logged</span>
+          <span className="text-[13px] font-medium text-ink-secondary">Hours logged</span>
         </Card>
       </div>
 
@@ -148,8 +183,7 @@ export default function DashboardScreen() {
             <Zap className="text-warning w-4 h-4" aria-hidden="true" />
           </div>
           <div className="flex-1">
-            <h3 className="text-body font-semibold text-ink-primary">Momentum Boosters</h3>
-            <p className="text-caption text-warning/90">{openWins.length} quick way{openWins.length === 1 ? '' : 's'} to speed up your progress</p>
+            <h3 className="text-body font-semibold text-ink-primary">Quick wins</h3>
           </div>
           <motion.div animate={{ rotate: winsExpanded ? 180 : 0 }} transition={{ duration: 0.2, ease: [0.25, 1, 0.5, 1] }}>
             <ChevronDown className="w-4 h-4 text-ink-tertiary" aria-hidden="true" />
@@ -202,11 +236,62 @@ export default function DashboardScreen() {
         </AnimatePresence>
       </div>
       )}
-      <Button fullWidth onClick={() => navigate('/curriculum')} className="gap-2">Open Curriculum <ArrowRight className="w-4 h-4" aria-hidden="true" /></Button>
 
       <ImportSheet isOpen={showImportSheet} onClose={() => setShowImportSheet(false)} onImported={() => { setShowImportSheet(false); showToast('Progress imported successfully.', 'success'); }} />
-      <Sheet isOpen={showSettingsSheet} onClose={() => setShowSettingsSheet(false)} title="Settings"><div className="space-y-3"><TextInput id="display-name" label="Your name (optional)" placeholder="Used in the greeting" value={displayName} maxLength={40} autoComplete="given-name" onChange={(e) => setDisplayName(e.target.value)} /><Button variant="secondary" fullWidth onClick={handleExport}><Download className="w-4 h-4" aria-hidden="true" /> Export backup</Button><Button variant="secondary" fullWidth onClick={handleCopyBackup}><Download className="w-4 h-4" aria-hidden="true" /> Copy backup to clipboard</Button><Button variant="secondary" fullWidth onClick={() => { setShowSettingsSheet(false); setShowImportSheet(true); }}><Upload className="w-4 h-4" aria-hidden="true" /> Import backup</Button><div className="p-4 mt-4 bg-danger-dim border border-danger/25 rounded-xl"><h4 className="text-body font-semibold text-danger mb-1">Danger zone</h4><p className="text-caption text-ink-secondary mb-3">Permanently deletes all progress, tracked hours, and workbench data.</p><Button variant="danger" fullWidth onClick={() => setShowResetSheet(true)}><RotateCcw className="w-4 h-4" aria-hidden="true" /> Reset all progress</Button></div><p className="pt-2 text-center text-caption text-ink-secondary">BSPR Curriculum v{__APP_VERSION__}</p></div></Sheet>
-      <Sheet isOpen={showResetSheet} onClose={() => setShowResetSheet(false)} title="Reset all progress?"><div className="space-y-4"><p className="text-body text-ink-secondary">This permanently deletes your phases, deliverables, notes, hours, and workbench data. This cannot be undone.</p><div className="flex gap-3"><Button variant="ghost" fullWidth onClick={() => setShowResetSheet(false)}>Cancel</Button><Button variant="danger" fullWidth onClick={handleReset}>Reset everything</Button></div></div></Sheet>
+      <Sheet isOpen={showSettingsSheet} onClose={() => setShowSettingsSheet(false)} title="Settings">
+        <div className="space-y-3">
+          <TextInput
+            id="display-name"
+            label="Your name (optional)"
+            placeholder="Used in the greeting"
+            value={displayName}
+            maxLength={40}
+            autoComplete="given-name"
+            onChange={(e) => setDisplayName(e.target.value)}
+          />
+          <Button variant="secondary" fullWidth onClick={handleExport}>
+            <Download className="w-4 h-4" aria-hidden="true" /> Export backup
+          </Button>
+          <Button variant="secondary" fullWidth onClick={handleCopyBackup}>
+            <Download className="w-4 h-4" aria-hidden="true" /> Copy backup to clipboard
+          </Button>
+          <Button
+            variant="secondary"
+            fullWidth
+            onClick={() => {
+              setShowSettingsSheet(false);
+              setShowImportSheet(true);
+            }}
+          >
+            <Upload className="w-4 h-4" aria-hidden="true" /> Import backup
+          </Button>
+          <div className="p-4 mt-4 bg-danger-dim border border-danger/25 rounded-xl">
+            <h4 className="text-body font-semibold text-danger mb-1">Danger zone</h4>
+            <p className="text-caption text-ink-secondary mb-3">
+              Permanently deletes all progress, tracked hours, and workbench data.
+            </p>
+            <Button variant="danger" fullWidth onClick={() => setShowResetSheet(true)}>
+              <RotateCcw className="w-4 h-4" aria-hidden="true" /> Reset all progress
+            </Button>
+          </div>
+          <p className="pt-2 text-center text-caption text-ink-secondary">BSPR Curriculum v{__APP_VERSION__}</p>
+        </div>
+      </Sheet>
+      <Sheet isOpen={showResetSheet} onClose={() => setShowResetSheet(false)} title="Reset all progress?">
+        <div className="space-y-4">
+          <p className="text-body text-ink-secondary">
+            This permanently deletes your phases, deliverables, notes, hours, and workbench data. This cannot be undone.
+          </p>
+          <div className="flex gap-3">
+            <Button variant="ghost" fullWidth onClick={() => setShowResetSheet(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" fullWidth onClick={handleReset}>
+              Reset everything
+            </Button>
+          </div>
+        </div>
+      </Sheet>
       </div>
     </div>
   );

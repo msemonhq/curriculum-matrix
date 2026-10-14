@@ -8,12 +8,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        surface: { base: '#090A0C', elevated: '#16171E', overlay: '#1f1f23', subtle: '#27272a' },
+        surface: { base: '#0B0D10', elevated: '#16171E', overlay: '#1f1f23', subtle: '#27272a' },
         accent: { DEFAULT: '#00c4db', dim: 'rgba(0,196,219,0.15)', glow: 'rgba(0,196,219,0.33)' },
         success: { DEFAULT: '#22c55e', dim: 'rgba(34,197,94,0.15)' },
         warning: { DEFAULT: '#f59e0b', dim: 'rgba(245,158,11,0.15)' },
         danger: { DEFAULT: '#f87171', dim: 'rgba(248,113,113,0.15)' },
-        ink: { primary: '#fafafa', secondary: '#a1a1aa', tertiary: '#71717a' },
+        ink: { primary: '#fafafa', secondary: '#a1a1aa', tertiary: '#8F8F94' },
         line: { DEFAULT: 'rgba(255,255,255,0.05)', focus: '#00c4db' },
         rokomari: { teal: '#00c4db', darkTeal: '#009ab0', orange: '#f7941e', darkOrange: '#c67618' },
       },
@@ -27,7 +27,7 @@ export default {
         title: ['1.125rem', { lineHeight: '1.4', fontWeight: '600' }],
         body: ['0.875rem', { lineHeight: '1.6' }],
         caption: ['0.75rem', { lineHeight: '1.4', fontWeight: '500', letterSpacing: '0.04em' }],
-        micro: ['0.625rem', { lineHeight: '1.2', fontWeight: '600', letterSpacing: '0.08em' }],
+        micro: ['0.75rem', { lineHeight: '1.2', fontWeight: '600', letterSpacing: '0.08em' }],
       },
       borderRadius: { xl: '0.75rem', '2xl': '1rem', '3xl': '1.5rem', '4xl': '2rem' },
       spacing: {

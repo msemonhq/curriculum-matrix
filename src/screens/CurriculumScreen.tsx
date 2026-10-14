@@ -138,7 +138,7 @@ export default function CurriculumScreen() {
             <button
               key={f.value}
               onClick={() => setStatusFilter(f.value)}
-              className={`flex-1 py-1.5 rounded-xl text-caption font-semibold transition-all duration-200 ${
+              className={`flex-1 min-h-11 py-1.5 rounded-xl text-caption font-semibold transition-all duration-200 ${
                 statusFilter === f.value
                   ? 'bg-accent text-surface-base shadow-glow-sm'
                   : 'bg-surface-subtle text-ink-secondary hover:text-ink-primary'
@@ -199,7 +199,7 @@ export default function CurriculumScreen() {
                       <Badge variant="phase" className="mb-1">
                         Phase {String(phase.number).padStart(2, '0')}
                       </Badge>
-                      <h3 className="text-title text-ink-primary leading-tight truncate">{phase.title}</h3>
+                      <h3 className="text-title text-ink-primary leading-tight break-words">{phase.title}</h3>
 
                       {/* Meta row */}
                       <div className="flex items-center gap-3 mt-1.5 text-caption text-ink-tertiary">
