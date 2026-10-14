@@ -38,7 +38,7 @@ function CheckMark({ isChecked }: { isChecked: boolean }) {
       aria-hidden="true"
       className={`relative w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 transition-all duration-300 ${
         isChecked
-          ? 'bg-accent/20 border border-accent shadow-glow-sm'
+          ? 'bg-accent/20 border border-accent'
           : 'bg-surface-base border border-rule'
       }`}
     >
@@ -140,7 +140,7 @@ export default function CurriculumScreen() {
               onClick={() => setStatusFilter(f.value)}
               className={`flex-1 min-h-11 py-1.5 rounded-xl text-meta font-semibold transition-all duration-200 ${
                 statusFilter === f.value
-                  ? 'bg-accent text-surface-base shadow-glow-sm'
+                  ? 'bg-accent text-surface-base'
                   : 'bg-surface-subtle text-ink-secondary hover:text-ink-primary'
               }`}
             >

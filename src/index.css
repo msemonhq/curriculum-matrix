@@ -90,15 +90,6 @@
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
   .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
 
-  .glass {
-    @apply bg-surface-elevated/80 backdrop-blur-md border border-rule;
-  }
-
-  .accent-border-top {
-    border-top: 1px solid;
-    border-image: linear-gradient(90deg, transparent, theme('colors.accent.DEFAULT'), transparent) 1;
-  }
-
   .tabular {
     font-feature-settings: 'tnum' 1;
     font-variant-numeric: tabular-nums;

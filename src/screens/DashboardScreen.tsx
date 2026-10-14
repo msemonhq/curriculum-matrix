@@ -8,7 +8,8 @@ import { Button } from '../components/Button';
 import { ImportSheet } from '../components/ImportSheet';
 import { TextInput } from '../components/TextInput';
 import { IconButton } from '../components/IconButton';
-import { Card } from '../components/Card';
+import { Panel } from '../components/Panel';
+import { Section } from '../components/Section';
 import { Sheet } from '../components/Sheet';
 import { useToast } from '../hooks/useToast';
 import { buildBackup } from '../lib/sanitize';
@@ -44,7 +45,6 @@ export default function DashboardScreen() {
   const totalPhases = phases.length;
   // Weighted by each phase's hoursMax, so a 20-hour phase moves the ring more than a 2-hour one.
   const progressPercent = overall.percent;
-  const isComplete = completedPhases === totalPhases;
   const nextPhase = activePhaseId ? (phases.find(phase => phase.id === activePhaseId && phaseStatus[phase.id] !== 'completed') || phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed')) : phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed');
   // Whether the recommended phase is already under way decides what the card says and offers.
   const nextProgress = nextPhase ? byPhase[nextPhase.id] : undefined;
@@ -104,7 +104,7 @@ export default function DashboardScreen() {
       </div>
 
       {nextPhase ? (
-        <Card variant="glass" padding="large" className="border-accent/30">
+        <Panel padding="large">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-xl bg-accent-dim flex items-center justify-center shrink-0">
               <ArrowRight className="w-5 h-5 text-accent" aria-hidden="true" />
@@ -124,9 +124,9 @@ export default function DashboardScreen() {
               </Button>
             </div>
           </div>
-        </Card>
+        </Panel>
       ) : (
-        <Card variant="glass" padding="large" className="border-success/30">
+        <Section padding="large">
           <div className="flex items-center gap-3">
             <CheckCircle2 className="w-8 h-8 text-success" aria-hidden="true" />
             <div>
@@ -134,10 +134,10 @@ export default function DashboardScreen() {
               <p className="text-meta text-ink-secondary">You have completed every phase.</p>
             </div>
           </div>
-        </Card>
+        </Section>
       )}
 
-      <Card padding="none" glow={isComplete} className="flex items-center justify-center py-8">
+      <Section padding="large" className="flex items-center justify-center">
         <div className="relative w-56 h-56 flex items-center justify-center">
           <svg className="w-full h-full -rotate-90 block" viewBox="0 0 100 100" role="img" aria-label={`${progressPercent}% of curriculum complete`}>
             <circle cx="50" cy="50" r={radius} fill="transparent" className="text-rule" stroke="currentColor" strokeWidth="7" />
@@ -151,10 +151,10 @@ export default function DashboardScreen() {
             <span className="text-meta text-ink-tertiary">{completedPhases} of {totalPhases} phases completed</span>
           </div>
         </div>
-      </Card>
+      </Section>
 
       <div className="grid grid-cols-2 gap-4">
-        <Card className="flex flex-col gap-3">
+        <Section className="flex flex-col gap-3">
           <div className="w-9 h-9 rounded-xl bg-success-dim flex items-center justify-center">
             <CheckCircle2 className="text-success w-5 h-5" aria-hidden="true" />
           </div>
@@ -163,8 +163,8 @@ export default function DashboardScreen() {
             <span className="text-meta text-ink-tertiary">/ {totalPhases}</span>
           </div>
           <span className="text-meta font-medium text-ink-secondary">Deliverables done</span>
-        </Card>
-        <Card className="flex flex-col gap-3">
+        </Section>
+        <Section className="flex flex-col gap-3">
           <div className="w-9 h-9 rounded-xl bg-clock-dim flex items-center justify-center">
             <Clock className="text-clock w-5 h-5" aria-hidden="true" />
           </div>
@@ -173,7 +173,7 @@ export default function DashboardScreen() {
             <span className="whitespace-nowrap text-meta text-ink-tertiary">/ {hoursDisplay}</span>
           </div>
           <span className="text-meta font-medium text-ink-secondary">Hours logged</span>
-        </Card>
+        </Section>
       </div>
 
       {openWins.length > 0 && (

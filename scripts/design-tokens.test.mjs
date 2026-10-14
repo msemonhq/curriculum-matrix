@@ -154,3 +154,32 @@ test('every colour class in the source names a token that exists', () => {
   }
   assert.deepEqual(offenders, [], `known tokens: ${[...valid].sort().join(', ')}`);
 });
+
+// ---- the design-system page and the retired styles ----
+
+test('docs/design-system.md names every colour token and type role', () => {
+  const doc = readFileSync(resolve(root, 'docs/design-system.md'), 'utf8');
+  const tokens = [];
+  for (const [family, value] of Object.entries(colors)) {
+    if (typeof value === 'string') tokens.push(family);
+    else for (const key of Object.keys(value)) tokens.push(key === 'DEFAULT' ? family : `${family}-${key}`);
+  }
+  const missing = [
+    ...tokens.filter((token) => !doc.includes(`\`${token}\``)),
+    ...Object.keys(config.theme.extend.fontSize).filter((role) => !doc.includes(`\`text-${role}\``)).map((role) => `text-${role}`),
+  ];
+  assert.deepEqual(missing, [], 'add these to docs/design-system.md');
+});
+
+test('the old Card, glass, glow and accent-border styles are gone', () => {
+  const offenders = [];
+  for (const { name, text } of sources) {
+    text.split('\n').forEach((line, i) => {
+      if (/\bglass\b|glow|accent-border-top|components\/Card\b/.test(line)) offenders.push(`${name}:${i + 1}: ${line.trim().slice(0, 90)}`);
+    });
+  }
+  assert.deepEqual(offenders, []);
+  const extend = config.theme.extend;
+  const defined = [...Object.keys(extend.boxShadow ?? {}), ...Object.keys(extend.keyframes ?? {}), ...Object.keys(extend.animation ?? {})];
+  assert.deepEqual(defined.filter((name) => /glow/.test(name)), []);
+});

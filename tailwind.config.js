@@ -63,16 +63,13 @@ export default {
         'app-nav': '5.5rem',
       },
       boxShadow: {
-        'glow-accent': `0 0 16px rgba(${rgb(SIGNAL)},0.35)`,
-        'glow-sm': `0 0 8px rgba(${rgb(SIGNAL)},0.25)`,
         surface: '0px 8px 24px rgba(0, 0, 0, 0.5)',
         'surface-lg': '0 8px 32px rgba(0,0,0,0.5)',
       },
       keyframes: {
-        'pulse-glow': { '0%, 100%': { boxShadow: `0 0 8px rgba(${rgb(SIGNAL)},0.25)` }, '50%': { boxShadow: `0 0 24px rgba(${rgb(SIGNAL)},0.55)` } },
         'fade-up': { '0%': { opacity: '0', transform: 'translateY(8px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
       },
-      animation: { 'pulse-glow': 'pulse-glow 2s ease-in-out infinite', 'fade-up': 'fade-up 0.3s ease-out' },
+      animation: { 'fade-up': 'fade-up 0.3s ease-out' },
     },
   },
   plugins: [],
