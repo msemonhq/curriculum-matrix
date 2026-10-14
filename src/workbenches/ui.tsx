@@ -3,12 +3,12 @@ import { Trash2 } from 'lucide-react';
 import { IconButton } from '../components/IconButton';
 
 export function SectionHeading({ children }: { children: React.ReactNode }) {
-  return <h4 className="text-caption text-ink-secondary font-semibold uppercase tracking-wider mb-3">{children}</h4>;
+  return <h4 className="text-meta text-ink-secondary font-semibold uppercase tracking-wider mb-3">{children}</h4>;
 }
 
 /** Muted explanatory text under a heading. */
 export function Hint({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <p className={`text-caption text-ink-secondary ${className}`}>{children}</p>;
+  return <p className={`text-meta text-ink-secondary ${className}`}>{children}</p>;
 }
 
 /** What to do first, shown while a list is still empty. */

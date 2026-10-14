@@ -11,6 +11,6 @@ trim_trailing_whitespace = true
 [*.md]
 trim_trailing_whitespace = false
 
-[src/assets/fonts/OFL.txt]
-# Verbatim copy of the upstream license; keep it byte-identical.
+[src/assets/fonts/OFL-*.txt]
+# Verbatim copies of the upstream licenses; keep them byte-identical.
 trim_trailing_whitespace = false

@@ -53,7 +53,7 @@ export default function WorkbenchesScreen() {
 
           <div className="flex-1 min-w-0">
             <h2 className="text-title text-ink-primary truncate">{activeTool.title}</h2>
-            <span className="text-caption text-ink-tertiary">{activeTool.phase} Workbench</span>
+            <span className="text-meta text-ink-tertiary">{activeTool.phase} Workbench</span>
           </div>
 
           {activeTool.share && (
@@ -97,7 +97,7 @@ export default function WorkbenchesScreen() {
   return (
     <div className="p-4 pb-28">
       <div className="mb-5">
-        <h2 className="text-heading text-ink-primary">Workbenches</h2>
+        <h2 className="text-display text-ink-primary">Workbenches</h2>
         <p className="text-body text-ink-secondary mt-1">Working tools for each phase.</p>
       </div>
 
@@ -122,7 +122,7 @@ export default function WorkbenchesScreen() {
               <div className={`p-3 rounded-xl ${tool.bgColor} mb-3`}>
                 <Icon className={`w-5 h-5 ${tool.accentColor}`} aria-hidden="true" />
               </div>
-              <span className="text-micro text-ink-tertiary uppercase tracking-wider">{tool.phase}</span>
+              <span className="text-kicker text-ink-tertiary uppercase tracking-wider">{tool.phase}</span>
               <h3 className="text-body font-semibold text-ink-primary leading-tight mt-1">{tool.title}</h3>
             </motion.button>
           );

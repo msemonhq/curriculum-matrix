@@ -24,7 +24,7 @@ interface ScoreSliderProps {
 function ScoreSlider({ id, label, value, strong = false, onChange }: ScoreSliderProps) {
   return (
     <div className="flex items-center gap-3">
-      <label htmlFor={id} className={`w-24 shrink-0 truncate text-caption ${strong ? 'text-accent font-semibold' : 'text-ink-secondary'}`}>{label}</label>
+      <label htmlFor={id} className={`w-24 shrink-0 truncate text-meta ${strong ? 'text-accent font-semibold' : 'text-ink-secondary'}`}>{label}</label>
       <input
         id={id}
         type="range"
@@ -35,7 +35,7 @@ function ScoreSlider({ id, label, value, strong = false, onChange }: ScoreSlider
         onChange={(e) => onChange(Number(e.target.value))}
         className={`flex-1 min-h-11 ${strong ? 'accent-accent' : 'accent-ink-tertiary'}`}
       />
-      <span className="w-6 text-right text-caption font-mono tabular text-ink-primary">{value}</span>
+      <span className="w-6 text-right text-meta font-mono tabular text-ink-primary">{value}</span>
     </div>
   );
 }
@@ -121,7 +121,7 @@ export default function StrategyCanvas() {
                       onChange={(value) => setFactor(f.id, (factor) => ({ ...factor, scores: { ...factor.scores, [c.id]: value } }))}
                     />
                   ))}
-                  <p role="status" className={`mt-1 text-caption font-semibold ${gap === null ? 'text-ink-tertiary' : gap > 0 ? 'text-success' : gap < 0 ? 'text-danger' : 'text-ink-secondary'}`}>
+                  <p role="status" className={`mt-1 text-meta font-semibold ${gap === null ? 'text-ink-tertiary' : gap > 0 ? 'text-success' : gap < 0 ? 'text-danger' : 'text-ink-secondary'}`}>
                     {describeGap(gap)}
                   </p>
                 </Panel>

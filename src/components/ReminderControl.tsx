@@ -61,7 +61,7 @@ export function ReminderControl({ phaseId, phaseTitle }: ReminderControlProps) {
 
   return (
     <div className="bg-surface-elevated border border-rule rounded-xl p-3">
-      <div className="flex items-center gap-2 text-caption text-ink-secondary font-semibold">
+      <div className="flex items-center gap-2 text-meta text-ink-secondary font-semibold">
         <Bell className="w-3.5 h-3.5" aria-hidden="true" /> Reminder
       </div>
       {active ? (
@@ -76,7 +76,7 @@ export function ReminderControl({ phaseId, phaseTitle }: ReminderControlProps) {
           </div>
         </>
       ) : (
-        <Button variant="ghost" fullWidth className="mt-1 gap-2 text-caption" onClick={() => setOpen(true)}>
+        <Button variant="ghost" fullWidth className="mt-1 gap-2 text-meta" onClick={() => setOpen(true)}>
           Set a reminder
         </Button>
       )}
@@ -97,7 +97,7 @@ export function ReminderControl({ phaseId, phaseTitle }: ReminderControlProps) {
             </Button>
           )}
           <div>
-            <label htmlFor={`reminder-date-${phaseId}`} className="block text-caption text-ink-secondary mb-1.5 font-medium">
+            <label htmlFor={`reminder-date-${phaseId}`} className="block text-meta text-ink-secondary mb-1.5 font-medium">
               Or pick a date (reminds at 9:00)
             </label>
             <div className="flex gap-2">

@@ -57,7 +57,7 @@ export default function BriefBuilder() {
         </Select>
       </div>
 
-      <p role="status" className="mt-5 flex items-center gap-1.5 text-caption text-ink-secondary">
+      <p role="status" className="mt-5 flex items-center gap-1.5 text-meta text-ink-secondary">
         {savedAt ? (
           <>
             <Check className="w-4 h-4 text-success" aria-hidden="true" />

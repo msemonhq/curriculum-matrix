@@ -75,11 +75,11 @@ function MainApp() {
           <div className="flex items-center gap-4">
             <MatrixLogo activeTab={activeTab} />
             <div className="flex flex-col justify-center">
-              <span className="text-[13px] font-normal text-ink-tertiary leading-none mb-1.5">
+              <span className="text-meta text-ink-tertiary leading-none mb-1.5">
                 {greeting}
                 {displayName ? `, ${displayName}` : ''} 👋🏽
               </span>
-              <span className="text-[20px] font-bold text-ink-primary leading-none">{contextStatus}</span>
+              <span className="text-title text-ink-primary leading-none">{contextStatus}</span>
             </div>
           </div>
           <div className="w-2 h-2 rounded-full bg-accent shrink-0" aria-hidden="true" />
@@ -132,7 +132,7 @@ function MainApp() {
                     />
                   </div>
                   <span
-                    className={`text-micro tracking-normal ${isActive ? 'text-accent' : 'text-ink-tertiary'}`}
+                    className={`text-kicker tracking-normal ${isActive ? 'text-accent' : 'text-ink-tertiary'}`}
                   >
                     {tab.label}
                   </span>

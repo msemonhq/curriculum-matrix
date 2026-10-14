@@ -138,7 +138,7 @@ export default function CurriculumScreen() {
             <button
               key={f.value}
               onClick={() => setStatusFilter(f.value)}
-              className={`flex-1 min-h-11 py-1.5 rounded-xl text-caption font-semibold transition-all duration-200 ${
+              className={`flex-1 min-h-11 py-1.5 rounded-xl text-meta font-semibold transition-all duration-200 ${
                 statusFilter === f.value
                   ? 'bg-accent text-surface-base shadow-glow-sm'
                   : 'bg-surface-subtle text-ink-secondary hover:text-ink-primary'
@@ -202,7 +202,7 @@ export default function CurriculumScreen() {
                       <h3 className="text-title text-ink-primary leading-tight break-words">{phase.title}</h3>
 
                       {/* Meta row */}
-                      <div className="flex items-center gap-3 mt-1.5 text-caption text-ink-tertiary">
+                      <div className="flex items-center gap-3 mt-1.5 text-meta text-ink-tertiary">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           {formatHours(phase.hoursMin, phase.hoursMax)}
@@ -247,7 +247,7 @@ export default function CurriculumScreen() {
 
                           {/* Target Course */}
                           <div className="mt-3 bg-surface-overlay rounded-xl p-3 border border-rule">
-                            <h4 className="flex items-center gap-2 text-caption text-ink-secondary font-semibold uppercase tracking-wider mb-2">
+                            <h4 className="flex items-center gap-2 text-meta text-ink-secondary font-semibold uppercase tracking-wider mb-2">
                               <BookOpen className="w-3.5 h-3.5 text-accent" />
                               Target Course
                             </h4>
@@ -264,7 +264,7 @@ export default function CurriculumScreen() {
                                     <motion.li
                                       key={mod.id}
                                       variants={staggerItem}
-                                      className="text-caption px-3 py-2 rounded-xl border border-dashed border-rule text-ink-tertiary"
+                                      className="text-meta px-3 py-2 rounded-xl border border-dashed border-rule text-ink-tertiary"
                                     >
                                       <span className="block">{mod.title}</span>
                                       {mod.description && <span className="block mt-0.5">{mod.description}</span>}
@@ -279,7 +279,7 @@ export default function CurriculumScreen() {
                                       role="checkbox"
                                       aria-checked={isChecked}
                                       onClick={() => toggleModule(phase.id, mod.id)}
-                                      className={`w-full min-h-11 text-left text-caption px-3 py-2 rounded-xl flex items-start gap-2.5 transition-all duration-200 border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 ${
+                                      className={`w-full min-h-11 text-left text-meta px-3 py-2 rounded-xl flex items-start gap-2.5 transition-all duration-200 border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 ${
                                         isChecked
                                           ? 'bg-accent-dim/30 border-accent/30 text-ink-primary'
                                           : 'bg-surface-subtle border-rule text-ink-secondary hover:border-edge'
@@ -288,7 +288,7 @@ export default function CurriculumScreen() {
                                       <CheckMark isChecked={isChecked} />
                                       <span className={`flex-1 leading-relaxed ${isChecked ? 'text-ink-primary font-medium' : ''}`}>
                                         <span className="block">{mod.title}</span>
-                                        {mod.kind === 'optional' && <span className="block text-micro uppercase text-ink-tertiary mt-0.5">Optional (not counted in progress)</span>}
+                                        {mod.kind === 'optional' && <span className="block text-kicker uppercase text-ink-tertiary mt-0.5">Optional (not counted in progress)</span>}
                                         {mod.description && <span className="block text-ink-tertiary mt-0.5">{mod.description}</span>}
                                       </span>
                                     </button>
@@ -300,7 +300,7 @@ export default function CurriculumScreen() {
 
                           {/* Strategic Application */}
                           <div>
-                            <h4 className="text-caption text-ink-secondary font-semibold uppercase tracking-wider mb-2">
+                            <h4 className="text-meta text-ink-secondary font-semibold uppercase tracking-wider mb-2">
                               Strategic Application
                             </h4>
                             <p className="text-body text-ink-primary bg-accent-dim border border-accent/20 p-3 rounded-xl">
@@ -311,7 +311,7 @@ export default function CurriculumScreen() {
                           {/* Hours + Notes */}
                           <div className="space-y-3">
                             <div className="bg-surface-elevated border border-rule rounded-xl p-3">
-                              <label className="block text-caption text-ink-secondary font-semibold mb-1.5">
+                              <label className="block text-meta text-ink-secondary font-semibold mb-1.5">
                                 Hours Logged
                               </label>
                               <input
@@ -325,7 +325,7 @@ export default function CurriculumScreen() {
                             </div>
 
                             <div className="bg-surface-elevated border border-rule rounded-xl p-3">
-                              <label className="block text-caption text-ink-secondary font-semibold mb-1.5">
+                              <label className="block text-meta text-ink-secondary font-semibold mb-1.5">
                                 Notes / Blockers
                               </label>
                               <textarea
@@ -365,7 +365,7 @@ export default function CurriculumScreen() {
                                 <h4 className={`text-body font-semibold ${deliverableDone ? 'text-success' : 'text-ink-primary'}`}>
                                   Proof-of-Skill Deliverable
                                 </h4>
-                                <p className={`text-caption mt-0.5 ${deliverableDone ? 'text-success/80' : 'text-ink-secondary'}`}>
+                                <p className={`text-meta mt-0.5 ${deliverableDone ? 'text-success/80' : 'text-ink-secondary'}`}>
                                   {phase.deliverable}
                                 </p>
                               </div>

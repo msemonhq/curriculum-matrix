@@ -33,8 +33,8 @@ function DonutChart({ covered, total }: { covered: number; total: number }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-2xl font-black text-ink-primary tabular leading-none">{pct}%</span>
-        <span className="text-micro text-ink-tertiary uppercase tracking-wider mt-0.5">coverage</span>
+        <span className="text-title text-ink-primary tabular leading-none">{pct}%</span>
+        <span className="text-kicker text-ink-tertiary uppercase tracking-wider mt-0.5">coverage</span>
       </div>
     </div>
   );
@@ -54,10 +54,10 @@ export default function AuditMatrixScreen() {
         <div className="flex items-center gap-5">
           <DonutChart covered={coveredCount} total={jdLines.length} />
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2"><Target className="w-4 h-4 text-accent" aria-hidden="true" /><span className="text-caption text-ink-secondary font-semibold uppercase tracking-wider">Curriculum coverage</span></div>
-            <span className={`text-heading font-black tabular ${hasGaps ? 'text-danger' : 'text-success'}`}>{coveredCount}<span className="text-ink-tertiary font-normal"> / {jdLines.length}</span></span>
-            <span className="text-caption text-ink-secondary">{hasGaps ? `${gaps.length} gap${gaps.length === 1 ? '' : 's'} detected` : `All ${jdLines.length} job-description lines are covered`}</span>
-            <span className="text-caption text-ink-tertiary">Design of the curriculum, not your progress</span>
+            <div className="flex items-center gap-2"><Target className="w-4 h-4 text-accent" aria-hidden="true" /><span className="text-meta text-ink-secondary font-semibold uppercase tracking-wider">Curriculum coverage</span></div>
+            <span className={`text-title tabular ${hasGaps ? 'text-danger' : 'text-success'}`}>{coveredCount}<span className="text-ink-tertiary font-normal"> / {jdLines.length}</span></span>
+            <span className="text-meta text-ink-secondary">{hasGaps ? `${gaps.length} gap${gaps.length === 1 ? '' : 's'} detected` : `All ${jdLines.length} job-description lines are covered`}</span>
+            <span className="text-meta text-ink-tertiary">Design of the curriculum, not your progress</span>
           </div>
         </div>
         {hasGaps && (
@@ -67,15 +67,15 @@ export default function AuditMatrixScreen() {
           >
             <AlertTriangle className="text-danger w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
             <div>
-              <p className="text-caption font-semibold text-danger">Coverage gap detected</p>
-              <p className="text-caption text-ink-secondary mt-0.5">Review the uncovered requirements below.</p>
+              <p className="text-meta font-semibold text-danger">Coverage gap detected</p>
+              <p className="text-meta text-ink-secondary mt-0.5">Review the uncovered requirements below.</p>
             </div>
           </div>
         )}
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 pb-28">
-        <h3 className="text-caption text-ink-secondary uppercase tracking-wider font-semibold mb-3">Job description lines</h3>
+        <h3 className="text-meta text-ink-secondary uppercase tracking-wider font-semibold mb-3">Job description lines</h3>
         <div className="space-y-2">
           {jdLines.map(line => {
             const servingPhases = phases.filter(p => p.jdLinesServed.includes(line.id));
@@ -86,19 +86,19 @@ export default function AuditMatrixScreen() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
-                      className={`font-mono text-micro px-2 py-0.5 rounded-md font-bold ${isUnserved ? 'bg-danger/15 text-danger' : 'bg-accent-dim text-accent'}`}
+                      className={`font-mono text-kicker px-2 py-0.5 rounded-md font-medium ${isUnserved ? 'bg-danger/15 text-danger' : 'bg-accent-dim text-accent'}`}
                     >
                       {line.id}
                     </span>
                     {isUnserved && (
-                      <span className="text-micro font-bold text-danger uppercase tracking-wider">Gap</span>
+                      <span className="text-kicker text-danger uppercase tracking-wider">Gap</span>
                     )}
                   </div>
                   <p className={`text-body mt-1 leading-snug ${isUnserved ? 'text-danger/90' : 'text-ink-primary'}`}>{line.text}</p>
-                  {servingPhases.length > 0 && <p className="text-caption text-accent mt-1.5 font-medium">Served by: {servingPhases.map(p => `Phase ${p.number}`).join(', ')}</p>}
+                  {servingPhases.length > 0 && <p className="text-meta text-accent mt-1.5 font-medium">Served by: {servingPhases.map(p => `Phase ${p.number}`).join(', ')}</p>}
                   {servingPhases.length > 0 && (
                     <div className="mt-2">
-                      <div className="flex items-center justify-between text-caption text-ink-secondary mb-1">
+                      <div className="flex items-center justify-between text-meta text-ink-secondary mb-1">
                         <span>Your readiness</span>
                         <span className="tabular">{byJdLine[line.id].percent}%</span>
                       </div>
@@ -111,7 +111,7 @@ export default function AuditMatrixScreen() {
                     <button
                       type="button"
                       onClick={() => navigate('/curriculum')}
-                      className="mt-2 inline-flex min-h-11 items-center gap-1 text-caption font-semibold text-danger underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
+                      className="mt-2 inline-flex min-h-11 items-center gap-1 text-meta font-semibold text-danger underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
                     >
                       Review roadmap <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
                     </button>

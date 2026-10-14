@@ -64,7 +64,7 @@ export default function ReconCalc() {
             <li key={i}>
               <Panel>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-caption font-semibold text-ink-primary">Day {i + 1}</span>
+                  <span className="text-meta font-semibold text-ink-primary">Day {i + 1}</span>
                   {badge && <Badge variant={badge.variant}>{badge.label}</Badge>}
                 </div>
                 <ToolInput
@@ -97,10 +97,10 @@ export default function ReconCalc() {
                   />
                 </div>
                 {result.flag === 'no_data' && (row.ga4 !== '' || row.meta !== '') && (
-                  <p className="mt-2 text-caption text-ink-tertiary">{describeFlag(result, data.thresholdPct)}</p>
+                  <p className="mt-2 text-meta text-ink-tertiary">{describeFlag(result, data.thresholdPct)}</p>
                 )}
                 {result.flag === 'zero_baseline' && (
-                  <p role="status" className="mt-2 text-caption text-warning">{describeFlag(result, data.thresholdPct)}</p>
+                  <p role="status" className="mt-2 text-meta text-warning">{describeFlag(result, data.thresholdPct)}</p>
                 )}
                 {(result.flag === 'ok' || result.flag === 'over') && result.diff !== null && result.pct !== null && (
                   <p role="status" className={`mt-2 text-body font-semibold tabular ${result.flag === 'over' ? 'text-danger' : 'text-success'}`}>
@@ -114,7 +114,7 @@ export default function ReconCalc() {
       </ul>
 
       <div className="p-4 mb-5 bg-surface-subtle border border-rule rounded-xl" role="status">
-        <h5 className="text-caption text-ink-secondary font-semibold uppercase tracking-wider mb-2">Week total</h5>
+        <h5 className="text-meta text-ink-secondary font-semibold uppercase tracking-wider mb-2">Week total</h5>
         {summary.days === 0 ? (
           <p className="text-body text-ink-secondary">Enter both numbers for at least one day to see the total.</p>
         ) : (

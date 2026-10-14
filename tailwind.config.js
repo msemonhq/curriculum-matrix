@@ -40,17 +40,20 @@ export default {
         edge: '#696967', // Folio 42% over Press: borders of controls, 3:1 on Press and Graphite
         rule: '#2B2C2D', // Folio 14% over Press: hairlines and dividers
       },
+      // Latin only for now: no Bengali fallback in the stacks.
       fontFamily: {
-        sans: ['Geist', 'system-ui', 'sans-serif'],
-        mono: ['Geist Mono', 'monospace'],
+        sans: ['Hanken Grotesk', 'system-ui', 'sans-serif'], // UI: body, buttons, labels, forms
+        serif: ['Newsreader', 'Georgia', 'serif'], // Display, Figure, Title (index.css applies it to those roles)
+        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'], // data: line IDs, formulas, dates
       },
+      // Type roles. Display, Figure and Title are serif; Body, Meta and Kicker are sans. Nothing is smaller than 12px.
       fontSize: {
-        display: ['2rem', { lineHeight: '1.2', fontWeight: '700', letterSpacing: '-0.02em' }],
-        heading: ['1.5rem', { lineHeight: '1.25', fontWeight: '700', letterSpacing: '-0.015em' }],
-        title: ['1.125rem', { lineHeight: '1.4', fontWeight: '600' }],
-        body: ['0.875rem', { lineHeight: '1.6' }],
-        caption: ['0.75rem', { lineHeight: '1.4', fontWeight: '500', letterSpacing: '0.04em' }],
-        micro: ['0.75rem', { lineHeight: '1.2', fontWeight: '600', letterSpacing: '0.08em' }],
+        display: ['2rem', { lineHeight: '2.25rem', fontWeight: '600' }], // 32/36, one per screen at most
+        figure: ['2.5rem', { lineHeight: '2.5rem', fontWeight: '600' }], // 40/40, big numbers
+        title: ['1.25rem', { lineHeight: '1.625rem', fontWeight: '600' }], // 20/26, cards and sheets
+        body: ['0.9375rem', { lineHeight: '1.5rem' }], // 15/24, the default
+        meta: ['0.8125rem', { lineHeight: '1.125rem' }], // 13/18, captions
+        kicker: ['0.75rem', { lineHeight: '1rem', fontWeight: '500', letterSpacing: '0.02em' }], // 12/16, small labels
       },
       borderRadius: { xl: '0.75rem', '2xl': '1rem', '3xl': '1.5rem', '4xl': '2rem' },
       spacing: {
