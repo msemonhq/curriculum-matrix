@@ -161,9 +161,9 @@ export default function DashboardScreen() {
           <div className="w-9 h-9 rounded-xl bg-warning-dim flex items-center justify-center">
             <Clock className="text-warning w-5 h-5" aria-hidden="true" />
           </div>
-          <div className="flex items-baseline gap-1.5">
+          <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
             <span className="text-[28px] font-bold text-white tabular leading-none">{totalLogged}</span>
-            <span className="text-[12px] font-normal text-ink-tertiary">/ {hoursDisplay}</span>
+            <span className="whitespace-nowrap text-[12px] font-normal text-ink-tertiary">/ {hoursDisplay}</span>
           </div>
           <span className="text-[13px] font-medium text-ink-secondary">Hours logged</span>
         </Card>

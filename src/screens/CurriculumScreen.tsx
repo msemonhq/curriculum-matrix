@@ -199,7 +199,7 @@ export default function CurriculumScreen() {
                       <Badge variant="phase" className="mb-1">
                         Phase {String(phase.number).padStart(2, '0')}
                       </Badge>
-                      <h3 className="text-title text-ink-primary leading-tight truncate">{phase.title}</h3>
+                      <h3 className="text-title text-ink-primary leading-tight break-words">{phase.title}</h3>
 
                       {/* Meta row */}
                       <div className="flex items-center gap-3 mt-1.5 text-caption text-ink-tertiary">
