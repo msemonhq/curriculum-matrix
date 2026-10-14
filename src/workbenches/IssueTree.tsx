@@ -145,7 +145,7 @@ export default function IssueTree() {
                 </ul>
 
                 <div className="mt-3">
-                  <Button variant="ghost" fullWidth onClick={() => addHypothesis(branch.id)} disabled={branch.hypotheses.length >= MAX_ITEMS}>
+                  <Button variant="text" fullWidth onClick={() => addHypothesis(branch.id)} disabled={branch.hypotheses.length >= MAX_ITEMS}>
                     <Plus className="w-4 h-4" aria-hidden="true" /> Add hypothesis
                   </Button>
                 </div>
@@ -154,7 +154,7 @@ export default function IssueTree() {
           ))}
         </ul>
 
-        <Button variant="outline" fullWidth onClick={addBranch} disabled={data.branches.length >= MAX_ITEMS}>
+        <Button variant="secondary" fullWidth onClick={addBranch} disabled={data.branches.length >= MAX_ITEMS}>
           <Plus className="w-4 h-4" aria-hidden="true" /> Add branch
         </Button>
       </div>

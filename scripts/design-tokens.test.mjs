@@ -183,3 +183,54 @@ test('the old Card, glass, glow and accent-border styles are gone', () => {
   const defined = [...Object.keys(extend.boxShadow ?? {}), ...Object.keys(extend.keyframes ?? {}), ...Object.keys(extend.animation ?? {})];
   assert.deepEqual(defined.filter((name) => /glow/.test(name)), []);
 });
+
+// ---- buttons and controls ----
+
+test('Button has one filled primary, one outline secondary, one text variant, and a danger confirm', () => {
+  const button = readFileSync(resolve(root, 'src/components/Button.tsx'), 'utf8');
+  const block = /const variants = \{([\s\S]*?)\n  \};/.exec(button)?.[1] ?? '';
+  const names = [...block.matchAll(/^\s{4}(\w+):/gm)].map((m) => m[1]);
+  assert.deepEqual(names, ['primary', 'secondary', 'text', 'danger']);
+  assert.match(block, /primary:.*bg-accent /);
+  assert.match(block, /secondary:.*bg-transparent border border-edge/);
+  for (const { name, text } of sources) {
+    assert.doesNotMatch(text, /variant="(?:ghost|outline)"/, `${name} uses a retired Button variant`);
+  }
+});
+
+test('every input, textarea and select has an edge-toned border', () => {
+  const offenders = [];
+  for (const { name, text } of sources) {
+    const lines = text.split('\n');
+    lines.forEach((line, i) => {
+      const tag = /<(input|textarea|select)\b/.exec(line);
+      if (!tag) return;
+      const element = lines.slice(i, i + 12).join('\n').split(/\n\s*\/?>/)[0];
+      if (/type="(?:file|range|checkbox|radio|hidden)"/.test(element)) return;
+      if (/\bborder-rule\b/.test(element)) offenders.push(`${name}:${i + 1}: <${tag[1]}> uses border-rule`);
+    });
+  }
+  assert.deepEqual(offenders, [], 'control borders use the edge tone (3:1), hairlines use rule');
+});
+
+test('the form-control components use edge, not rule', () => {
+  for (const file of ['TextInput', 'TextArea', 'Select', 'ToolInput', 'ToolTextArea']) {
+    const text = readFileSync(resolve(root, `src/components/${file}.tsx`), 'utf8');
+    assert.match(text, /\bborder-edge\b/, `${file} should use border-edge`);
+    assert.doesNotMatch(text, /\bborder-rule\b/, `${file} should not use border-rule`);
+  }
+});
+
+test('every single-line text input is at least 44px tall', () => {
+  const offenders = [];
+  for (const { name, text } of sources) {
+    const lines = text.split('\n');
+    lines.forEach((line, i) => {
+      if (!/<input\b/.test(line)) return;
+      const element = lines.slice(i, i + 12).join('\n').split(/\n\s*\/?>/)[0];
+      if (/type="(?:file|range|checkbox|radio|hidden)"/.test(element)) return;
+      if (!/\bmin-h-11\b/.test(element)) offenders.push(`${name}:${i + 1}`);
+    });
+  }
+  assert.deepEqual(offenders, []);
+});

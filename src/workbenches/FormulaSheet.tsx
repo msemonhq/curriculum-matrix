@@ -44,7 +44,7 @@ export default function FormulaSheet() {
             type="button"
             aria-pressed={group === choice}
             onClick={() => setGroup(choice)}
-            className={`min-h-11 shrink-0 px-4 rounded-xl border text-meta font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 ${group === choice ? 'bg-accent-dim border-accent/50 text-accent' : 'bg-transparent border-rule text-ink-secondary hover:text-ink-primary'}`}
+            className={`min-h-11 shrink-0 px-4 rounded-xl border text-meta font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 ${group === choice ? 'bg-accent-dim border-accent/50 text-accent' : 'bg-transparent border-edge text-ink-secondary hover:text-ink-primary'}`}
           >
             {choice}
           </button>

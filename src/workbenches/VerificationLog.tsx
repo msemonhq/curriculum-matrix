@@ -89,7 +89,7 @@ export default function VerificationLog() {
                       type="button"
                       aria-pressed={c.status === status}
                       onClick={() => setClaim(c.id, { status })}
-                      className={`min-h-11 rounded-xl border text-meta font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 ${c.status === status ? STATUS_ON[status] : 'bg-transparent border-rule text-ink-tertiary hover:text-ink-secondary'}`}
+                      className={`min-h-11 rounded-xl border text-meta font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 ${c.status === status ? STATUS_ON[status] : 'bg-transparent border-edge text-ink-tertiary hover:text-ink-secondary'}`}
                     >
                       {STATUS_LABEL[status]}
                     </button>
@@ -101,7 +101,7 @@ export default function VerificationLog() {
         ))}
       </ul>
 
-      <Button variant="outline" fullWidth onClick={addClaim} disabled={data.claims.length >= MAX_ITEMS}>
+      <Button variant="secondary" fullWidth onClick={addClaim} disabled={data.claims.length >= MAX_ITEMS}>
         <Plus className="w-4 h-4" aria-hidden="true" /> Add claim
       </Button>
     </div>

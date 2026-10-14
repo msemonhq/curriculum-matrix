@@ -82,7 +82,7 @@ export default function StrategyCanvas() {
           </li>
         ))}
       </ul>
-      <Button variant="outline" fullWidth onClick={() => update((current) => addCompetitor(current, newId()))} disabled={data.competitors.length >= MAX_COMPETITORS}>
+      <Button variant="secondary" fullWidth onClick={() => update((current) => addCompetitor(current, newId()))} disabled={data.competitors.length >= MAX_COMPETITORS}>
         <Plus className="w-4 h-4" aria-hidden="true" /> Add competitor
       </Button>
 
@@ -129,7 +129,7 @@ export default function StrategyCanvas() {
             );
           })}
         </ul>
-        <Button variant="outline" fullWidth onClick={() => update((current) => addFactor(current, newId()))} disabled={data.factors.length >= MAX_FACTORS}>
+        <Button variant="secondary" fullWidth onClick={() => update((current) => addFactor(current, newId()))} disabled={data.factors.length >= MAX_FACTORS}>
           <Plus className="w-4 h-4" aria-hidden="true" /> Add factor
         </Button>
       </div>
@@ -185,7 +185,7 @@ export default function StrategyCanvas() {
           })}
         </ul>
         <Button
-          variant="outline"
+          variant="secondary"
           fullWidth
           onClick={() => update((current) => ({ ...current, opportunities: [...current.opportunities, { id: newId(), title: '', hypothesis: '', impact: 0, effort: 0 }] }))}
           disabled={data.opportunities.length >= MAX_OPPORTUNITIES}

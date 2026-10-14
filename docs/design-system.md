@@ -64,3 +64,16 @@ Props: `Section` takes `rule` (`top`, `bottom`, `none`) and `padding` (`none`, `
 
 Retired: the old `Card` and its `glass` and `inset` variants, `glow` shadows, the pulsing glow animation and
 `accent-border-top`. Frosted translucency stays only where content scrolls under a sticky bar or a sheet scrim.
+
+## Buttons and controls
+
+| Button variant | Looks like | Use it for |
+|---|---|---|
+| `primary` | Filled Signal, Press text | The one main action on a screen |
+| `secondary` | Transparent, `edge` border, Folio text | Other actions, such as "Add" or "Import" |
+| `text` | No fill or border, `ink-secondary` text | Cancel, Back and quiet actions |
+| `danger` | Filled Brick, Press text | The confirm step of a destructive action only |
+
+Inputs, textareas, selects, the Roadmap check box and the toggle chips take their border from `edge` (3:1 against the page
+and a Panel) over a `surface-subtle` fill. `rule` is for decoration only, never for the edge of something you operate.
+Focus shows as a Signal border plus a 2px Signal ring. Every control is at least 44px tall.

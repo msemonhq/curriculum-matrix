@@ -39,7 +39,7 @@ function CheckMark({ isChecked }: { isChecked: boolean }) {
       className={`relative w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 transition-all duration-300 ${
         isChecked
           ? 'bg-accent/20 border border-accent'
-          : 'bg-surface-base border border-rule'
+          : 'bg-surface-base border border-edge'
       }`}
     >
       <svg className="w-3.5 h-3.5 text-accent" viewBox="0 0 16 16" fill="none">
@@ -128,7 +128,7 @@ export default function CurriculumScreen() {
             placeholder="Search phases or JD lines..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2.5 bg-surface-subtle border border-rule rounded-xl text-body text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
+            className="min-h-11 w-full pl-9 pr-3 py-2.5 bg-surface-subtle border border-edge rounded-xl text-body text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
           />
         </div>
 
@@ -140,8 +140,8 @@ export default function CurriculumScreen() {
               onClick={() => setStatusFilter(f.value)}
               className={`flex-1 min-h-11 py-1.5 rounded-xl text-meta font-semibold transition-all duration-200 ${
                 statusFilter === f.value
-                  ? 'bg-accent text-surface-base'
-                  : 'bg-surface-subtle text-ink-secondary hover:text-ink-primary'
+                  ? 'border border-accent bg-accent text-surface-base'
+                  : 'border border-edge bg-surface-subtle text-ink-secondary hover:text-ink-primary'
               }`}
             >
               {f.label}
@@ -320,7 +320,7 @@ export default function CurriculumScreen() {
                                 value={timeLogged || ''}
                                 onChange={(e) => setPhaseTime(phase.id, parseFloat(e.target.value) || 0)}
                                 placeholder={`Est: ${phase.hoursMin}h`}
-                                className="w-full bg-surface-subtle border border-rule rounded-lg px-3 py-2 text-body text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all tabular"
+                                className="min-h-11 w-full bg-surface-subtle border border-edge rounded-lg px-3 py-2 text-body text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all tabular"
                               />
                             </div>
 
@@ -333,7 +333,7 @@ export default function CurriculumScreen() {
                                 value={note}
                                 onChange={(e) => setPhaseNote(phase.id, e.target.value)}
                                 placeholder="Add notes..."
-                                className="w-full bg-surface-subtle border border-rule rounded-lg px-3 py-2 text-body text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all resize-none"
+                                className="w-full bg-surface-subtle border border-edge rounded-lg px-3 py-2 text-body text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all resize-none"
                               />
                             </div>
                           </div>
@@ -375,7 +375,7 @@ export default function CurriculumScreen() {
                           {/* Open Workbench */}
                           {toolId && (
                             <Button
-                              variant="outline"
+                              variant="secondary"
                               fullWidth
                               onClick={() => navigate(`/workbenches/${toolId}`)}
                               className="gap-2"

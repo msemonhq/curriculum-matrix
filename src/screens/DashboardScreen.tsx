@@ -283,7 +283,7 @@ export default function DashboardScreen() {
             This permanently deletes your phases, deliverables, notes, hours, and workbench data. This cannot be undone.
           </p>
           <div className="flex gap-3">
-            <Button variant="ghost" fullWidth onClick={() => setShowResetSheet(false)}>
+            <Button variant="text" fullWidth onClick={() => setShowResetSheet(false)}>
               Cancel
             </Button>
             <Button variant="danger" fullWidth onClick={handleReset}>

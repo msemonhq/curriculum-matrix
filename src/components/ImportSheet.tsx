@@ -117,7 +117,7 @@ export function ImportSheet({ isOpen, onClose, onImported }: ImportSheetProps) {
         </p>
       )}
       <div className="flex gap-3">
-        <Button variant="ghost" fullWidth onClick={() => setReview(null)}>Back</Button>
+        <Button variant="text" fullWidth onClick={() => setReview(null)}>Back</Button>
         <Button variant="danger" fullWidth onClick={handleConfirm}>Replace my progress</Button>
       </div>
     </div>
@@ -157,7 +157,7 @@ export function ImportSheet({ isOpen, onClose, onImported }: ImportSheetProps) {
       )}
       {error && <p role="alert" className="text-meta text-danger">{error}</p>}
       <div className="flex gap-3">
-        <Button variant="ghost" fullWidth onClick={onClose}>Cancel</Button>
+        <Button variant="text" fullWidth onClick={onClose}>Cancel</Button>
         <Button fullWidth onClick={() => runReview(text)}>Review</Button>
       </div>
     </div>

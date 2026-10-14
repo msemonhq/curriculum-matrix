@@ -72,11 +72,11 @@ export function ReminderControl({ phaseId, phaseTitle }: ReminderControlProps) {
           </p>
           <div className="mt-2 flex gap-2">
             <Button variant="secondary" disabled={busy} onClick={() => setOpen(true)}>Change</Button>
-            <Button variant="ghost" disabled={busy} onClick={cancel}>Cancel reminder</Button>
+            <Button variant="text" disabled={busy} onClick={cancel}>Cancel reminder</Button>
           </div>
         </>
       ) : (
-        <Button variant="ghost" fullWidth className="mt-1 gap-2 text-meta" onClick={() => setOpen(true)}>
+        <Button variant="text" fullWidth className="mt-1 gap-2 text-meta" onClick={() => setOpen(true)}>
           Set a reminder
         </Button>
       )}
@@ -107,7 +107,7 @@ export function ReminderControl({ phaseId, phaseTitle }: ReminderControlProps) {
                 min={toYmd(new Date())}
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="min-h-11 w-full bg-surface-subtle border border-rule rounded-xl px-3 py-2.5 text-body text-ink-primary focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
+                className="min-h-11 w-full bg-surface-subtle border border-edge rounded-xl px-3 py-2.5 text-body text-ink-primary focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
               />
               <Button disabled={busy || !pickedAt} onClick={() => pickedAt && set(pickedAt, 'Custom date')}>Set</Button>
             </div>

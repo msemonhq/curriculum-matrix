@@ -60,7 +60,7 @@ export default function DemandCalendar() {
           placeholder="e.g. Ekushey Book Fair opens"
           onChange={(e) => setTitle(e.target.value)}
         />
-        <Button type="submit" variant="outline" fullWidth disabled={data.events.length >= MAX_ITEMS}>
+        <Button type="submit" variant="secondary" fullWidth disabled={data.events.length >= MAX_ITEMS}>
           <Plus className="w-4 h-4" aria-hidden="true" /> Add to calendar
         </Button>
       </form>
