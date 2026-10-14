@@ -77,3 +77,10 @@ Retired: the old `Card` and its `glass` and `inset` variants, `glow` shadows, th
 Inputs, textareas, selects, the Roadmap check box and the toggle chips take their border from `edge` (3:1 against the page
 and a Panel) over a `surface-subtle` fill. `rule` is for decoration only, never for the edge of something you operate.
 Focus shows as a Signal border plus a 2px Signal ring. Every control is at least 44px tall.
+
+## Tool icons
+
+A workbench is recognised by its phase number and one line icon in Folio (`text-ink-primary`), with no tinted tile. The
+registry (`src/workbenches/registry.ts`) carries no colour fields, so a tool can never bring its own hue, and a colour
+keeps one meaning (Signal is progress, Clock is time, Brick is wrong).
+

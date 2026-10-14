@@ -123,8 +123,6 @@ test('no source file uses a Tailwind default-palette colour', () => {
   );
   const offenders = [];
   for (const { name, text } of sources) {
-    // P1.6 deletes the per-tool hues from the registry; remove this exception with them.
-    if (name === 'src/workbenches/registry.ts') continue;
     text.split('\n').forEach((line, i) => {
       const hit = line.match(pattern);
       if (hit) offenders.push(`${name}:${i + 1}: ${hit[0]}`);
@@ -247,4 +245,9 @@ test('labels are sentence case: no caps or wide-tracking utilities', () => {
     });
   }
   assert.deepEqual(offenders, []);
+});
+
+test('tools are told apart by number and icon, not by colour', () => {
+  const registry = readFileSync(resolve(root, 'src/workbenches/registry.ts'), 'utf8');
+  assert.doesNotMatch(registry, /accentColor|bgColor|\bcolou?r\b/i);
 });

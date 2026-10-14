@@ -47,9 +47,7 @@ export default function WorkbenchesScreen() {
             <ArrowLeft className="w-5 h-5" aria-hidden="true" />
           </motion.button>
 
-          <div className={`p-2 rounded-xl ${activeTool.bgColor} shrink-0`}>
-            <Icon className={`w-5 h-5 ${activeTool.accentColor}`} aria-hidden="true" />
-          </div>
+          <Icon className="w-5 h-5 shrink-0 text-ink-primary" aria-hidden="true" />
 
           <div className="flex-1 min-w-0">
             <h2 className="text-title text-ink-primary truncate">{activeTool.title}</h2>
@@ -119,9 +117,7 @@ export default function WorkbenchesScreen() {
               onClick={() => navigate(`/workbenches/${tool.id}`)}
               className="bg-surface-elevated border border-rule rounded-2xl p-4 flex flex-col items-start text-left shadow-surface hover:border-edge hover:-translate-y-px transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
             >
-              <div className={`p-3 rounded-xl ${tool.bgColor} mb-3`}>
-                <Icon className={`w-5 h-5 ${tool.accentColor}`} aria-hidden="true" />
-              </div>
+              <Icon className="w-5 h-5 mb-3 text-ink-primary" aria-hidden="true" />
               <span className="text-kicker text-ink-tertiary">{tool.phase}</span>
               <h3 className="text-body font-semibold text-ink-primary leading-tight mt-1">{tool.title}</h3>
             </motion.button>
