@@ -70,14 +70,9 @@ export default function WorkbenchesScreen() {
           )}
         </header>
 
-        {/* Tool content */}
+        {/* Tool content: a short intro, then the work. The icon is already in the header above. */}
         <div className="flex-1 overflow-y-auto">
-          <div className="flex flex-col items-center pt-6 px-6 pb-4 text-center">
-            <div className={`p-5 rounded-3xl ${activeTool.bgColor} mb-4`}>
-              <Icon className={`w-10 h-10 ${activeTool.accentColor}`} strokeWidth={1.5} aria-hidden="true" />
-            </div>
-            <p className="text-body text-ink-secondary max-w-xs">{activeTool.description}</p>
-          </div>
+          <p className="px-4 pt-4 pb-3 text-body text-ink-secondary">{activeTool.description}</p>
 
           <div className="px-4 pb-28">
             <div className="bg-surface-elevated border border-line rounded-2xl p-5 shadow-surface">
