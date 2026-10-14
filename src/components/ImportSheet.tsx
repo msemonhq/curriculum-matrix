@@ -103,7 +103,7 @@ export function ImportSheet({ isOpen, onClose, onImported }: ImportSheetProps) {
         </thead>
         <tbody>
           {ROWS.map(({ key, label }) => (
-            <tr key={key} className="border-t border-line">
+            <tr key={key} className="border-t border-rule">
               <th scope="row" className="py-2 text-left font-normal text-ink-primary">{label}</th>
               <td className="tabular py-2 text-right text-ink-primary">{review.summary[key]}</td>
               <td className="tabular py-2 text-right text-ink-secondary">{review.current[key]}</td>

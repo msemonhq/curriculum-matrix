@@ -39,13 +39,13 @@ function CheckMark({ isChecked }: { isChecked: boolean }) {
       className={`relative w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 transition-all duration-300 ${
         isChecked
           ? 'bg-accent/20 border border-accent shadow-glow-sm'
-          : 'bg-surface-base border border-line/70'
+          : 'bg-surface-base border border-rule'
       }`}
     >
-      <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
+      <svg className="w-3.5 h-3.5 text-accent" viewBox="0 0 16 16" fill="none">
         <motion.path
           d="M3.5 8.5L6.5 11.5L12.5 5"
-          stroke={isChecked ? '#00c4db' : 'transparent'}
+          stroke={isChecked ? 'currentColor' : 'transparent'}
           strokeWidth="2.2"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -120,7 +120,7 @@ export default function CurriculumScreen() {
   return (
     <div className="flex flex-col h-full">
       {/* Sticky search + filter bar */}
-      <div className="px-4 pt-3 pb-3 space-y-3 bg-surface-base/80 backdrop-blur-md sticky top-0 z-10 border-b border-line/50">
+      <div className="px-4 pt-3 pb-3 space-y-3 bg-surface-base/80 backdrop-blur-md sticky top-0 z-10 border-b border-rule">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-tertiary" />
           <input
@@ -128,7 +128,7 @@ export default function CurriculumScreen() {
             placeholder="Search phases or JD lines..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2.5 bg-surface-subtle border border-line rounded-xl text-body text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-line-focus focus:ring-2 focus:ring-accent/20 transition-all"
+            className="w-full pl-9 pr-3 py-2.5 bg-surface-subtle border border-rule rounded-xl text-body text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
           />
         </div>
 
@@ -172,7 +172,7 @@ export default function CurriculumScreen() {
             return (
               <motion.div key={phase.id} variants={staggerItem}>
                 {/* Phase card */}
-                <div className="bg-surface-elevated border border-line rounded-2xl overflow-hidden shadow-surface">
+                <div className="bg-surface-elevated border border-rule rounded-2xl overflow-hidden shadow-surface">
 
                   {/* Phase header row */}
                   <div
@@ -243,10 +243,10 @@ export default function CurriculumScreen() {
                         transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
                         className="overflow-hidden"
                       >
-                        <div className="px-4 pb-4 pt-1 border-t border-line bg-surface-subtle/50 space-y-4">
+                        <div className="px-4 pb-4 pt-1 border-t border-rule bg-surface-subtle/50 space-y-4">
 
                           {/* Target Course */}
-                          <div className="mt-3 bg-surface-overlay rounded-xl p-3 border border-line/60">
+                          <div className="mt-3 bg-surface-overlay rounded-xl p-3 border border-rule">
                             <h4 className="flex items-center gap-2 text-caption text-ink-secondary font-semibold uppercase tracking-wider mb-2">
                               <BookOpen className="w-3.5 h-3.5 text-accent" />
                               Target Course
@@ -264,7 +264,7 @@ export default function CurriculumScreen() {
                                     <motion.li
                                       key={mod.id}
                                       variants={staggerItem}
-                                      className="text-caption px-3 py-2 rounded-xl border border-dashed border-line/60 text-ink-tertiary"
+                                      className="text-caption px-3 py-2 rounded-xl border border-dashed border-rule text-ink-tertiary"
                                     >
                                       <span className="block">{mod.title}</span>
                                       {mod.description && <span className="block mt-0.5">{mod.description}</span>}
@@ -282,7 +282,7 @@ export default function CurriculumScreen() {
                                       className={`w-full min-h-11 text-left text-caption px-3 py-2 rounded-xl flex items-start gap-2.5 transition-all duration-200 border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 ${
                                         isChecked
                                           ? 'bg-accent-dim/30 border-accent/30 text-ink-primary'
-                                          : 'bg-surface-subtle border-line/50 text-ink-secondary hover:border-line'
+                                          : 'bg-surface-subtle border-rule text-ink-secondary hover:border-edge'
                                       }`}
                                     >
                                       <CheckMark isChecked={isChecked} />
@@ -310,7 +310,7 @@ export default function CurriculumScreen() {
 
                           {/* Hours + Notes */}
                           <div className="space-y-3">
-                            <div className="bg-surface-elevated border border-line rounded-xl p-3">
+                            <div className="bg-surface-elevated border border-rule rounded-xl p-3">
                               <label className="block text-caption text-ink-secondary font-semibold mb-1.5">
                                 Hours Logged
                               </label>
@@ -320,11 +320,11 @@ export default function CurriculumScreen() {
                                 value={timeLogged || ''}
                                 onChange={(e) => setPhaseTime(phase.id, parseFloat(e.target.value) || 0)}
                                 placeholder={`Est: ${phase.hoursMin}h`}
-                                className="w-full bg-surface-subtle border border-line rounded-lg px-3 py-2 text-body text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-line-focus focus:ring-2 focus:ring-accent/20 transition-all tabular"
+                                className="w-full bg-surface-subtle border border-rule rounded-lg px-3 py-2 text-body text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all tabular"
                               />
                             </div>
 
-                            <div className="bg-surface-elevated border border-line rounded-xl p-3">
+                            <div className="bg-surface-elevated border border-rule rounded-xl p-3">
                               <label className="block text-caption text-ink-secondary font-semibold mb-1.5">
                                 Notes / Blockers
                               </label>
@@ -333,7 +333,7 @@ export default function CurriculumScreen() {
                                 value={note}
                                 onChange={(e) => setPhaseNote(phase.id, e.target.value)}
                                 placeholder="Add notes..."
-                                className="w-full bg-surface-subtle border border-line rounded-lg px-3 py-2 text-body text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-line-focus focus:ring-2 focus:ring-accent/20 transition-all resize-none"
+                                className="w-full bg-surface-subtle border border-rule rounded-lg px-3 py-2 text-body text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all resize-none"
                               />
                             </div>
                           </div>
@@ -346,7 +346,7 @@ export default function CurriculumScreen() {
                             className={`p-3 rounded-xl border cursor-pointer transition-all duration-200 ${
                               deliverableDone
                                 ? 'bg-success-dim border-success/30'
-                                : 'bg-surface-elevated border-line hover:border-line/80'
+                                : 'bg-surface-elevated border-rule hover:border-edge'
                             }`}
                             onClick={() => toggleDeliverable(phase.id)}
                           >

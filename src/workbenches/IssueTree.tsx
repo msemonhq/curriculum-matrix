@@ -81,7 +81,7 @@ export default function IssueTree() {
 
                 <ul className="space-y-3">
                   {branch.hypotheses.map((h, hi) => (
-                    <li key={h.id} className="p-3 bg-surface-base border border-line rounded-xl">
+                    <li key={h.id} className="p-3 bg-surface-base border border-rule rounded-xl">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-caption font-semibold text-ink-primary">Hypothesis {bi + 1}.{hi + 1}</span>
                         <RemoveButton

@@ -18,12 +18,12 @@ export function Card({
 }: CardProps) {
   const paddingClasses = { none: '', small: 'p-3', normal: 'p-4', large: 'p-6' };
   const variantClasses = {
-    default: 'bg-surface-elevated border border-line',
-    glass: 'bg-surface-elevated/70 backdrop-blur-md border border-line/60',
+    default: 'bg-surface-elevated border border-rule',
+    glass: 'bg-surface-elevated/70 backdrop-blur-md border border-rule',
     inset: 'bg-surface-subtle border-0',
   };
   const interactionClasses = interactive
-    ? 'hover:border-line/80 hover:-translate-y-px cursor-pointer active:scale-[0.98] active:duration-100'
+    ? 'hover:border-edge hover:-translate-y-px cursor-pointer active:scale-[0.98] active:duration-100'
     : '';
 
   return (

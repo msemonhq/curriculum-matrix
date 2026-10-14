@@ -13,12 +13,12 @@ export function Hint({ children, className = '' }: { children: React.ReactNode; 
 
 /** What to do first, shown while a list is still empty. */
 export function EmptyHint({ children }: { children: React.ReactNode }) {
-  return <div className="p-4 mb-3 border border-dashed border-line rounded-xl text-body text-ink-secondary">{children}</div>;
+  return <div className="p-4 mb-3 border border-dashed border-rule rounded-xl text-body text-ink-secondary">{children}</div>;
 }
 
 /** A bordered group inside a tool: one claim, one branch, one day. */
 export function Panel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={`p-3 bg-surface-subtle border border-line rounded-xl ${className}`}>{children}</div>;
+  return <div className={`p-3 bg-surface-subtle border border-rule rounded-xl ${className}`}>{children}</div>;
 }
 
 interface RemoveButtonProps {

@@ -27,8 +27,7 @@ const MatrixLogo: React.FC<MatrixLogoProps> = ({ activeTab }) => {
             width="8"
             height="8"
             rx="2.5"
-            fill="#27272a"
-            stroke="#3f3f46"
+            className="fill-surface-overlay stroke-edge/50"
             strokeWidth="0.8"
           />
         ))}
@@ -38,7 +37,7 @@ const MatrixLogo: React.FC<MatrixLogoProps> = ({ activeTab }) => {
           width="8"
           height="8"
           rx="2.5"
-          fill="#00c4db"
+          className="fill-accent"
         />
       </svg>
     </div>
@@ -80,7 +79,7 @@ function MainApp() {
                 {greeting}
                 {displayName ? `, ${displayName}` : ''} 👋🏽
               </span>
-              <span className="text-[20px] font-bold text-white leading-none">{contextStatus}</span>
+              <span className="text-[20px] font-bold text-ink-primary leading-none">{contextStatus}</span>
             </div>
           </div>
           <div className="w-2 h-2 rounded-full bg-accent shrink-0" aria-hidden="true" />
@@ -111,7 +110,7 @@ function MainApp() {
           aria-label="Primary navigation"
           className="fixed bottom-0 w-full px-4 pb-4 safe-bottom z-30 pointer-events-none"
         >
-          <div className="pointer-events-auto bg-surface-elevated border border-line rounded-3xl shadow-surface-lg flex justify-around items-center h-16 px-2">
+          <div className="pointer-events-auto bg-surface-elevated border border-rule rounded-3xl shadow-surface-lg flex justify-around items-center h-16 px-2">
             {tabs.map(tab => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;

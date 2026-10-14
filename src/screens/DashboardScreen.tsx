@@ -140,11 +140,11 @@ export default function DashboardScreen() {
       <Card padding="none" glow={isComplete} className="flex items-center justify-center py-8">
         <div className="relative w-56 h-56 flex items-center justify-center">
           <svg className="w-full h-full -rotate-90 block" viewBox="0 0 100 100" role="img" aria-label={`${progressPercent}% of curriculum complete`}>
-            <circle cx="50" cy="50" r={radius} fill="transparent" className="text-[#00D4FF]/[0.06]" stroke="currentColor" strokeWidth="7" />
+            <circle cx="50" cy="50" r={radius} fill="transparent" className="text-rule" stroke="currentColor" strokeWidth="7" />
             <motion.circle cx="50" cy="50" r={radius} fill="transparent" className="text-accent" stroke="currentColor" strokeWidth="7" strokeLinecap="round" strokeDasharray={circumference} initial={{ strokeDashoffset: circumference }} animate={{ strokeDashoffset: circumference - (circumference * progressPercent) / 100 }} transition={{ duration: 1.2 }} />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center space-y-1.5 pt-1">
-            <span className="text-[36px] font-extrabold text-white tabular leading-none">
+            <span className="text-[36px] font-extrabold text-ink-primary tabular leading-none">
               <AnimatedNumber value={progressPercent} suffix="%" />
             </span>
             <span className="text-[12px] font-bold text-accent tracking-[0.12em] uppercase">Overall progress</span>
@@ -159,17 +159,17 @@ export default function DashboardScreen() {
             <CheckCircle2 className="text-success w-5 h-5" aria-hidden="true" />
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-[28px] font-bold text-white tabular leading-none">{completedDeliverables}</span>
+            <span className="text-[28px] font-bold text-ink-primary tabular leading-none">{completedDeliverables}</span>
             <span className="text-[12px] font-normal text-ink-tertiary">/ {totalPhases}</span>
           </div>
           <span className="text-[13px] font-medium text-ink-secondary">Deliverables done</span>
         </Card>
         <Card className="flex flex-col gap-3">
-          <div className="w-9 h-9 rounded-xl bg-warning-dim flex items-center justify-center">
-            <Clock className="text-warning w-5 h-5" aria-hidden="true" />
+          <div className="w-9 h-9 rounded-xl bg-clock-dim flex items-center justify-center">
+            <Clock className="text-clock w-5 h-5" aria-hidden="true" />
           </div>
           <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
-            <span className="text-[28px] font-bold text-white tabular leading-none">{totalLogged}</span>
+            <span className="text-[28px] font-bold text-ink-primary tabular leading-none">{totalLogged}</span>
             <span className="whitespace-nowrap text-[12px] font-normal text-ink-tertiary">/ {hoursDisplay}</span>
           </div>
           <span className="text-[13px] font-medium text-ink-secondary">Hours logged</span>

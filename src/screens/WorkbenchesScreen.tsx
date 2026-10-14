@@ -35,7 +35,7 @@ export default function WorkbenchesScreen() {
     return (
       <div className="flex flex-col h-full bg-surface-base">
         {/* Tool header */}
-        <header className="w-full bg-surface-elevated/85 backdrop-blur-md border-b border-line/60 border-t-0 border-x-0 rounded-b-3xl shadow-surface-lg safe-top px-5 py-3.5 flex items-center gap-3">
+        <header className="w-full bg-surface-elevated/85 backdrop-blur-md border-b border-rule border-t-0 border-x-0 rounded-b-3xl shadow-surface-lg safe-top px-5 py-3.5 flex items-center gap-3">
           <motion.button
             type="button"
             aria-label="Back to workbenches"
@@ -75,7 +75,7 @@ export default function WorkbenchesScreen() {
           <p className="px-4 pt-4 pb-3 text-body text-ink-secondary">{activeTool.description}</p>
 
           <div className="px-4 pb-28">
-            <div className="bg-surface-elevated border border-line rounded-2xl p-5 shadow-surface">
+            <div className="bg-surface-elevated border border-rule rounded-2xl p-5 shadow-surface">
               <ToolBody />
             </div>
           </div>
@@ -117,7 +117,7 @@ export default function WorkbenchesScreen() {
               whileTap={{ scale: 0.95 }}
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               onClick={() => navigate(`/workbenches/${tool.id}`)}
-              className="bg-surface-elevated border border-line rounded-2xl p-4 flex flex-col items-start text-left shadow-surface hover:border-line/80 hover:-translate-y-px transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
+              className="bg-surface-elevated border border-rule rounded-2xl p-4 flex flex-col items-start text-left shadow-surface hover:border-edge hover:-translate-y-px transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
             >
               <div className={`p-3 rounded-xl ${tool.bgColor} mb-3`}>
                 <Icon className={`w-5 h-5 ${tool.accentColor}`} aria-hidden="true" />

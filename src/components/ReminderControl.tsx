@@ -60,7 +60,7 @@ export function ReminderControl({ phaseId, phaseTitle }: ReminderControlProps) {
   const pickedAt = reminderTimeOn(date);
 
   return (
-    <div className="bg-surface-elevated border border-line rounded-xl p-3">
+    <div className="bg-surface-elevated border border-rule rounded-xl p-3">
       <div className="flex items-center gap-2 text-caption text-ink-secondary font-semibold">
         <Bell className="w-3.5 h-3.5" aria-hidden="true" /> Reminder
       </div>
@@ -107,7 +107,7 @@ export function ReminderControl({ phaseId, phaseTitle }: ReminderControlProps) {
                 min={toYmd(new Date())}
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="min-h-11 w-full bg-surface-subtle border border-line rounded-xl px-3 py-2.5 text-body text-ink-primary focus:outline-none focus:border-line-focus focus:ring-2 focus:ring-accent/30"
+                className="min-h-11 w-full bg-surface-subtle border border-rule rounded-xl px-3 py-2.5 text-body text-ink-primary focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
               />
               <Button disabled={busy || !pickedAt} onClick={() => pickedAt && set(pickedAt, 'Custom date')}>Set</Button>
             </div>

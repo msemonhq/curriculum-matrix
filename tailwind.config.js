@@ -1,3 +1,15 @@
+// The Ledger palette: six named colours. Every other tone below is one of them, or Folio
+// blended over Press/Graphite, so scripts/design-tokens.test.mjs can recompute and check it.
+const PRESS = '#0B0D10'; // page
+const GRAPHITE = '#151920'; // raised panel
+const FOLIO = '#ECE8DF'; // ink
+const SIGNAL = '#00C4DB'; // action, progress, complete
+const CLOCK = '#F7941E'; // time
+const BRICK = '#F87171'; // error, uncovered
+
+const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(',');
+const dim = (hex) => `rgba(${rgb(hex)},0.15)`;
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -8,14 +20,25 @@ export default {
   theme: {
     extend: {
       colors: {
-        surface: { base: '#0B0D10', elevated: '#16171E', overlay: '#1f1f23', subtle: '#27272a' },
-        accent: { DEFAULT: '#00c4db', dim: 'rgba(0,196,219,0.15)', glow: 'rgba(0,196,219,0.33)' },
-        success: { DEFAULT: '#22c55e', dim: 'rgba(34,197,94,0.15)' },
-        warning: { DEFAULT: '#f59e0b', dim: 'rgba(245,158,11,0.15)' },
-        danger: { DEFAULT: '#f87171', dim: 'rgba(248,113,113,0.15)' },
-        ink: { primary: '#fafafa', secondary: '#a1a1aa', tertiary: '#8F8F94' },
-        line: { DEFAULT: 'rgba(255,255,255,0.05)', focus: '#00c4db' },
-        rokomari: { teal: '#00c4db', darkTeal: '#009ab0', orange: '#f7941e', darkOrange: '#c67618' },
+        surface: {
+          base: PRESS,
+          elevated: GRAPHITE,
+          subtle: '#1E2128', // Folio 4% over Graphite: input and chip fills
+          overlay: '#24272D', // Folio 7% over Graphite: hover fills, sheets
+        },
+        ink: {
+          primary: FOLIO,
+          secondary: '#ADABA5', // Folio 72% over Press
+          tertiary: '#92908C', // Folio 60% over Press; still 4.5:1 on every surface
+        },
+        accent: { DEFAULT: SIGNAL, dim: dim(SIGNAL) },
+        clock: { DEFAULT: CLOCK, dim: dim(CLOCK) },
+        danger: { DEFAULT: BRICK, dim: dim(BRICK) },
+        // Status words keep their names but borrow a palette colour: done is Signal, caution is Clock.
+        success: { DEFAULT: SIGNAL, dim: dim(SIGNAL) },
+        warning: { DEFAULT: CLOCK, dim: dim(CLOCK) },
+        edge: '#696967', // Folio 42% over Press: borders of controls, 3:1 on Press and Graphite
+        rule: '#2B2C2D', // Folio 14% over Press: hairlines and dividers
       },
       fontFamily: {
         sans: ['Geist', 'system-ui', 'sans-serif'],
@@ -37,13 +60,13 @@ export default {
         'app-nav': '5.5rem',
       },
       boxShadow: {
-        'glow-accent': '0 0 16px rgba(0,196,219,0.35)',
-        'glow-sm': '0 0 8px rgba(0,196,219,0.25)',
+        'glow-accent': `0 0 16px rgba(${rgb(SIGNAL)},0.35)`,
+        'glow-sm': `0 0 8px rgba(${rgb(SIGNAL)},0.25)`,
         surface: '0px 8px 24px rgba(0, 0, 0, 0.5)',
         'surface-lg': '0 8px 32px rgba(0,0,0,0.5)',
       },
       keyframes: {
-        'pulse-glow': { '0%, 100%': { boxShadow: '0 0 8px rgba(0,196,219,0.25)' }, '50%': { boxShadow: '0 0 24px rgba(0,196,219,0.55)' } },
+        'pulse-glow': { '0%, 100%': { boxShadow: `0 0 8px rgba(${rgb(SIGNAL)},0.25)` }, '50%': { boxShadow: `0 0 24px rgba(${rgb(SIGNAL)},0.55)` } },
         'fade-up': { '0%': { opacity: '0', transform: 'translateY(8px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
       },
       animation: { 'pulse-glow': 'pulse-glow 2s ease-in-out infinite', 'fade-up': 'fade-up 0.3s ease-out' },

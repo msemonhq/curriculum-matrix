@@ -89,7 +89,7 @@ export default function VerificationLog() {
                       type="button"
                       aria-pressed={c.status === status}
                       onClick={() => setClaim(c.id, { status })}
-                      className={`min-h-11 rounded-xl border text-caption font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 ${c.status === status ? STATUS_ON[status] : 'bg-transparent border-line text-ink-tertiary hover:text-ink-secondary'}`}
+                      className={`min-h-11 rounded-xl border text-caption font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 ${c.status === status ? STATUS_ON[status] : 'bg-transparent border-rule text-ink-tertiary hover:text-ink-secondary'}`}
                     >
                       {STATUS_LABEL[status]}
                     </button>

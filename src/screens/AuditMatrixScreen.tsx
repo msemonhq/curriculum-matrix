@@ -50,7 +50,7 @@ export default function AuditMatrixScreen() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 pt-4 pb-4 bg-surface-base/95 sticky top-0 z-10 border-b border-line/50">
+      <div className="px-4 pt-4 pb-4 bg-surface-base/95 sticky top-0 z-10 border-b border-rule">
         <div className="flex items-center gap-5">
           <DonutChart covered={coveredCount} total={jdLines.length} />
           <div className="flex flex-col gap-1">
@@ -80,7 +80,7 @@ export default function AuditMatrixScreen() {
           {jdLines.map(line => {
             const servingPhases = phases.filter(p => p.jdLinesServed.includes(line.id));
             const isUnserved = servingPhases.length === 0;
-            return <div key={line.id} className={`rounded-xl border overflow-hidden ${isUnserved ? 'bg-danger-dim border-danger/25' : 'bg-surface-elevated border-line'}`}>
+            return <div key={line.id} className={`rounded-xl border overflow-hidden ${isUnserved ? 'bg-danger-dim border-danger/25' : 'bg-surface-elevated border-rule'}`}>
               <div className="p-3 flex gap-3 items-start">
                 {isUnserved ? <AlertTriangle className="w-4 h-4 text-danger mt-0.5 shrink-0" aria-label="Uncovered requirement" /> : <CheckCircle2 className="w-4 h-4 text-success mt-0.5 shrink-0" aria-label="Covered requirement" />}
                 <div className="flex-1 min-w-0">
