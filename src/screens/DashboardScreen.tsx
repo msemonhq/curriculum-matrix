@@ -99,7 +99,7 @@ export default function DashboardScreen() {
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-app-nav">
       <div className="flex items-center justify-between">
-        <div><p className="text-meta text-ink-secondary uppercase tracking-wider">Overview</p><h2 className="text-display text-ink-primary">Your curriculum</h2></div>
+        <div><p className="text-meta text-ink-secondary">Overview</p><h2 className="text-display text-ink-primary">Your curriculum</h2></div>
         <IconButton label="Open settings" onClick={() => setShowSettingsSheet(true)}><Settings className="w-5 h-5" aria-hidden="true" /></IconButton>
       </div>
 
@@ -110,7 +110,7 @@ export default function DashboardScreen() {
               <ArrowRight className="w-5 h-5 text-accent" aria-hidden="true" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-kicker text-accent uppercase tracking-wider">Up next</p>
+              <p className="text-kicker text-accent">Up next</p>
               <h3 className="text-title text-ink-primary mt-1">
                 Phase {nextPhase.number}: {nextPhase.title}
               </h3>
@@ -147,7 +147,7 @@ export default function DashboardScreen() {
             <span className="text-figure text-ink-primary tabular">
               <AnimatedNumber value={progressPercent} suffix="%" />
             </span>
-            <span className="text-kicker text-accent tracking-wider uppercase">Overall progress</span>
+            <span className="text-kicker text-accent">Overall progress</span>
             <span className="text-meta text-ink-tertiary">{completedPhases} of {totalPhases} phases completed</span>
           </div>
         </div>
@@ -222,7 +222,7 @@ export default function DashboardScreen() {
                     <button type="button" className="w-full flex items-center justify-between text-left bg-surface-elevated/40 hover:bg-surface-elevated/60 p-3 rounded-lg border border-warning/10 active:scale-[0.98] transition-transform duration-100" onClick={() => navigate('/curriculum')}>
                       <div className="flex-1 pr-3">
                         <p className="text-meta text-ink-primary font-medium leading-snug">{win.text}</p>
-                        <p className="text-kicker text-warning/80 mt-1 uppercase tracking-wider">Phase {phases.find(p => p.id === win.phaseId)?.number}</p>
+                        <p className="text-kicker text-warning/80 mt-1">Phase {phases.find(p => p.id === win.phaseId)?.number}</p>
                       </div>
                       <div className="w-6 h-6 rounded-full bg-warning/15 flex items-center justify-center shrink-0">
                         <ArrowRight className="w-3.5 h-3.5 text-warning" aria-hidden="true" />

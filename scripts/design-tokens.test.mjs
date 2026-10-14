@@ -234,3 +234,17 @@ test('every single-line text input is at least 44px tall', () => {
   }
   assert.deepEqual(offenders, []);
 });
+
+// ---- sentence case ----
+
+test('labels are sentence case: no caps or wide-tracking utilities', () => {
+  const offenders = [];
+  for (const { name, text } of sources) {
+    text.split('\n').forEach((line, i) => {
+      if (/(?<![\w-])(?:uppercase|lowercase|capitalize|tracking-wide|tracking-wider|tracking-widest)(?![\w-])|text-transform/.test(line)) {
+        offenders.push(`${name}:${i + 1}: ${line.trim().slice(0, 90)}`);
+      }
+    });
+  }
+  assert.deepEqual(offenders, []);
+});

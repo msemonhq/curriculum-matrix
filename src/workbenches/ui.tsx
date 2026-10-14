@@ -3,7 +3,7 @@ import { Trash2 } from 'lucide-react';
 import { IconButton } from '../components/IconButton';
 
 export function SectionHeading({ children }: { children: React.ReactNode }) {
-  return <h4 className="text-meta text-ink-secondary font-semibold uppercase tracking-wider mb-3">{children}</h4>;
+  return <h4 className="text-meta text-ink-secondary font-semibold mb-3">{children}</h4>;
 }
 
 /** Muted explanatory text under a heading. */

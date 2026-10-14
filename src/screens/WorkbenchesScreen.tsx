@@ -122,7 +122,7 @@ export default function WorkbenchesScreen() {
               <div className={`p-3 rounded-xl ${tool.bgColor} mb-3`}>
                 <Icon className={`w-5 h-5 ${tool.accentColor}`} aria-hidden="true" />
               </div>
-              <span className="text-kicker text-ink-tertiary uppercase tracking-wider">{tool.phase}</span>
+              <span className="text-kicker text-ink-tertiary">{tool.phase}</span>
               <h3 className="text-body font-semibold text-ink-primary leading-tight mt-1">{tool.title}</h3>
             </motion.button>
           );

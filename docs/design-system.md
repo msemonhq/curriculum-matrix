@@ -9,7 +9,7 @@ surface for things you can act on. The source of truth for every value below is 
 1. **Say it once.** One title per screen, one primary button per screen, one status per phase.
 2. **Rules over boxes.** A raised surface means "you can type or tap here".
 3. **Color is a unit.** Signal is progress and the action. Clock is time. Brick is destructive or wrong.
-4. **12px is the floor.** Sentence case everywhere; serif only for figures and titles.
+4. **12px is the floor.** Sentence case everywhere (no `uppercase` or wide tracking; the test fails on them); serif only for figures and titles.
 
 ## Colour
 

@@ -11,7 +11,7 @@ export function Badge({ variant = 'default', className = '', children, ...props 
     warning: 'bg-warning-dim text-warning',
     danger:  'bg-danger-dim text-danger',
     accent:  'bg-accent-dim text-accent',
-    phase:   'bg-accent-dim text-accent font-mono tracking-widest uppercase',
+    phase:   'bg-accent-dim text-accent font-mono',
   };
 
   return (

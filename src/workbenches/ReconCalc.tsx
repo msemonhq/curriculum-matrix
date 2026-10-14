@@ -114,7 +114,7 @@ export default function ReconCalc() {
       </ul>
 
       <div className="p-4 mb-5 bg-surface-subtle border border-rule rounded-xl" role="status">
-        <h5 className="text-meta text-ink-secondary font-semibold uppercase tracking-wider mb-2">Week total</h5>
+        <h5 className="text-meta text-ink-secondary font-semibold mb-2">Week total</h5>
         {summary.days === 0 ? (
           <p className="text-body text-ink-secondary">Enter both numbers for at least one day to see the total.</p>
         ) : (

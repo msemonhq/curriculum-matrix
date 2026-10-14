@@ -247,7 +247,7 @@ export default function CurriculumScreen() {
 
                           {/* Target Course */}
                           <div className="mt-3 bg-surface-overlay rounded-xl p-3 border border-rule">
-                            <h4 className="flex items-center gap-2 text-meta text-ink-secondary font-semibold uppercase tracking-wider mb-2">
+                            <h4 className="flex items-center gap-2 text-meta text-ink-secondary font-semibold mb-2">
                               <BookOpen className="w-3.5 h-3.5 text-accent" />
                               Target Course
                             </h4>
@@ -288,7 +288,7 @@ export default function CurriculumScreen() {
                                       <CheckMark isChecked={isChecked} />
                                       <span className={`flex-1 leading-relaxed ${isChecked ? 'text-ink-primary font-medium' : ''}`}>
                                         <span className="block">{mod.title}</span>
-                                        {mod.kind === 'optional' && <span className="block text-kicker uppercase text-ink-tertiary mt-0.5">Optional (not counted in progress)</span>}
+                                        {mod.kind === 'optional' && <span className="block text-kicker text-ink-tertiary mt-0.5">Optional (not counted in progress)</span>}
                                         {mod.description && <span className="block text-ink-tertiary mt-0.5">{mod.description}</span>}
                                       </span>
                                     </button>
@@ -300,7 +300,7 @@ export default function CurriculumScreen() {
 
                           {/* Strategic Application */}
                           <div>
-                            <h4 className="text-meta text-ink-secondary font-semibold uppercase tracking-wider mb-2">
+                            <h4 className="text-meta text-ink-secondary font-semibold mb-2">
                               Strategic Application
                             </h4>
                             <p className="text-body text-ink-primary bg-accent-dim border border-accent/20 p-3 rounded-xl">
