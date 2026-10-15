@@ -15,7 +15,7 @@ import { Sheet } from '../components/Sheet';
 import { useToast } from '../hooks/useToast';
 import { buildBackup } from '../lib/sanitize';
 import { cancelAllReminders } from '../services/reminders';
-import { formatHours } from '../lib/progress';
+import { formatHours, phaseSummary } from '../lib/progress';
 import { useProgress } from '../hooks/useProgress';
 
 function Figure({ value, unit, label, icon, divided }: { value: React.ReactNode; unit?: string; label: string; icon?: React.ReactNode; divided?: boolean }) {
@@ -121,25 +121,25 @@ export default function DashboardScreen() {
 
       {nextPhase ? (
         <Panel padding="large">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-accent-dim flex items-center justify-center shrink-0">
-              <ArrowRight className="w-5 h-5 text-accent" aria-hidden="true" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-kicker text-accent">Up next</p>
-              <h3 className="text-title text-ink-primary mt-1">
-                Phase {nextPhase.number}: {nextPhase.title}
-              </h3>
-              {nextProgress && nextProgress.total > 0 && (
-                <p className="text-meta text-ink-secondary mt-1">
-                  {nextStarted ? `${nextProgress.done} of ${nextProgress.total} modules done` : `${nextProgress.total} modules to go`}
-                </p>
-              )}
-              <Button fullWidth onClick={() => navigate('/curriculum')} className="mt-7">
-                {nextStarted ? 'Continue' : 'Start'} Phase {nextPhase.number} <ArrowRight className="w-4 h-4" aria-hidden="true" />
-              </Button>
-            </div>
-          </div>
+          <p className="text-kicker text-ink-secondary">Up next</p>
+          <h3 className="mt-1 text-title text-ink-primary">
+            <span className="text-ink-secondary">Phase {nextPhase.number}</span> {nextPhase.title}
+          </h3>
+          {nextProgress && (
+            <p className="mt-1 text-meta text-ink-secondary">
+              {phaseSummary({
+                done: nextProgress.done,
+                total: nextProgress.total,
+                started: nextStarted,
+                trackedHours: timeTracking[nextPhase.id] ?? 0,
+                hoursMin: nextPhase.hoursMin,
+                hoursMax: nextPhase.hoursMax,
+              })}
+            </p>
+          )}
+          <Button fullWidth onClick={() => navigate('/curriculum')} className="mt-6">
+            {nextStarted ? 'Continue' : 'Start'} Phase {nextPhase.number} <ArrowRight className="w-4 h-4" aria-hidden="true" />
+          </Button>
         </Panel>
       ) : (
         <Section padding="large">

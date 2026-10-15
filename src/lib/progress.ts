@@ -71,6 +71,30 @@ export function formatHours(min: number, max: number): string {
   return min === max ? `~${trim(max)}h` : `~${trim(min)}–${trim(max)}h`;
 }
 
+export interface PhaseSummaryInput {
+  done: number;
+  total: number;
+  /** In progress, or at least one module ticked. */
+  started: boolean;
+  trackedHours: number;
+  hoursMin: number;
+  hoursMax: number;
+}
+
+/**
+ * The line under a phase title: "2 of 4 modules done · 6h of ~15–18h" once it is under way,
+ * "4 modules to go · ~15–18h" before. Tracked hours show whenever there are some.
+ */
+export function phaseSummary({ done, total, started, trackedHours, hoursMin, hoursMax }: PhaseSummaryInput): string {
+  const noun = total === 1 ? 'module' : 'modules';
+  const budget = formatHours(hoursMin, hoursMax);
+  const tracked = Math.round(trackedHours * 10) / 10;
+  const parts: string[] = [];
+  if (total > 0) parts.push(started ? `${done} of ${total} ${noun} done` : `${total} ${noun} to go`);
+  parts.push(tracked > 0 ? `${trim(tracked)}h of ${budget}` : budget);
+  return parts.join(' · ');
+}
+
 export interface ToggleState extends ProgressInputs {
   activePhaseId: string | null;
 }

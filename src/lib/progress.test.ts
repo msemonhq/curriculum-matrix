@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  formatHours, isModuleChecked, jdReadiness, overallProgress, phaseProgress, toggleModuleUpdate,
+  formatHours, isModuleChecked, jdReadiness, overallProgress, phaseProgress, phaseSummary, toggleModuleUpdate,
 } from './progress.ts';
 import type { PhaseLike, ProgressInputs } from './progress.ts';
 
@@ -124,4 +124,34 @@ test('formatHours writes ranges with an en dash and drops the range when min equ
   assert.equal(formatHours(18, 19), '~18–19h');
   assert.equal(formatHours(87, 92.5), '~87–92.5h');
   assert.equal(formatHours(16, 16), '~16h');
+});
+
+test('phaseSummary: under way shows modules done and tracked hours against the budget', () => {
+  assert.equal(
+    phaseSummary({ done: 2, total: 4, started: true, trackedHours: 6, hoursMin: 15, hoursMax: 18 }),
+    '2 of 4 modules done · 6h of ~15–18h',
+  );
+  assert.equal(
+    phaseSummary({ done: 1, total: 3, started: true, trackedHours: 1.5, hoursMin: 2, hoursMax: 2 }),
+    '1 of 3 modules done · 1.5h of ~2h',
+  );
+});
+
+test('phaseSummary: before the phase starts it counts the modules to go and gives the budget', () => {
+  assert.equal(phaseSummary({ done: 0, total: 4, started: false, trackedHours: 0, hoursMin: 15, hoursMax: 18 }), '4 modules to go · ~15–18h');
+});
+
+test('phaseSummary: no tracked hours gives the budget alone; tiny or invalid hours count as none', () => {
+  assert.equal(phaseSummary({ done: 2, total: 5, started: true, trackedHours: 0, hoursMin: 16, hoursMax: 16 }), '2 of 5 modules done · ~16h');
+  assert.equal(phaseSummary({ done: 2, total: 5, started: true, trackedHours: 0.04, hoursMin: 16, hoursMax: 16 }), '2 of 5 modules done · ~16h');
+  assert.equal(phaseSummary({ done: 2, total: 5, started: true, trackedHours: Number.NaN, hoursMin: 16, hoursMax: 16 }), '2 of 5 modules done · ~16h');
+});
+
+test('phaseSummary: tracked hours round to one decimal and show even before a module is ticked', () => {
+  assert.equal(phaseSummary({ done: 0, total: 5, started: false, trackedHours: 3.46, hoursMin: 4.5, hoursMax: 6 }), '5 modules to go · 3.5h of ~4.5–6h');
+});
+
+test('phaseSummary: singular module, and a phase with no core modules gives only the hours', () => {
+  assert.equal(phaseSummary({ done: 0, total: 1, started: false, trackedHours: 0, hoursMin: 1, hoursMax: 1 }), '1 module to go · ~1h');
+  assert.equal(phaseSummary({ done: 0, total: 0, started: true, trackedHours: 2, hoursMin: 3, hoursMax: 4 }), '2h of ~3–4h');
 });
