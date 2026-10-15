@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  formatHours, isModuleChecked, jdReadiness, overallProgress, phaseProgress, phaseSummary, toggleModuleUpdate,
+  formatHours, isModuleChecked, jdReadiness, overallProgress, phaseProgress, phaseRowLine, phaseSummary, toggleModuleUpdate,
 } from './progress.ts';
 import type { PhaseLike, ProgressInputs } from './progress.ts';
 
@@ -154,4 +154,16 @@ test('phaseSummary: tracked hours round to one decimal and show even before a mo
 test('phaseSummary: singular module, and a phase with no core modules gives only the hours', () => {
   assert.equal(phaseSummary({ done: 0, total: 1, started: false, trackedHours: 0, hoursMin: 1, hoursMax: 1 }), '1 module to go · ~1h');
   assert.equal(phaseSummary({ done: 0, total: 0, started: true, trackedHours: 2, hoursMin: 3, hoursMax: 4 }), '2h of ~3–4h');
+});
+
+test('phaseRowLine: a finished phase says Done with the hours actually tracked, or the budget if none', () => {
+  const base = { done: 5, total: 5, started: true, hoursMin: 16, hoursMax: 16 };
+  assert.equal(phaseRowLine('completed', { ...base, trackedHours: 9.25 }), 'Done · 9.3h');
+  assert.equal(phaseRowLine('completed', { ...base, trackedHours: 0 }), 'Done · ~16h');
+});
+
+test('phaseRowLine: in progress leads with the status; not started is the plain summary', () => {
+  const input = { done: 2, total: 5, started: true, trackedHours: 3, hoursMin: 16, hoursMax: 16 };
+  assert.equal(phaseRowLine('in_progress', input), 'In progress · 2 of 5 modules done · 3h of ~16h');
+  assert.equal(phaseRowLine('not_started', { ...input, done: 0, started: false, trackedHours: 0 }), '5 modules to go · ~16h');
 });

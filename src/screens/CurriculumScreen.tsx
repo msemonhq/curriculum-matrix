@@ -3,16 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { phases } from '../data/curriculum';
 import { useProgressStore } from '../hooks/useProgressStore';
 import { useProgress } from '../hooks/useProgress';
-import { formatHours, isModuleChecked } from '../lib/progress';
+import { isModuleChecked, phaseRowLine } from '../lib/progress';
 import type { PhaseStatus } from '../types';
 import {
-  ChevronDown, BookOpen, Clock, Target, FileCheck,
-  Circle, CheckCircle2, PlayCircle, TestTube, Search,
+  ChevronDown, BookOpen, FileCheck, Check,
+  CheckCircle2, TestTube, Search,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EmptyState } from '../components/EmptyState';
-import { Badge } from '../components/Badge';
-import { ProgressBar } from '../components/ProgressBar';
+import { Panel } from '../components/Panel';
 import { Button } from '../components/Button';
 import { ReminderControl } from '../components/ReminderControl';
 
@@ -72,6 +71,25 @@ function CheckMark({ isChecked }: { isChecked: boolean }) {
   );
 }
 
+/** The phase's one status mark: solid when done, a ringed dot while under way, hollow before. Filled with the page colour so the spine never shows through it. */
+function PhaseNode({ status }: { status: PhaseStatus }) {
+  if (status === 'completed') {
+    return (
+      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent" aria-hidden="true">
+        <Check className="h-3.5 w-3.5 text-surface-base" strokeWidth={3} />
+      </span>
+    );
+  }
+  if (status === 'in_progress') {
+    return (
+      <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-accent bg-surface-base" aria-hidden="true">
+        <span className="h-2 w-2 rounded-full bg-accent" />
+      </span>
+    );
+  }
+  return <span className="h-6 w-6 rounded-full border-2 border-edge bg-surface-base" aria-hidden="true" />;
+}
+
 const STATUS_LABEL: Record<PhaseStatus, string> = {
   not_started: 'not started',
   in_progress: 'in progress',
@@ -108,14 +126,6 @@ export default function CurriculumScreen() {
       return matchesSearch && matchesFilter;
     });
   }, [searchQuery, statusFilter, phaseStatus]);
-
-  const getStatusIcon = (status: string | undefined) => {
-    switch (status) {
-      case 'completed':  return <CheckCircle2 className="text-success w-6 h-6" aria-hidden="true" />;
-      case 'in_progress': return <PlayCircle className="text-accent w-6 h-6" aria-hidden="true" />;
-      default:            return <Circle className="text-ink-tertiary w-6 h-6" aria-hidden="true" />;
-    }
-  };
 
   return (
     <div className="flex flex-col h-full">
@@ -163,80 +173,65 @@ export default function CurriculumScreen() {
           </div>
         )}
 
-        <motion.div variants={staggerContainer} initial="hidden" animate="show" className="space-y-3">
-          {filteredPhases.map((phase) => {
+        <motion.ol variants={staggerContainer} initial="hidden" animate="show">
+          {filteredPhases.map((phase, index) => {
             const isExpanded    = expandedId === phase.id;
             const status        = phaseStatus[phase.id] || 'not_started';
             const deliverableDone = deliverables[phase.id] || false;
             const toolId        = phase.workbenchId;
             const timeLogged    = timeTracking[phase.id] || 0;
             const note          = notes[phase.id] || '';
-            const timePercent   = phase.hoursMax > 0 ? Math.min((timeLogged / phase.hoursMax) * 100, 100) : 0;
             const moduleProgress = byPhase[phase.id];
+            const above         = index > 0 ? filteredPhases[index - 1] : null;
+            const rowLine       = phaseRowLine(status, {
+              done: moduleProgress.done,
+              total: moduleProgress.total,
+              started: status === 'in_progress' || moduleProgress.done > 0,
+              trackedHours: timeLogged,
+              hoursMin: phase.hoursMin,
+              hoursMax: phase.hoursMax,
+            });
 
             return (
-              <motion.div key={phase.id} variants={staggerItem}>
-                {/* Phase card */}
-                <div className="bg-surface-elevated border border-rule rounded-2xl overflow-hidden shadow-surface">
+              <motion.li key={phase.id} id={`phase-${phase.id}`} variants={staggerItem} className="relative flex scroll-mt-40">
+                {/* The spine: a hairline through the nodes, Signal below a finished phase. Drawn before the node so the node sits on top. */}
+                {above && <span aria-hidden="true" className={`absolute left-6 top-0 h-[22px] w-px ${phaseStatus[above.id] === 'completed' ? 'bg-accent' : 'bg-rule'}`} />}
+                {index < filteredPhases.length - 1 && <span aria-hidden="true" className={`absolute bottom-0 left-6 top-[22px] w-px ${status === 'completed' ? 'bg-accent' : 'bg-rule'}`} />}
 
-                  {/* Phase header row */}
-                  <div
-                    className="p-4 flex items-center gap-3 cursor-pointer active:bg-surface-subtle transition-colors"
-                    onClick={() => setExpandedId(isExpanded ? null : phase.id)}
+                <div className="relative flex w-12 shrink-0 items-start justify-center">
+                  {/* Status: a real button so it can be focused and is announced with its state */}
+                  <motion.button
+                    type="button"
+                    whileTap={{ scale: 0.8 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                    aria-label={`Phase ${phase.number} status: ${STATUS_LABEL[status]}, tap to change`}
+                    className="flex min-h-11 min-w-11 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
+                    onClick={() => setPhaseStatus(phase.id, STATUS_CYCLE[status] || 'not_started')}
                   >
-                    {/* Status: a real button so it can be focused and is announced with its state */}
-                    <motion.button
+                    <PhaseNode status={status} />
+                  </motion.button>
+                </div>
+
+                <div className="min-w-0 flex-1 pb-6">
+                  <h3>
+                    <button
                       type="button"
-                      whileTap={{ scale: 0.8 }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                      aria-label={`Phase ${phase.number} status: ${STATUS_LABEL[status]}, tap to change`}
-                      className="-mx-2.5 -my-2 flex min-h-11 min-w-11 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPhaseStatus(phase.id, STATUS_CYCLE[status] || 'not_started');
-                      }}
+                      aria-expanded={isExpanded}
+                      onClick={() => setExpandedId(isExpanded ? null : phase.id)}
+                      className="flex min-h-11 w-full items-start gap-3 rounded-xl py-2.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
                     >
-                      {getStatusIcon(status)}
-                    </motion.button>
-
-                    <div className="flex-1 min-w-0">
-                      {/* Phase number badge */}
-                      <Badge variant="phase" className="mb-1">
-                        Phase {String(phase.number).padStart(2, '0')}
-                      </Badge>
-                      <h3 className="text-title text-ink-primary leading-tight break-words">{phase.title}</h3>
-
-                      {/* Meta row */}
-                      <div className="flex items-center gap-3 mt-1.5 text-meta text-ink-tertiary">
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {formatHours(phase.hoursMin, phase.hoursMax)}
+                      <span className="min-w-0 flex-1">
+                        <span className="block break-words text-title leading-tight text-ink-primary">
+                          <span className="text-ink-secondary">Phase {phase.number}</span> {phase.title}
                         </span>
-                        <span className="flex items-center gap-1">
-                          <FileCheck className="w-3 h-3" aria-hidden="true" />
-                          {moduleProgress.done}/{moduleProgress.total} modules
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Target className="w-3 h-3" />
-                          {phase.jdLinesServed.join(', ')}
-                        </span>
-                      </div>
-
-                      {/* Inline time progress bar */}
-                      {timeLogged > 0 && (
-                        <div className="mt-2">
-                          <ProgressBar progress={timePercent} height="thin" />
-                        </div>
-                      )}
-                    </div>
-
-                    <motion.div
-                      animate={{ rotate: isExpanded ? 180 : 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ChevronDown className="text-ink-tertiary w-4 h-4" />
-                    </motion.div>
-                  </div>
+                        <span className="mt-1 block text-meta text-ink-secondary">{rowLine}</span>
+                        <span className="mt-0.5 block text-meta text-ink-tertiary">Serves <span className="font-mono">{phase.jdLinesServed.join(', ')}</span></span>
+                      </span>
+                      <motion.span className="mt-1.5 flex shrink-0" animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                        <ChevronDown className="h-4 w-4 text-ink-tertiary" aria-hidden="true" />
+                      </motion.span>
+                    </button>
+                  </h3>
 
                   {/* Expanded detail */}
                   <AnimatePresence>
@@ -248,7 +243,7 @@ export default function CurriculumScreen() {
                         transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
                         className="overflow-hidden"
                       >
-                        <div className="px-4 pb-4 pt-1 border-t border-rule bg-surface-subtle/50 space-y-4">
+                        <Panel className="mt-1 space-y-4">
 
                           {/* Target Course */}
                           <div className="mt-3 bg-surface-overlay rounded-xl p-3 border border-rule">
@@ -389,15 +384,15 @@ export default function CurriculumScreen() {
                               Open Workbench
                             </Button>
                           )}
-                        </div>
+                        </Panel>
                       </motion.div>
                     )}
                   </AnimatePresence>
                 </div>
-              </motion.div>
+              </motion.li>
             );
           })}
-        </motion.div>
+        </motion.ol>
       </div>
       </div>
     </div>

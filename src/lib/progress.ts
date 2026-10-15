@@ -95,6 +95,20 @@ export function phaseSummary({ done, total, started, trackedHours, hoursMin, hou
   return parts.join(' · ');
 }
 
+/**
+ * The line under a phase title on the Roadmap: "Done · 5.5h" once finished (tracked hours if any,
+ * otherwise the budget), "In progress · 2 of 5 modules done · 3h of ~16h" while under way, and the
+ * plain summary before that.
+ */
+export function phaseRowLine(status: PhaseStatus, input: PhaseSummaryInput): string {
+  if (status === 'completed') {
+    const tracked = Math.round(input.trackedHours * 10) / 10;
+    return `Done · ${tracked > 0 ? `${trim(tracked)}h` : formatHours(input.hoursMin, input.hoursMax)}`;
+  }
+  const summary = phaseSummary(input);
+  return status === 'in_progress' ? `In progress · ${summary}` : summary;
+}
+
 export interface ToggleState extends ProgressInputs {
   activePhaseId: string | null;
 }
