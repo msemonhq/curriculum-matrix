@@ -40,6 +40,11 @@ export default function DashboardScreen() {
   const [showResetSheet, setShowResetSheet] = useState(false);
   const [winsExpanded, setWinsExpanded] = useState(false);
 
+  // The greeting is the screen's one title; the header above only carries the app name.
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const name = displayName.trim();
+
   const completedPhases = phases.filter(phase => phaseStatus[phase.id] === 'completed').length;
   const completedDeliverables = Object.values(deliverables).filter(Boolean).length;
   const totalPhases = phases.length;
@@ -98,9 +103,9 @@ export default function DashboardScreen() {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-app-nav">
-      <div className="flex items-center justify-between">
-        <div><p className="text-meta text-ink-secondary">Overview</p><h2 className="text-display text-ink-primary">Your curriculum</h2></div>
-        <IconButton label="Open settings" onClick={() => setShowSettingsSheet(true)}><Settings className="w-5 h-5" aria-hidden="true" /></IconButton>
+      <div className="flex items-start justify-between gap-2">
+        <h2 className="min-w-0 break-words text-display text-ink-primary">{greeting}{name ? `, ${name}` : ''}</h2>
+        <IconButton className="-mr-3 shrink-0" label="Open settings" onClick={() => setShowSettingsSheet(true)}><Settings className="w-5 h-5" aria-hidden="true" /></IconButton>
       </div>
 
       {nextPhase ? (

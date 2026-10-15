@@ -1,9 +1,7 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { App as CapacitorApp } from '@capacitor/app';
-import { useProgressStore } from './hooks/useProgressStore';
 import { ToastProvider } from './components/ToastProvider';
-import { phases } from './data/curriculum';
 import { LayoutDashboard, Map, TestTube, Target } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import DashboardScreen from './screens/DashboardScreen';
@@ -54,35 +52,15 @@ function MainApp() {
   const activeTab = getActiveTab();
   const tabs = [{ id: 'dashboard', path: '/', label: 'Dashboard', icon: LayoutDashboard }, { id: 'curriculum', path: '/curriculum', label: 'Roadmap', icon: Map }, { id: 'workbenches', path: '/workbenches', label: 'Workbenches', icon: TestTube }, { id: 'audit', path: '/audit', label: 'Audit', icon: Target }];
   const isInsideTool = location.pathname.startsWith('/workbenches/') && location.pathname.length > '/workbenches/'.length;
-  const phaseStatus = useProgressStore(state => state.phaseStatus);
-  const activePhaseId = useProgressStore(state => state.activePhaseId);
-  const displayName = useProgressStore(state => state.displayName).trim();
-  const isOpen = (id: string) => (phaseStatus[id] || 'not_started') !== 'completed';
-  // The phase being worked on if one is marked active, otherwise the first unfinished phase.
-  const currentPhase = phases.find(phase => phase.id === activePhaseId && isOpen(phase.id)) || phases.find(phase => isOpen(phase.id));
-  const contextStatus = currentPhase
-    ? `Phase ${currentPhase.number}: ${phaseStatus[currentPhase.id] === 'in_progress' ? 'In progress' : 'Not started'}`
-    : 'Curriculum Complete';
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
   
   React.useEffect(() => { if (mainRef.current) mainRef.current.scrollTop = 0; }, [location.pathname]);
 
   return (
     <div className="flex flex-col h-screen bg-surface-base overflow-hidden text-ink-primary pb-safe">
       <header className="w-full z-20 pt-safe-top">
-        <div className="px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <MatrixLogo activeTab={activeTab} />
-            <div className="flex flex-col justify-center">
-              <span className="text-meta text-ink-tertiary leading-none mb-1.5">
-                {greeting}
-                {displayName ? `, ${displayName}` : ''} 👋🏽
-              </span>
-              <span className="text-title text-ink-primary leading-none">{contextStatus}</span>
-            </div>
-          </div>
-          <div className="w-2 h-2 rounded-full bg-accent shrink-0" aria-hidden="true" />
+        <div className="px-4 py-4 flex items-center gap-3">
+          <MatrixLogo activeTab={activeTab} />
+          <span className="text-meta text-ink-secondary">Rokomari BSPR</span>
         </div>
       </header>
       <main ref={mainRef} className="flex-1 overflow-y-auto scroll-smooth relative">
