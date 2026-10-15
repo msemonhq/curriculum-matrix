@@ -84,3 +84,9 @@ A workbench is recognised by its phase number and one line icon in Folio (`text-
 registry (`src/workbenches/registry.ts`) carries no colour fields, so a tool can never bring its own hue, and a colour
 keeps one meaning (Signal is progress, Clock is time, Brick is wrong).
 
+## Not yet converted (planned for P2)
+
+P1 changes the tokens, type and shared components. These screens still use their own boxes and need the P2 layouts:
+the Dashboard ring, icon tiles and Quick wins block (which borrows `warning`, so Clock still appears outside time until
+it is redesigned); the Roadmap phase cards and their `shadow-surface`; the Workbench tiles; the Audit donut and line cards.
+
