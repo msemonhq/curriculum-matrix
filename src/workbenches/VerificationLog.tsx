@@ -34,7 +34,7 @@ export default function VerificationLog() {
       </Hint>
 
       <div className="mb-5" role="status">
-        <div className="flex items-baseline justify-between mb-2">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 mb-2">
           <span className="text-body font-semibold text-ink-primary tabular">
             {counts.total} of {REQUIRED_CLAIMS} claims logged
           </span>

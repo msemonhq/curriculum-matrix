@@ -35,7 +35,7 @@ export default function WorkbenchesScreen() {
     return (
       <div className="flex flex-col h-full bg-surface-base">
         {/* Tool header */}
-        <header className="w-full bg-surface-elevated/85 backdrop-blur-md border-b border-rule border-t-0 border-x-0 rounded-b-3xl shadow-surface-lg safe-top px-5 py-3.5 flex items-center gap-3">
+        <header className="w-full bg-surface-elevated/85 backdrop-blur-md border-b border-rule border-t-0 border-x-0 rounded-b-3xl shadow-surface-lg px-5 py-3.5 flex items-center gap-3">
           <motion.button
             type="button"
             aria-label="Back to workbenches"

@@ -59,9 +59,9 @@ export default function FormulaSheet() {
         <ul className="space-y-3">
           {results.map((entry) => (
             <li key={entry.id} className="p-3 bg-surface-subtle border border-rule rounded-xl">
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <div className="flex items-center gap-2 min-w-0">
-                  <h5 className="text-body font-semibold text-ink-primary truncate">{entry.name}</h5>
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex flex-col items-start gap-1 min-w-0">
+                  <h5 className="text-body font-semibold text-ink-primary break-words">{entry.name}</h5>
                   <Badge>{entry.group}</Badge>
                 </div>
                 <Button variant="secondary" aria-label={`Copy ${entry.name}`} onClick={() => handleCopy(entry)} className="shrink-0 !px-3 !py-2">
