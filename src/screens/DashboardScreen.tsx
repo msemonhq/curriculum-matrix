@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProgressStore } from '../hooks/useProgressStore';
 import { phases, priorityWins } from '../data/curriculum';
 import { CheckCircle2, Zap, Clock, Settings, Upload, ChevronDown, ArrowRight, Download, RotateCcw } from 'lucide-react';
-import { motion, animate, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/Button';
+import { HoursStrip } from '../components/HoursStrip';
 import { ImportSheet } from '../components/ImportSheet';
 import { TextInput } from '../components/TextInput';
 import { IconButton } from '../components/IconButton';
@@ -17,22 +18,24 @@ import { cancelAllReminders } from '../services/reminders';
 import { formatHours } from '../lib/progress';
 import { useProgress } from '../hooks/useProgress';
 
-function AnimatedNumber({ value, suffix = '' }: { value: number; suffix?: string }) {
-  const [display, setDisplay] = useState(0);
-  useEffect(() => {
-    const controls = animate(0, value, {
-      duration: 1.0,
-      ease: "linear",
-      onUpdate: (latest) => setDisplay(Math.round(latest))
-    });
-    return () => controls.stop();
-  }, [value]);
-  return <span className="tabular">{display}{suffix}</span>;
+function Figure({ value, unit, label, icon, divided }: { value: React.ReactNode; unit?: string; label: string; icon?: React.ReactNode; divided?: boolean }) {
+  return (
+    <div className={`min-w-0 ${divided ? 'border-l border-rule pl-3' : ''}`}>
+      <div className="flex flex-wrap items-baseline gap-x-1">
+        <span className="text-figure text-ink-primary tabular">{value}</span>
+        {unit && <span className="whitespace-nowrap text-meta text-ink-tertiary">{unit}</span>}
+      </div>
+      <p className="mt-1 flex items-start gap-1.5 text-meta text-ink-secondary">
+        {icon}
+        <span>{label}</span>
+      </p>
+    </div>
+  );
 }
 
 export default function DashboardScreen() {
   const navigate = useNavigate();
-  const { activePhaseId, phaseStatus, deliverables, timeTracking, displayName, setDisplayName, resetProgress } = useProgressStore();
+  const { activePhaseId, phaseStatus, completedModules, deliverables, timeTracking, displayName, setDisplayName, resetProgress } = useProgressStore();
   const { showToast } = useToast();
   const { overall, byPhase } = useProgress();
   const [showImportSheet, setShowImportSheet] = useState(false);
@@ -45,10 +48,9 @@ export default function DashboardScreen() {
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
   const name = displayName.trim();
 
-  const completedPhases = phases.filter(phase => phaseStatus[phase.id] === 'completed').length;
   const completedDeliverables = Object.values(deliverables).filter(Boolean).length;
   const totalPhases = phases.length;
-  // Weighted by each phase's hoursMax, so a 20-hour phase moves the ring more than a 2-hour one.
+  // Weighted by each phase's hoursMax, so a 20-hour phase moves the strip more than a 2-hour one.
   const progressPercent = overall.percent;
   const nextPhase = activePhaseId ? (phases.find(phase => phase.id === activePhaseId && phaseStatus[phase.id] !== 'completed') || phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed')) : phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed');
   // Whether the recommended phase is already under way decides what the card says and offers.
@@ -58,8 +60,6 @@ export default function DashboardScreen() {
   const totalHoursMax = phases.reduce((acc, p) => acc + p.hoursMax, 0);
   const hoursDisplay = formatHours(totalHoursMin, totalHoursMax);
   const totalLogged = Math.round(Object.values(timeTracking).reduce((sum, h) => sum + (h || 0), 0) * 10) / 10;
-  const radius = 42;
-  const circumference = 2 * Math.PI * radius;
 
   const makeBackup = () => {
     const state = useProgressStore.getState();
@@ -104,9 +104,20 @@ export default function DashboardScreen() {
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-app-nav">
       <div className="flex items-start justify-between gap-2">
-        <h2 className="min-w-0 break-words text-display text-ink-primary">{greeting}{name ? `, ${name}` : ''}</h2>
+        <div className="min-w-0">
+          <h2 className="break-words text-display text-ink-primary">{greeting}{name ? `, ${name}` : ''}</h2>
+          <p className="mt-1 text-meta text-ink-secondary">{hoursDisplay} across {totalPhases} phases</p>
+        </div>
         <IconButton className="-mr-3 shrink-0" label="Open settings" onClick={() => setShowSettingsSheet(true)}><Settings className="w-5 h-5" aria-hidden="true" /></IconButton>
       </div>
+
+      <HoursStrip
+        phases={phases}
+        phaseStatus={phaseStatus}
+        completedModules={completedModules}
+        activePhaseId={nextPhase?.id ?? null}
+        timeTracking={timeTracking}
+      />
 
       {nextPhase ? (
         <Panel padding="large">
@@ -142,43 +153,23 @@ export default function DashboardScreen() {
         </Section>
       )}
 
-      <Section padding="large" className="flex items-center justify-center">
-        <div className="relative w-56 h-56 flex items-center justify-center">
-          <svg className="w-full h-full -rotate-90 block" viewBox="0 0 100 100" role="img" aria-label={`${progressPercent}% of curriculum complete`}>
-            <circle cx="50" cy="50" r={radius} fill="transparent" className="text-rule" stroke="currentColor" strokeWidth="7" />
-            <motion.circle cx="50" cy="50" r={radius} fill="transparent" className="text-accent" stroke="currentColor" strokeWidth="7" strokeLinecap="round" strokeDasharray={circumference} initial={{ strokeDashoffset: circumference }} animate={{ strokeDashoffset: circumference - (circumference * progressPercent) / 100 }} transition={{ duration: 1.2 }} />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center space-y-1.5 pt-1">
-            <span className="text-figure text-ink-primary tabular">
-              <AnimatedNumber value={progressPercent} suffix="%" />
-            </span>
-            <span className="text-kicker text-accent">Overall progress</span>
-            <span className="text-meta text-ink-tertiary">{completedPhases} of {totalPhases} phases completed</span>
-          </div>
-        </div>
-      </Section>
-
-      <Section className="grid grid-cols-2 gap-x-6">
-        <div className="min-w-0">
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-figure text-ink-primary tabular">{completedDeliverables}</span>
-            <span className="text-meta text-ink-tertiary">/ {totalPhases}</span>
-          </div>
-          <p className="mt-1 flex items-center gap-1.5 text-meta text-ink-secondary">
-            <CheckCircle2 className="w-4 h-4 shrink-0 text-success" aria-hidden="true" />
-            Deliverables done
-          </p>
-        </div>
-        <div className="min-w-0 border-l border-rule pl-6">
-          <div className="flex flex-wrap items-baseline gap-x-1.5">
-            <span className="text-figure text-ink-primary tabular">{totalLogged}</span>
-            <span className="whitespace-nowrap text-meta text-ink-tertiary">/ {hoursDisplay}</span>
-          </div>
-          <p className="mt-1 flex items-center gap-1.5 text-meta text-ink-secondary">
-            <Clock className="w-4 h-4 shrink-0 text-clock" aria-hidden="true" />
-            Hours logged
-          </p>
-        </div>
+      {/* Columns size to their content (not equal thirds), so 123.5 hours still fits beside the other two. */}
+      <Section className="flex justify-between">
+        <Figure value={`${progressPercent}%`} label="Overall" />
+        <Figure
+          divided
+          value={completedDeliverables}
+          unit={`/ ${totalPhases}`}
+          label="Deliverables"
+          icon={<CheckCircle2 className="mt-px w-4 h-4 shrink-0 text-success" aria-hidden="true" />}
+        />
+        <Figure
+          divided
+          value={totalLogged}
+          unit="h"
+          label="Hours logged"
+          icon={<Clock className="mt-px w-4 h-4 shrink-0 text-clock" aria-hidden="true" />}
+        />
       </Section>
 
       {openWins.length > 0 && (
