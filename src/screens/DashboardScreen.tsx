@@ -8,7 +8,8 @@ import { Button } from '../components/Button';
 import { ImportSheet } from '../components/ImportSheet';
 import { TextInput } from '../components/TextInput';
 import { IconButton } from '../components/IconButton';
-import { Card } from '../components/Card';
+import { Panel } from '../components/Panel';
+import { Section } from '../components/Section';
 import { Sheet } from '../components/Sheet';
 import { useToast } from '../hooks/useToast';
 import { buildBackup } from '../lib/sanitize';
@@ -44,7 +45,6 @@ export default function DashboardScreen() {
   const totalPhases = phases.length;
   // Weighted by each phase's hoursMax, so a 20-hour phase moves the ring more than a 2-hour one.
   const progressPercent = overall.percent;
-  const isComplete = completedPhases === totalPhases;
   const nextPhase = activePhaseId ? (phases.find(phase => phase.id === activePhaseId && phaseStatus[phase.id] !== 'completed') || phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed')) : phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed');
   // Whether the recommended phase is already under way decides what the card says and offers.
   const nextProgress = nextPhase ? byPhase[nextPhase.id] : undefined;
@@ -99,23 +99,23 @@ export default function DashboardScreen() {
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-app-nav">
       <div className="flex items-center justify-between">
-        <div><p className="text-caption text-ink-secondary uppercase tracking-wider">Overview</p><h2 className="text-heading text-ink-primary">Your curriculum</h2></div>
+        <div><p className="text-meta text-ink-secondary">Overview</p><h2 className="text-display text-ink-primary">Your curriculum</h2></div>
         <IconButton label="Open settings" onClick={() => setShowSettingsSheet(true)}><Settings className="w-5 h-5" aria-hidden="true" /></IconButton>
       </div>
 
       {nextPhase ? (
-        <Card variant="glass" padding="large" className="border-accent/30">
+        <Panel padding="large">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-xl bg-accent-dim flex items-center justify-center shrink-0">
               <ArrowRight className="w-5 h-5 text-accent" aria-hidden="true" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-micro text-accent uppercase tracking-wider">Up next</p>
+              <p className="text-kicker text-accent">Up next</p>
               <h3 className="text-title text-ink-primary mt-1">
                 Phase {nextPhase.number}: {nextPhase.title}
               </h3>
               {nextProgress && nextProgress.total > 0 && (
-                <p className="text-caption text-ink-secondary mt-1">
+                <p className="text-meta text-ink-secondary mt-1">
                   {nextStarted ? `${nextProgress.done} of ${nextProgress.total} modules done` : `${nextProgress.total} modules to go`}
                 </p>
               )}
@@ -124,57 +124,57 @@ export default function DashboardScreen() {
               </Button>
             </div>
           </div>
-        </Card>
+        </Panel>
       ) : (
-        <Card variant="glass" padding="large" className="border-success/30">
+        <Section padding="large">
           <div className="flex items-center gap-3">
             <CheckCircle2 className="w-8 h-8 text-success" aria-hidden="true" />
             <div>
               <h3 className="text-title text-ink-primary">Curriculum complete</h3>
-              <p className="text-caption text-ink-secondary">You have completed every phase.</p>
+              <p className="text-meta text-ink-secondary">You have completed every phase.</p>
             </div>
           </div>
-        </Card>
+        </Section>
       )}
 
-      <Card padding="none" glow={isComplete} className="flex items-center justify-center py-8">
+      <Section padding="large" className="flex items-center justify-center">
         <div className="relative w-56 h-56 flex items-center justify-center">
           <svg className="w-full h-full -rotate-90 block" viewBox="0 0 100 100" role="img" aria-label={`${progressPercent}% of curriculum complete`}>
-            <circle cx="50" cy="50" r={radius} fill="transparent" className="text-[#00D4FF]/[0.06]" stroke="currentColor" strokeWidth="7" />
+            <circle cx="50" cy="50" r={radius} fill="transparent" className="text-rule" stroke="currentColor" strokeWidth="7" />
             <motion.circle cx="50" cy="50" r={radius} fill="transparent" className="text-accent" stroke="currentColor" strokeWidth="7" strokeLinecap="round" strokeDasharray={circumference} initial={{ strokeDashoffset: circumference }} animate={{ strokeDashoffset: circumference - (circumference * progressPercent) / 100 }} transition={{ duration: 1.2 }} />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center space-y-1.5 pt-1">
-            <span className="text-[36px] font-extrabold text-white tabular leading-none">
+            <span className="text-figure text-ink-primary tabular">
               <AnimatedNumber value={progressPercent} suffix="%" />
             </span>
-            <span className="text-[12px] font-bold text-accent tracking-[0.12em] uppercase">Overall progress</span>
-            <span className="text-[12px] font-normal text-ink-tertiary">{completedPhases} of {totalPhases} phases completed</span>
+            <span className="text-kicker text-accent">Overall progress</span>
+            <span className="text-meta text-ink-tertiary">{completedPhases} of {totalPhases} phases completed</span>
           </div>
         </div>
-      </Card>
+      </Section>
 
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="flex flex-col gap-3">
-          <div className="w-9 h-9 rounded-xl bg-success-dim flex items-center justify-center">
-            <CheckCircle2 className="text-success w-5 h-5" aria-hidden="true" />
-          </div>
+      <Section className="grid grid-cols-2 gap-x-6">
+        <div className="min-w-0">
           <div className="flex items-baseline gap-1.5">
-            <span className="text-[28px] font-bold text-white tabular leading-none">{completedDeliverables}</span>
-            <span className="text-[12px] font-normal text-ink-tertiary">/ {totalPhases}</span>
+            <span className="text-figure text-ink-primary tabular">{completedDeliverables}</span>
+            <span className="text-meta text-ink-tertiary">/ {totalPhases}</span>
           </div>
-          <span className="text-[13px] font-medium text-ink-secondary">Deliverables done</span>
-        </Card>
-        <Card className="flex flex-col gap-3">
-          <div className="w-9 h-9 rounded-xl bg-warning-dim flex items-center justify-center">
-            <Clock className="text-warning w-5 h-5" aria-hidden="true" />
+          <p className="mt-1 flex items-center gap-1.5 text-meta text-ink-secondary">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-success" aria-hidden="true" />
+            Deliverables done
+          </p>
+        </div>
+        <div className="min-w-0 border-l border-rule pl-6">
+          <div className="flex flex-wrap items-baseline gap-x-1.5">
+            <span className="text-figure text-ink-primary tabular">{totalLogged}</span>
+            <span className="whitespace-nowrap text-meta text-ink-tertiary">/ {hoursDisplay}</span>
           </div>
-          <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
-            <span className="text-[28px] font-bold text-white tabular leading-none">{totalLogged}</span>
-            <span className="whitespace-nowrap text-[12px] font-normal text-ink-tertiary">/ {hoursDisplay}</span>
-          </div>
-          <span className="text-[13px] font-medium text-ink-secondary">Hours logged</span>
-        </Card>
-      </div>
+          <p className="mt-1 flex items-center gap-1.5 text-meta text-ink-secondary">
+            <Clock className="w-4 h-4 shrink-0 text-clock" aria-hidden="true" />
+            Hours logged
+          </p>
+        </div>
+      </Section>
 
       {openWins.length > 0 && (
       <div className="bg-warning-dim border border-warning/25 rounded-2xl overflow-hidden">
@@ -221,8 +221,8 @@ export default function DashboardScreen() {
                   >
                     <button type="button" className="w-full flex items-center justify-between text-left bg-surface-elevated/40 hover:bg-surface-elevated/60 p-3 rounded-lg border border-warning/10 active:scale-[0.98] transition-transform duration-100" onClick={() => navigate('/curriculum')}>
                       <div className="flex-1 pr-3">
-                        <p className="text-caption text-ink-primary font-medium leading-snug">{win.text}</p>
-                        <p className="text-micro text-warning/80 mt-1 uppercase tracking-wider">Phase {phases.find(p => p.id === win.phaseId)?.number}</p>
+                        <p className="text-meta text-ink-primary font-medium leading-snug">{win.text}</p>
+                        <p className="text-kicker text-warning/80 mt-1">Phase {phases.find(p => p.id === win.phaseId)?.number}</p>
                       </div>
                       <div className="w-6 h-6 rounded-full bg-warning/15 flex items-center justify-center shrink-0">
                         <ArrowRight className="w-3.5 h-3.5 text-warning" aria-hidden="true" />
@@ -267,14 +267,14 @@ export default function DashboardScreen() {
           </Button>
           <div className="p-4 mt-4 bg-danger-dim border border-danger/25 rounded-xl">
             <h4 className="text-body font-semibold text-danger mb-1">Danger zone</h4>
-            <p className="text-caption text-ink-secondary mb-3">
+            <p className="text-meta text-ink-secondary mb-3">
               Permanently deletes all progress, tracked hours, and workbench data.
             </p>
             <Button variant="danger" fullWidth onClick={() => setShowResetSheet(true)}>
               <RotateCcw className="w-4 h-4" aria-hidden="true" /> Reset all progress
             </Button>
           </div>
-          <p className="pt-2 text-center text-caption text-ink-secondary">BSPR Curriculum v{__APP_VERSION__}</p>
+          <p className="pt-2 text-center text-meta text-ink-secondary">BSPR Curriculum v{__APP_VERSION__}</p>
         </div>
       </Sheet>
       <Sheet isOpen={showResetSheet} onClose={() => setShowResetSheet(false)} title="Reset all progress?">
@@ -283,7 +283,7 @@ export default function DashboardScreen() {
             This permanently deletes your phases, deliverables, notes, hours, and workbench data. This cannot be undone.
           </p>
           <div className="flex gap-3">
-            <Button variant="ghost" fullWidth onClick={() => setShowResetSheet(false)}>
+            <Button variant="text" fullWidth onClick={() => setShowResetSheet(false)}>
               Cancel
             </Button>
             <Button variant="danger" fullWidth onClick={handleReset}>

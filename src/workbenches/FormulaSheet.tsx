@@ -44,33 +44,33 @@ export default function FormulaSheet() {
             type="button"
             aria-pressed={group === choice}
             onClick={() => setGroup(choice)}
-            className={`min-h-11 shrink-0 px-4 rounded-xl border text-caption font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 ${group === choice ? 'bg-accent-dim border-accent/50 text-accent' : 'bg-transparent border-line text-ink-secondary hover:text-ink-primary'}`}
+            className={`min-h-11 shrink-0 px-4 rounded-xl border text-meta font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 ${group === choice ? 'bg-accent-dim border-accent/50 text-accent' : 'bg-transparent border-edge text-ink-secondary hover:text-ink-primary'}`}
           >
             {choice}
           </button>
         ))}
       </div>
 
-      <p role="status" className="mb-3 text-caption text-ink-secondary tabular">{results.length} of {FORMULAS.length} shown</p>
+      <p role="status" className="mb-3 text-meta text-ink-secondary tabular">{results.length} of {FORMULAS.length} shown</p>
 
       {results.length === 0 ? (
-        <div className="p-4 border border-dashed border-line rounded-xl text-body text-ink-secondary">No formula matches that search. Try a shorter word, or choose All.</div>
+        <div className="p-4 border border-dashed border-rule rounded-xl text-body text-ink-secondary">No formula matches that search. Try a shorter word, or choose All.</div>
       ) : (
         <ul className="space-y-3">
           {results.map((entry) => (
-            <li key={entry.id} className="p-3 bg-surface-subtle border border-line rounded-xl">
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <div className="flex items-center gap-2 min-w-0">
-                  <h5 className="text-body font-semibold text-ink-primary truncate">{entry.name}</h5>
+            <li key={entry.id} className="p-3 bg-surface-subtle border border-rule rounded-xl">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex flex-col items-start gap-1 min-w-0">
+                  <h5 className="text-body font-semibold text-ink-primary break-words">{entry.name}</h5>
                   <Badge>{entry.group}</Badge>
                 </div>
                 <Button variant="secondary" aria-label={`Copy ${entry.name}`} onClick={() => handleCopy(entry)} className="shrink-0 !px-3 !py-2">
                   <Copy className="w-4 h-4" aria-hidden="true" /> Copy
                 </Button>
               </div>
-              <code className="block p-2.5 mb-2 bg-surface-base border border-line rounded-lg font-mono text-caption text-success whitespace-pre-wrap break-words">{entry.formula}</code>
-              <p className="text-caption text-ink-secondary">{entry.note}</p>
-              {entry.excel && <p className="mt-1.5 text-caption text-ink-secondary"><span className="font-semibold text-ink-primary">In Excel: </span>{entry.excel}</p>}
+              <code className="block p-2.5 mb-2 bg-surface-base border border-rule rounded-lg font-mono text-meta text-success whitespace-pre-wrap break-words">{entry.formula}</code>
+              <p className="text-meta text-ink-secondary">{entry.note}</p>
+              {entry.excel && <p className="mt-1.5 text-meta text-ink-secondary"><span className="font-semibold text-ink-primary">In Excel: </span>{entry.excel}</p>}
             </li>
           ))}
         </ul>

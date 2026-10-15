@@ -4,17 +4,25 @@
 
 /* Fonts ship with the app (see src/assets/fonts/README.md): same look offline, no third-party request at launch. */
 @font-face {
-  font-family: 'Geist';
-  src: url('./assets/fonts/Geist-Variable.woff2') format('woff2');
+  font-family: 'Newsreader';
+  src: url('./assets/fonts/Newsreader-Variable.woff2') format('woff2');
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Hanken Grotesk';
+  src: url('./assets/fonts/HankenGrotesk-Variable.woff2') format('woff2');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Geist Mono';
-  src: url('./assets/fonts/GeistMono-Variable.woff2') format('woff2');
-  font-weight: 100 900;
+  font-family: 'JetBrains Mono';
+  src: url('./assets/fonts/JetBrainsMono-Variable.woff2') format('woff2');
+  font-weight: 100 800;
   font-style: normal;
   font-display: swap;
 }
@@ -29,15 +37,6 @@
 
   :root {
     color-scheme: dark;
-    --bg-base: #0B0D10;
-    --bg-elevated: #16171E;
-    --bg-overlay: #1f1f23;
-    --bg-subtle: #27272a;
-    --accent: #00c4db;
-    --accent-dim: rgba(0,196,219,0.15);
-    --text-primary: #fafafa;
-    --text-secondary: #a1a1aa;
-    --border: rgba(255, 255, 255, 0.05);
   }
 
   body {
@@ -77,19 +76,19 @@
   }
 }
 
+@layer components {
+  /* The three serif roles pick their face here, so a size class alone is enough at the call site. */
+  .text-display,
+  .text-figure,
+  .text-title {
+    font-family: theme('fontFamily.serif');
+  }
+}
+
 @layer utilities {
   .safe-top { padding-top: env(safe-area-inset-top); }
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
   .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
-
-  .glass {
-    @apply bg-surface-elevated/80 backdrop-blur-md border border-line;
-  }
-
-  .accent-border-top {
-    border-top: 1px solid;
-    border-image: linear-gradient(90deg, transparent, #00c4db, transparent) 1;
-  }
 
   .tabular {
     font-feature-settings: 'tnum' 1;

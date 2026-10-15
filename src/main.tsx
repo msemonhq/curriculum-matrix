@@ -27,11 +27,11 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     if (this.state.hasError) {
       return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-surface-base text-ink-primary p-6 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-red-500/15 border border-red-500/30 flex items-center justify-center mb-4 text-red-400 text-2xl font-bold">
+          <div className="w-12 h-12 rounded-2xl bg-danger-dim border border-danger/30 flex items-center justify-center mb-4 text-danger text-title">
             !
           </div>
-          <h2 className="text-xl font-bold mb-2">Something went wrong</h2>
-          <p className="text-sm text-gray-400 mb-6 max-w-sm">
+          <h2 className="text-title mb-2">Something went wrong</h2>
+          <p className="text-body text-ink-secondary mb-6 max-w-sm">
             {this.state.error?.message || 'An unexpected rendering error occurred.'}
           </p>
           <div className="flex gap-3">
@@ -40,13 +40,13 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                 localStorage.clear();
                 window.location.reload();
               }}
-              className="px-4 py-2 text-sm bg-gray-800 border border-gray-700 text-gray-200 rounded-xl hover:bg-gray-700"
+              className="px-4 py-2 text-body bg-surface-subtle border border-edge text-ink-primary rounded-xl hover:bg-surface-overlay"
             >
               Reset Data & Reload
             </button>
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 text-sm bg-[#00c4db] text-black font-semibold rounded-xl hover:bg-[#00c4db]/90"
+              className="px-4 py-2 text-body bg-accent text-surface-base font-semibold rounded-xl hover:bg-accent/90"
             >
               Reload App
             </button>

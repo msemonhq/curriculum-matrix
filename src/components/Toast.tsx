@@ -36,7 +36,7 @@ export function Toast({ message, tone = 'info', onClose, duration = 3200 }: Toas
         type="button"
         onClick={onClose}
         aria-label="Dismiss notification"
-        className="min-h-11 min-w-11 rounded-full p-2 hover:bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"
+        className="min-h-11 min-w-11 rounded-full p-2 hover:bg-ink-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"
       >
         <X className="h-4 w-4" aria-hidden="true" />
       </button>

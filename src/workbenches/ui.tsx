@@ -3,22 +3,22 @@ import { Trash2 } from 'lucide-react';
 import { IconButton } from '../components/IconButton';
 
 export function SectionHeading({ children }: { children: React.ReactNode }) {
-  return <h4 className="text-caption text-ink-secondary font-semibold uppercase tracking-wider mb-3">{children}</h4>;
+  return <h4 className="text-meta text-ink-secondary font-semibold mb-3">{children}</h4>;
 }
 
 /** Muted explanatory text under a heading. */
 export function Hint({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <p className={`text-caption text-ink-secondary ${className}`}>{children}</p>;
+  return <p className={`text-meta text-ink-secondary ${className}`}>{children}</p>;
 }
 
 /** What to do first, shown while a list is still empty. */
 export function EmptyHint({ children }: { children: React.ReactNode }) {
-  return <div className="p-4 mb-3 border border-dashed border-line rounded-xl text-body text-ink-secondary">{children}</div>;
+  return <div className="p-4 mb-3 border border-dashed border-rule rounded-xl text-body text-ink-secondary">{children}</div>;
 }
 
 /** A bordered group inside a tool: one claim, one branch, one day. */
 export function Panel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={`p-3 bg-surface-subtle border border-line rounded-xl ${className}`}>{children}</div>;
+  return <div className={`p-3 bg-surface-subtle border border-rule rounded-xl ${className}`}>{children}</div>;
 }
 
 interface RemoveButtonProps {

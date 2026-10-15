@@ -89,13 +89,13 @@ export function ImportSheet({ isOpen, onClose, onImported }: ImportSheetProps) {
 
   const reviewBody = review && (
     <div className="space-y-4">
-      <div className="flex items-start gap-2 rounded-xl border border-warning/30 bg-warning-dim p-3 text-caption text-warning">
+      <div className="flex items-start gap-2 rounded-xl border border-warning/30 bg-warning-dim p-3 text-meta text-warning">
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
         <p>Importing replaces everything saved on this device. Check the numbers below first.</p>
       </div>
       <table className="w-full text-body">
         <thead>
-          <tr className="text-caption text-ink-secondary">
+          <tr className="text-meta text-ink-secondary">
             <th scope="col" className="py-1 text-left font-medium">Item</th>
             <th scope="col" className="py-1 text-right font-medium">Backup</th>
             <th scope="col" className="py-1 text-right font-medium">Now</th>
@@ -103,7 +103,7 @@ export function ImportSheet({ isOpen, onClose, onImported }: ImportSheetProps) {
         </thead>
         <tbody>
           {ROWS.map(({ key, label }) => (
-            <tr key={key} className="border-t border-line">
+            <tr key={key} className="border-t border-rule">
               <th scope="row" className="py-2 text-left font-normal text-ink-primary">{label}</th>
               <td className="tabular py-2 text-right text-ink-primary">{review.summary[key]}</td>
               <td className="tabular py-2 text-right text-ink-secondary">{review.current[key]}</td>
@@ -112,12 +112,12 @@ export function ImportSheet({ isOpen, onClose, onImported }: ImportSheetProps) {
         </tbody>
       </table>
       {review.sourceVersion < 1 && (
-        <p className="text-caption text-ink-secondary">
+        <p className="text-meta text-ink-secondary">
           This backup is from an older version. Module checkmarks were matched to the updated curriculum.
         </p>
       )}
       <div className="flex gap-3">
-        <Button variant="ghost" fullWidth onClick={() => setReview(null)}>Back</Button>
+        <Button variant="text" fullWidth onClick={() => setReview(null)}>Back</Button>
         <Button variant="danger" fullWidth onClick={handleConfirm}>Replace my progress</Button>
       </div>
     </div>
@@ -125,7 +125,7 @@ export function ImportSheet({ isOpen, onClose, onImported }: ImportSheetProps) {
 
   const inputBody = (
     <div className="space-y-4">
-      <p className="text-caption text-ink-secondary">Choose a backup file, or paste the backup text below.</p>
+      <p className="text-meta text-ink-secondary">Choose a backup file, or paste the backup text below.</p>
       <input
         ref={fileInputRef}
         type="file"
@@ -150,14 +150,14 @@ export function ImportSheet({ isOpen, onClose, onImported }: ImportSheetProps) {
         <button
           type="button"
           onClick={() => { setText(snapshot); runReview(snapshot); }}
-          className="min-h-11 w-full text-left text-caption text-accent underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
+          className="min-h-11 w-full text-left text-meta text-accent underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
         >
           Use the snapshot saved automatically before the 4.0 update
         </button>
       )}
-      {error && <p role="alert" className="text-caption text-danger">{error}</p>}
+      {error && <p role="alert" className="text-meta text-danger">{error}</p>}
       <div className="flex gap-3">
-        <Button variant="ghost" fullWidth onClick={onClose}>Cancel</Button>
+        <Button variant="text" fullWidth onClick={onClose}>Cancel</Button>
         <Button fullWidth onClick={() => runReview(text)}>Review</Button>
       </div>
     </div>

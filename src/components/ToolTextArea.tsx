@@ -11,15 +11,15 @@ export function ToolTextArea({ label, error, id, className = '', ...props }: Too
 
   return (
     <div className="w-full">
-      {label && <label htmlFor={inputId} className="block text-caption text-ink-secondary mb-1.5 font-medium">{label}</label>}
+      {label && <label htmlFor={inputId} className="block text-meta text-ink-secondary mb-1.5 font-medium">{label}</label>}
       <textarea
         {...props}
         id={inputId}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
-        className={`w-full bg-surface-subtle border rounded-xl px-3 py-2.5 text-body text-ink-primary placeholder:text-ink-tertiary transition-colors focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${error ? 'border-danger focus:border-danger focus:ring-danger/30' : 'border-line focus:border-line-focus focus:ring-accent/30'} ${className}`}
+        className={`w-full bg-surface-subtle border rounded-xl px-3 py-2.5 text-body text-ink-primary placeholder:text-ink-tertiary transition-colors focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${error ? 'border-danger focus:border-danger focus:ring-danger/30' : 'border-edge focus:border-accent focus:ring-accent/30'} ${className}`}
       />
-      {error && <p id={errorId} role="alert" className="mt-1.5 text-caption text-danger">{error}</p>}
+      {error && <p id={errorId} role="alert" className="mt-1.5 text-meta text-danger">{error}</p>}
     </div>
   );
 }

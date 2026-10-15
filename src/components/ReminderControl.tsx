@@ -60,8 +60,8 @@ export function ReminderControl({ phaseId, phaseTitle }: ReminderControlProps) {
   const pickedAt = reminderTimeOn(date);
 
   return (
-    <div className="bg-surface-elevated border border-line rounded-xl p-3">
-      <div className="flex items-center gap-2 text-caption text-ink-secondary font-semibold">
+    <div className="bg-surface-elevated border border-rule rounded-xl p-3">
+      <div className="flex items-center gap-2 text-meta text-ink-secondary font-semibold">
         <Bell className="w-3.5 h-3.5" aria-hidden="true" /> Reminder
       </div>
       {active ? (
@@ -72,11 +72,11 @@ export function ReminderControl({ phaseId, phaseTitle }: ReminderControlProps) {
           </p>
           <div className="mt-2 flex gap-2">
             <Button variant="secondary" disabled={busy} onClick={() => setOpen(true)}>Change</Button>
-            <Button variant="ghost" disabled={busy} onClick={cancel}>Cancel reminder</Button>
+            <Button variant="text" disabled={busy} onClick={cancel}>Cancel reminder</Button>
           </div>
         </>
       ) : (
-        <Button variant="ghost" fullWidth className="mt-1 gap-2 text-caption" onClick={() => setOpen(true)}>
+        <Button variant="text" fullWidth className="mt-1 gap-2 text-meta" onClick={() => setOpen(true)}>
           Set a reminder
         </Button>
       )}
@@ -97,7 +97,7 @@ export function ReminderControl({ phaseId, phaseTitle }: ReminderControlProps) {
             </Button>
           )}
           <div>
-            <label htmlFor={`reminder-date-${phaseId}`} className="block text-caption text-ink-secondary mb-1.5 font-medium">
+            <label htmlFor={`reminder-date-${phaseId}`} className="block text-meta text-ink-secondary mb-1.5 font-medium">
               Or pick a date (reminds at 9:00)
             </label>
             <div className="flex gap-2">
@@ -107,7 +107,7 @@ export function ReminderControl({ phaseId, phaseTitle }: ReminderControlProps) {
                 min={toYmd(new Date())}
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="min-h-11 w-full bg-surface-subtle border border-line rounded-xl px-3 py-2.5 text-body text-ink-primary focus:outline-none focus:border-line-focus focus:ring-2 focus:ring-accent/30"
+                className="min-h-11 w-full bg-surface-subtle border border-edge rounded-xl px-3 py-2.5 text-body text-ink-primary focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
               />
               <Button disabled={busy || !pickedAt} onClick={() => pickedAt && set(pickedAt, 'Custom date')}>Set</Button>
             </div>

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -23,7 +23,7 @@ test('the stylesheet does not import anything remote', () => {
 });
 
 test('every @font-face points at a bundled WOFF2 file that exists', () => {
-  assert.ok(fontFaces.length >= 2, 'expected @font-face rules for Geist and Geist Mono');
+  assert.ok(fontFaces.length >= 3, 'expected @font-face rules for Newsreader, Hanken Grotesk and JetBrains Mono');
   for (const face of fontFaces) {
     assert.match(face, /font-display:\s*swap/, 'font-display: swap keeps text visible while a font loads');
     const urls = [...face.matchAll(/url\(\s*["']?([^"')]+)["']?\s*\)/g)].map((m) => m[1]);
@@ -40,11 +40,17 @@ test('every @font-face points at a bundled WOFF2 file that exists', () => {
 test('the families Tailwind asks for first are the ones that are bundled', async () => {
   const config = (await import(pathToFileURL(resolve(root, 'tailwind.config.js')).href)).default;
   const declared = fontFaces.map((face) => /font-family:\s*["']([^"']+)["']/.exec(face)?.[1]);
-  const { sans, mono } = config.theme.extend.fontFamily;
-  assert.ok(declared.includes(sans[0]), `${sans[0]} has no @font-face`);
-  assert.ok(declared.includes(mono[0]), `${mono[0]} has no @font-face`);
+  const { sans, serif, mono } = config.theme.extend.fontFamily;
+  for (const stack of [sans, serif, mono]) assert.ok(declared.includes(stack[0]), `${stack[0]} has no @font-face`);
 });
 
-test('the license ships with the fonts', () => {
-  assert.match(read('src/assets/fonts/OFL.txt'), /SIL OPEN FONT LICENSE/i);
+test('every bundled family ships its license and its provenance', () => {
+  const readme = read('src/assets/fonts/README.md');
+  const files = readdirSync(resolve(root, 'src/assets/fonts'));
+  const families = files.filter((f) => f.endsWith('.woff2')).map((f) => f.replace(/-Variable\.woff2$/, ''));
+  assert.deepEqual(families.sort(), ['HankenGrotesk', 'JetBrainsMono', 'Newsreader']);
+  for (const family of families) {
+    assert.match(read(`src/assets/fonts/OFL-${family}.txt`), /SIL OPEN FONT LICENSE/i, `${family} license`);
+    assert.ok(readme.includes(`${family}-Variable.woff2`), `${family} is not in the README`);
+  }
 });

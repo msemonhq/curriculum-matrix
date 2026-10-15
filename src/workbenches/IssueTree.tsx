@@ -56,7 +56,7 @@ export default function IssueTree() {
 
       <div className="mt-5">
         <SectionHeading>Branches and hypotheses</SectionHeading>
-        {hasSharedRank && <p role="status" className="mb-3 text-caption text-warning">Two hypotheses share the same priority. Give each its own number to rank them.</p>}
+        {hasSharedRank && <p role="status" className="mb-3 text-meta text-warning">Two hypotheses share the same priority. Give each its own number to rank them.</p>}
         {data.branches.length === 0 && <EmptyHint>No branches yet. Add one for each part of the question you want to test.</EmptyHint>}
 
         <ul className="space-y-4 mb-4">
@@ -81,9 +81,9 @@ export default function IssueTree() {
 
                 <ul className="space-y-3">
                   {branch.hypotheses.map((h, hi) => (
-                    <li key={h.id} className="p-3 bg-surface-base border border-line rounded-xl">
+                    <li key={h.id} className="p-3 bg-surface-base border border-rule rounded-xl">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-caption font-semibold text-ink-primary">Hypothesis {bi + 1}.{hi + 1}</span>
+                        <span className="text-meta font-semibold text-ink-primary">Hypothesis {bi + 1}.{hi + 1}</span>
                         <RemoveButton
                           label={`Delete hypothesis ${bi + 1}.${hi + 1}`}
                           needsConfirm={Boolean(h.text.trim() || h.dataSource.trim() || h.method.trim() || h.decisionResult.trim())}
@@ -145,7 +145,7 @@ export default function IssueTree() {
                 </ul>
 
                 <div className="mt-3">
-                  <Button variant="ghost" fullWidth onClick={() => addHypothesis(branch.id)} disabled={branch.hypotheses.length >= MAX_ITEMS}>
+                  <Button variant="text" fullWidth onClick={() => addHypothesis(branch.id)} disabled={branch.hypotheses.length >= MAX_ITEMS}>
                     <Plus className="w-4 h-4" aria-hidden="true" /> Add hypothesis
                   </Button>
                 </div>
@@ -154,7 +154,7 @@ export default function IssueTree() {
           ))}
         </ul>
 
-        <Button variant="outline" fullWidth onClick={addBranch} disabled={data.branches.length >= MAX_ITEMS}>
+        <Button variant="secondary" fullWidth onClick={addBranch} disabled={data.branches.length >= MAX_ITEMS}>
           <Plus className="w-4 h-4" aria-hidden="true" /> Add branch
         </Button>
       </div>

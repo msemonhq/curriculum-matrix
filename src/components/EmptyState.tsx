@@ -11,15 +11,15 @@ export function EmptyState({ title, description, action }: EmptyStateProps) {
     <div className="flex flex-col items-center justify-center text-center py-16 px-8">
       {/* Geometric illustration */}
       <div className="relative mb-6">
-        <div className="w-16 h-16 rounded-2xl bg-surface-subtle border border-line flex items-center justify-center">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <rect x="2" y="2" width="10" height="10" rx="2.5" fill="#00c4db" opacity="0.4"/>
-            <rect x="16" y="2" width="10" height="10" rx="2.5" fill="#00c4db" opacity="0.2"/>
-            <rect x="2" y="16" width="10" height="10" rx="2.5" fill="#00c4db" opacity="0.2"/>
-            <rect x="16" y="16" width="10" height="10" rx="2.5" fill="#00c4db" opacity="0.1"/>
+        <div className="w-16 h-16 rounded-2xl bg-surface-subtle border border-rule flex items-center justify-center">
+          <svg className="text-accent" width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+            <rect x="2" y="2" width="10" height="10" rx="2.5" fill="currentColor" opacity="0.4"/>
+            <rect x="16" y="2" width="10" height="10" rx="2.5" fill="currentColor" opacity="0.2"/>
+            <rect x="2" y="16" width="10" height="10" rx="2.5" fill="currentColor" opacity="0.2"/>
+            <rect x="16" y="16" width="10" height="10" rx="2.5" fill="currentColor" opacity="0.1"/>
           </svg>
         </div>
-        <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-surface-elevated border border-line flex items-center justify-center">
+        <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-surface-elevated border border-rule flex items-center justify-center">
           <div className="w-1.5 h-1.5 rounded-full bg-ink-tertiary" />
         </div>
       </div>

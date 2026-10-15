@@ -34,17 +34,17 @@ export default function VerificationLog() {
       </Hint>
 
       <div className="mb-5" role="status">
-        <div className="flex items-baseline justify-between mb-2">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 mb-2">
           <span className="text-body font-semibold text-ink-primary tabular">
             {counts.total} of {REQUIRED_CLAIMS} claims logged
           </span>
-          <span className="text-caption text-ink-secondary tabular">
+          <span className="text-meta text-ink-secondary tabular">
             {counts.confirmed} confirmed · {counts.unsupported} unsupported · {counts.unchecked} unchecked
           </span>
         </div>
         <ProgressBar progress={(Math.min(counts.total, REQUIRED_CLAIMS) / REQUIRED_CLAIMS) * 100} />
         {counts.total >= REQUIRED_CLAIMS && counts.unchecked === 0 && (
-          <p className="mt-2 text-caption text-success">All claims are checked.</p>
+          <p className="mt-2 text-meta text-success">All claims are checked.</p>
         )}
       </div>
 
@@ -57,7 +57,7 @@ export default function VerificationLog() {
           <li key={c.id}>
             <Panel>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-caption font-semibold text-ink-primary">Claim {i + 1}</span>
+                <span className="text-meta font-semibold text-ink-primary">Claim {i + 1}</span>
                 <RemoveButton
                   label={`Delete claim ${i + 1}`}
                   needsConfirm={Boolean(c.claim.trim() || c.source.trim())}
@@ -89,7 +89,7 @@ export default function VerificationLog() {
                       type="button"
                       aria-pressed={c.status === status}
                       onClick={() => setClaim(c.id, { status })}
-                      className={`min-h-11 rounded-xl border text-caption font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 ${c.status === status ? STATUS_ON[status] : 'bg-transparent border-line text-ink-tertiary hover:text-ink-secondary'}`}
+                      className={`min-h-11 rounded-xl border text-meta font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 ${c.status === status ? STATUS_ON[status] : 'bg-transparent border-edge text-ink-tertiary hover:text-ink-secondary'}`}
                     >
                       {STATUS_LABEL[status]}
                     </button>
@@ -101,7 +101,7 @@ export default function VerificationLog() {
         ))}
       </ul>
 
-      <Button variant="outline" fullWidth onClick={addClaim} disabled={data.claims.length >= MAX_ITEMS}>
+      <Button variant="secondary" fullWidth onClick={addClaim} disabled={data.claims.length >= MAX_ITEMS}>
         <Plus className="w-4 h-4" aria-hidden="true" /> Add claim
       </Button>
     </div>

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 type MotionConflicts = 'onAnimationStart' | 'onDrag' | 'onDragStart' | 'onDragEnd';
 
 interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, MotionConflicts> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'outline' | 'danger';
+  variant?: 'primary' | 'secondary' | 'text' | 'danger';
   fullWidth?: boolean;
   loading?: boolean;
 }
@@ -22,9 +22,8 @@ export function Button({
   const base = 'inline-flex min-h-11 items-center justify-center gap-2 font-semibold rounded-xl py-3 px-5 text-body transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base disabled:cursor-not-allowed disabled:opacity-40';
   const variants = {
     primary: 'bg-accent text-surface-base hover:bg-accent/90 active:bg-accent/80',
-    secondary: 'bg-surface-subtle border border-line text-ink-primary hover:bg-surface-overlay active:bg-surface-overlay',
-    ghost: 'bg-transparent text-ink-secondary hover:text-ink-primary hover:bg-surface-subtle',
-    outline: 'bg-transparent border border-accent text-accent hover:bg-accent-dim active:bg-accent-dim',
+    secondary: 'bg-transparent border border-edge text-ink-primary hover:bg-surface-subtle active:bg-surface-overlay',
+    text: 'bg-transparent text-ink-secondary hover:text-ink-primary hover:bg-surface-subtle',
     danger: 'bg-danger text-surface-base hover:bg-danger/90 active:bg-danger/80',
   };
 

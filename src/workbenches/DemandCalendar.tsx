@@ -60,7 +60,7 @@ export default function DemandCalendar() {
           placeholder="e.g. Ekushey Book Fair opens"
           onChange={(e) => setTitle(e.target.value)}
         />
-        <Button type="submit" variant="outline" fullWidth disabled={data.events.length >= MAX_ITEMS}>
+        <Button type="submit" variant="secondary" fullWidth disabled={data.events.length >= MAX_ITEMS}>
           <Plus className="w-4 h-4" aria-hidden="true" /> Add to calendar
         </Button>
       </form>
@@ -74,7 +74,7 @@ export default function DemandCalendar() {
             const days = daysUntil(e.date, now);
             const past = days !== null && days < 0;
             return (
-              <li key={e.id} className={`p-3 border rounded-xl ${isNext ? 'bg-accent-dim border-accent/60' : 'bg-surface-subtle border-line'} ${past ? 'opacity-70' : ''}`}>
+              <li key={e.id} className={`p-3 border rounded-xl ${isNext ? 'bg-accent-dim border-accent/60' : 'bg-surface-subtle border-rule'} ${past ? 'opacity-70' : ''}`}>
                 {(isNext || past || !e.date) && (
                   <div className="mb-2">
                     {isNext && <Badge variant="accent">Next · {whenText(days)}</Badge>}

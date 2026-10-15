@@ -11,12 +11,12 @@ export function Badge({ variant = 'default', className = '', children, ...props 
     warning: 'bg-warning-dim text-warning',
     danger:  'bg-danger-dim text-danger',
     accent:  'bg-accent-dim text-accent',
-    phase:   'bg-accent-dim text-accent font-mono tracking-widest uppercase',
+    phase:   'bg-accent-dim text-accent font-mono',
   };
 
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-caption font-semibold ${
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-meta font-semibold ${
         variantClasses[variant]
       } ${className}`}
       {...props}

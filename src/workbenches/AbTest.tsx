@@ -74,7 +74,7 @@ export default function AbTest() {
           {size.ok ? (
             <>
               <p className="text-title text-ink-primary tabular">{fmt(size.perArm)} visitors per arm</p>
-              <p className="text-caption text-ink-secondary mt-1 tabular">{fmt(size.total)} in total · 95% confidence, 80% power, two-sided</p>
+              <p className="text-meta text-ink-secondary mt-1 tabular">{fmt(size.total)} in total · 95% confidence, 80% power, two-sided</p>
             </>
           ) : (
             <p className="text-body text-ink-secondary">{size.message}</p>

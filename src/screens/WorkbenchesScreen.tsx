@@ -35,7 +35,7 @@ export default function WorkbenchesScreen() {
     return (
       <div className="flex flex-col h-full bg-surface-base">
         {/* Tool header */}
-        <header className="w-full bg-surface-elevated/85 backdrop-blur-md border-b border-line/60 border-t-0 border-x-0 rounded-b-3xl shadow-surface-lg safe-top px-5 py-3.5 flex items-center gap-3">
+        <header className="w-full bg-surface-elevated/85 backdrop-blur-md border-b border-rule border-t-0 border-x-0 rounded-b-3xl shadow-surface-lg px-5 py-3.5 flex items-center gap-3">
           <motion.button
             type="button"
             aria-label="Back to workbenches"
@@ -47,13 +47,11 @@ export default function WorkbenchesScreen() {
             <ArrowLeft className="w-5 h-5" aria-hidden="true" />
           </motion.button>
 
-          <div className={`p-2 rounded-xl ${activeTool.bgColor} shrink-0`}>
-            <Icon className={`w-5 h-5 ${activeTool.accentColor}`} aria-hidden="true" />
-          </div>
+          <Icon className="w-5 h-5 shrink-0 text-ink-primary" aria-hidden="true" />
 
           <div className="flex-1 min-w-0">
             <h2 className="text-title text-ink-primary truncate">{activeTool.title}</h2>
-            <span className="text-caption text-ink-tertiary">{activeTool.phase} Workbench</span>
+            <span className="text-meta text-ink-tertiary">{activeTool.phase} Workbench</span>
           </div>
 
           {activeTool.share && (
@@ -75,7 +73,7 @@ export default function WorkbenchesScreen() {
           <p className="px-4 pt-4 pb-3 text-body text-ink-secondary">{activeTool.description}</p>
 
           <div className="px-4 pb-28">
-            <div className="bg-surface-elevated border border-line rounded-2xl p-5 shadow-surface">
+            <div className="bg-surface-elevated border border-rule rounded-2xl p-5 shadow-surface">
               <ToolBody />
             </div>
           </div>
@@ -97,7 +95,7 @@ export default function WorkbenchesScreen() {
   return (
     <div className="p-4 pb-28">
       <div className="mb-5">
-        <h2 className="text-heading text-ink-primary">Workbenches</h2>
+        <h2 className="text-display text-ink-primary">Workbenches</h2>
         <p className="text-body text-ink-secondary mt-1">Working tools for each phase.</p>
       </div>
 
@@ -117,12 +115,10 @@ export default function WorkbenchesScreen() {
               whileTap={{ scale: 0.95 }}
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               onClick={() => navigate(`/workbenches/${tool.id}`)}
-              className="bg-surface-elevated border border-line rounded-2xl p-4 flex flex-col items-start text-left shadow-surface hover:border-line/80 hover:-translate-y-px transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
+              className="bg-surface-elevated border border-rule rounded-2xl p-4 flex flex-col items-start text-left shadow-surface hover:border-edge hover:-translate-y-px transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
             >
-              <div className={`p-3 rounded-xl ${tool.bgColor} mb-3`}>
-                <Icon className={`w-5 h-5 ${tool.accentColor}`} aria-hidden="true" />
-              </div>
-              <span className="text-micro text-ink-tertiary uppercase tracking-wider">{tool.phase}</span>
+              <Icon className="w-5 h-5 mb-3 text-ink-primary" aria-hidden="true" />
+              <span className="text-kicker text-ink-tertiary">{tool.phase}</span>
               <h3 className="text-body font-semibold text-ink-primary leading-tight mt-1">{tool.title}</h3>
             </motion.button>
           );
