@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProgressStore } from '../hooks/useProgressStore';
 import { phases, priorityWins } from '../data/curriculum';
-import { CheckCircle2, Zap, Clock, Settings, Upload, ChevronDown, ArrowRight, Download, RotateCcw } from 'lucide-react';
+import { CheckCircle2, Zap, Settings, Upload, ChevronDown, ArrowRight, Download, RotateCcw } from 'lucide-react';
 import { motion, animate, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/Button';
 import { ImportSheet } from '../components/ImportSheet';
@@ -153,28 +153,22 @@ export default function DashboardScreen() {
         </div>
       </Section>
 
-      <div className="grid grid-cols-2 gap-4">
-        <Section className="flex flex-col gap-3">
-          <div className="w-9 h-9 rounded-xl bg-success-dim flex items-center justify-center">
-            <CheckCircle2 className="text-success w-5 h-5" aria-hidden="true" />
-          </div>
+      <Section className="grid grid-cols-2 gap-x-6">
+        <div className="min-w-0">
           <div className="flex items-baseline gap-1.5">
             <span className="text-figure text-ink-primary tabular">{completedDeliverables}</span>
             <span className="text-meta text-ink-tertiary">/ {totalPhases}</span>
           </div>
-          <span className="text-meta font-medium text-ink-secondary">Deliverables done</span>
-        </Section>
-        <Section className="flex flex-col gap-3">
-          <div className="w-9 h-9 rounded-xl bg-clock-dim flex items-center justify-center">
-            <Clock className="text-clock w-5 h-5" aria-hidden="true" />
-          </div>
-          <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
+          <p className="mt-1 text-meta text-ink-secondary">Deliverables done</p>
+        </div>
+        <div className="min-w-0 border-l border-rule pl-6">
+          <div className="flex flex-wrap items-baseline gap-x-1.5">
             <span className="text-figure text-ink-primary tabular">{totalLogged}</span>
             <span className="whitespace-nowrap text-meta text-ink-tertiary">/ {hoursDisplay}</span>
           </div>
-          <span className="text-meta font-medium text-ink-secondary">Hours logged</span>
-        </Section>
-      </div>
+          <p className="mt-1 text-meta text-ink-secondary">Hours logged</p>
+        </div>
+      </Section>
 
       {openWins.length > 0 && (
       <div className="bg-warning-dim border border-warning/25 rounded-2xl overflow-hidden">
