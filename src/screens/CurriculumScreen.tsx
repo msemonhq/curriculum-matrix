@@ -93,7 +93,7 @@ export default function CurriculumScreen() {
 
   const statusFilters = [
     { value: 'all',         label: 'All' },
-    { value: 'not_started', label: 'To Do' },
+    { value: 'not_started', label: 'To do' },
     { value: 'in_progress', label: 'Active' },
     { value: 'completed',   label: 'Done' },
   ];
@@ -119,8 +119,13 @@ export default function CurriculumScreen() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Sticky search + filter bar */}
-      <div className="px-4 pt-3 pb-3 space-y-3 bg-surface-base/80 backdrop-blur-md sticky top-0 z-10 border-b border-rule">
+      <div className="flex-1 overflow-y-auto">
+      <div className="px-4 pt-4 pb-3">
+        <h2 className="text-display text-ink-primary">Roadmap</h2>
+      </div>
+
+      {/* Search and filters stay pinned once the title has scrolled away */}
+      <div className="px-4 pt-3 pb-3 space-y-3 bg-surface-base/80 backdrop-blur-md sticky top-0 z-10 border-y border-rule">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-tertiary" />
           <input
@@ -151,7 +156,7 @@ export default function CurriculumScreen() {
       </div>
 
       {/* Phase list */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-28">
+      <div className="p-4 space-y-3 pb-28">
         {filteredPhases.length === 0 && (
           <div className="mt-8">
             <EmptyState title="No phases found" description="Try adjusting your search or filters." />
@@ -393,6 +398,7 @@ export default function CurriculumScreen() {
             );
           })}
         </motion.div>
+      </div>
       </div>
     </div>
   );
