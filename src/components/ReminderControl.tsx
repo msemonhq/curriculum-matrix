@@ -60,7 +60,7 @@ export function ReminderControl({ phaseId, phaseTitle }: ReminderControlProps) {
   const pickedAt = reminderTimeOn(date);
 
   return (
-    <div className="bg-surface-elevated border border-rule rounded-xl p-3">
+    <div className="p-4">
       <div className="flex items-center gap-2 text-meta text-ink-secondary font-semibold">
         <Bell className="w-3.5 h-3.5" aria-hidden="true" /> Reminder
       </div>

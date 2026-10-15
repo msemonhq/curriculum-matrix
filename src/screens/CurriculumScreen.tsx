@@ -6,7 +6,7 @@ import { useProgress } from '../hooks/useProgress';
 import { isModuleChecked, phaseRowLine } from '../lib/progress';
 import type { PhaseStatus } from '../types';
 import {
-  ChevronDown, BookOpen, FileCheck, Check,
+  ChevronDown, FileCheck, Check,
   CheckCircle2, TestTube, Search,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -243,20 +243,17 @@ export default function CurriculumScreen() {
                         transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
                         className="overflow-hidden"
                       >
-                        <Panel className="mt-1 space-y-4">
+                        <Panel padding="none" className="mt-1 divide-y divide-rule">
 
-                          {/* Target Course */}
-                          <div className="mt-3 bg-surface-overlay rounded-xl p-3 border border-rule">
-                            <h4 className="flex items-center gap-2 text-meta text-ink-secondary font-semibold mb-2">
-                              <BookOpen className="w-3.5 h-3.5 text-accent" />
-                              Target Course
-                            </h4>
-                            <p className="text-body text-ink-primary">{phase.course}</p>
+                          {/* Target course and its modules */}
+                          <div className="p-4">
+                            <h4 className="text-kicker text-ink-secondary">Target course</h4>
+                            <p className="mt-1 text-body text-ink-primary">{phase.course}</p>
                             <motion.ul
                               variants={staggerContainer}
                               initial="hidden"
                               animate="show"
-                              className="mt-2 space-y-1.5"
+                              className="mt-2"
                             >
                               {phase.modules.map((mod) => {
                                 if (mod.kind === 'note') {
@@ -264,7 +261,7 @@ export default function CurriculumScreen() {
                                     <motion.li
                                       key={mod.id}
                                       variants={staggerItem}
-                                      className="text-meta px-3 py-2 rounded-xl border border-dashed border-rule text-ink-tertiary"
+                                      className="border-t border-rule py-2.5 text-meta text-ink-tertiary"
                                     >
                                       <span className="block">{mod.title}</span>
                                       {mod.description && <span className="block mt-0.5">{mod.description}</span>}
@@ -273,20 +270,18 @@ export default function CurriculumScreen() {
                                 }
                                 const isChecked = isModuleChecked({ phaseStatus, completedModules }, phase.id, mod.id);
                                 return (
-                                  <motion.li key={mod.id} variants={staggerItem}>
+                                  <motion.li key={mod.id} variants={staggerItem} className="border-t border-rule">
                                     <button
                                       type="button"
                                       role="checkbox"
                                       aria-checked={isChecked}
                                       onClick={() => toggleModule(phase.id, mod.id)}
-                                      className={`w-full min-h-11 text-left text-meta px-3 py-2 rounded-xl flex items-start gap-2.5 transition-all duration-200 border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 ${
-                                        isChecked
-                                          ? 'bg-accent-dim/30 border-accent/30 text-ink-primary'
-                                          : 'bg-surface-subtle border-rule text-ink-secondary hover:border-edge'
+                                      className={`w-full min-h-11 text-left text-meta py-2.5 flex items-start gap-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/70 ${
+                                        isChecked ? 'text-ink-primary' : 'text-ink-secondary'
                                       }`}
                                     >
                                       <CheckMark isChecked={isChecked} />
-                                      <span className={`flex-1 leading-relaxed ${isChecked ? 'text-ink-primary font-medium' : ''}`}>
+                                      <span className="flex-1 leading-relaxed">
                                         <span className="block">{mod.title}</span>
                                         {mod.kind === 'optional' && <span className="block text-kicker text-ink-tertiary mt-0.5">Optional (not counted in progress)</span>}
                                         {mod.description && <span className="block text-ink-tertiary mt-0.5">{mod.description}</span>}
@@ -298,23 +293,20 @@ export default function CurriculumScreen() {
                             </motion.ul>
                           </div>
 
-                          {/* Strategic Application */}
-                          <div>
-                            <h4 className="text-meta text-ink-secondary font-semibold mb-2">
-                              Strategic Application
-                            </h4>
-                            <p className="text-body text-ink-primary bg-accent-dim border border-accent/20 p-3 rounded-xl">
-                              {phase.application}
-                            </p>
+                          {/* Strategic application: plain text, no tinted box */}
+                          <div className="p-4">
+                            <h4 className="text-kicker text-ink-secondary">Strategic application</h4>
+                            <p className="mt-1 text-body text-ink-primary">{phase.application}</p>
                           </div>
 
-                          {/* Hours + Notes */}
-                          <div className="space-y-3">
-                            <div className="bg-surface-elevated border border-rule rounded-xl p-3">
-                              <label className="block text-meta text-ink-secondary font-semibold mb-1.5">
-                                Hours Logged
+                          {/* Hours and notes: the things you type */}
+                          <div className="p-4 space-y-4">
+                            <div>
+                              <label htmlFor={`hours-${phase.id}`} className="block text-meta text-ink-secondary font-semibold mb-1.5">
+                                Hours logged
                               </label>
                               <input
+                                id={`hours-${phase.id}`}
                                 type="number"
                                 min="0"
                                 value={timeLogged || ''}
@@ -324,11 +316,12 @@ export default function CurriculumScreen() {
                               />
                             </div>
 
-                            <div className="bg-surface-elevated border border-rule rounded-xl p-3">
-                              <label className="block text-meta text-ink-secondary font-semibold mb-1.5">
-                                Notes / Blockers
+                            <div>
+                              <label htmlFor={`notes-${phase.id}`} className="block text-meta text-ink-secondary font-semibold mb-1.5">
+                                Notes and blockers
                               </label>
                               <textarea
+                                id={`notes-${phase.id}`}
                                 rows={2}
                                 value={note}
                                 onChange={(e) => setPhaseNote(phase.id, e.target.value)}
@@ -341,48 +334,46 @@ export default function CurriculumScreen() {
                           {/* Reminder */}
                           <ReminderControl phaseId={phase.id} phaseTitle={phase.title} />
 
-                          {/* Deliverable toggle */}
-                          <div
-                            className={`p-3 rounded-xl border cursor-pointer transition-all duration-200 ${
-                              deliverableDone
-                                ? 'bg-success-dim border-success/30'
-                                : 'bg-surface-elevated border-rule hover:border-edge'
-                            }`}
+                          {/* Deliverable: a real toggle, so keyboards and screen readers can reach it */}
+                          <button
+                            type="button"
+                            aria-pressed={deliverableDone}
                             onClick={() => toggleDeliverable(phase.id)}
+                            className="flex w-full min-h-11 items-start gap-3 p-4 text-left transition-colors active:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/70"
                           >
-                            <div className="flex items-start gap-3">
-                              <motion.div
-                                animate={{ scale: deliverableDone ? [1, 1.25, 1] : 1 }}
-                                transition={{ duration: 0.3 }}
-                                className="mt-0.5"
-                              >
-                                {deliverableDone
-                                  ? <CheckCircle2 className="w-5 h-5 text-success" />
-                                  : <FileCheck className="w-5 h-5 text-ink-tertiary" />
-                                }
-                              </motion.div>
-                              <div>
-                                <h4 className={`text-body font-semibold ${deliverableDone ? 'text-success' : 'text-ink-primary'}`}>
-                                  Proof-of-Skill Deliverable
-                                </h4>
-                                <p className={`text-meta mt-0.5 ${deliverableDone ? 'text-success/80' : 'text-ink-secondary'}`}>
-                                  {phase.deliverable}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Open Workbench */}
-                          {toolId && (
-                            <Button
-                              variant="secondary"
-                              fullWidth
-                              onClick={() => navigate(`/workbenches/${toolId}`)}
-                              className="gap-2"
+                            <motion.span
+                              animate={{ scale: deliverableDone ? [1, 1.25, 1] : 1 }}
+                              transition={{ duration: 0.3 }}
+                              className="mt-0.5 flex"
                             >
-                              <TestTube className="w-4 h-4" />
-                              Open Workbench
-                            </Button>
+                              {deliverableDone
+                                ? <CheckCircle2 className="w-5 h-5 text-success" aria-hidden="true" />
+                                : <FileCheck className="w-5 h-5 text-ink-tertiary" aria-hidden="true" />
+                              }
+                            </motion.span>
+                            <span>
+                              <span className={`block text-body font-semibold ${deliverableDone ? 'text-success' : 'text-ink-primary'}`}>
+                                Proof-of-skill deliverable
+                              </span>
+                              <span className="mt-0.5 block text-meta text-ink-secondary">
+                                {phase.deliverable}
+                              </span>
+                            </span>
+                          </button>
+
+                          {/* Open workbench */}
+                          {toolId && (
+                            <div className="p-4">
+                              <Button
+                                variant="secondary"
+                                fullWidth
+                                onClick={() => navigate(`/workbenches/${toolId}`)}
+                                className="gap-2"
+                              >
+                                <TestTube className="w-4 h-4" aria-hidden="true" />
+                                Open workbench
+                              </Button>
+                            </div>
                           )}
                         </Panel>
                       </motion.div>
