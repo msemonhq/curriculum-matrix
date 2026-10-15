@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProgressStore } from '../hooks/useProgressStore';
 import { phases, priorityWins } from '../data/curriculum';
-import { CheckCircle2, Zap, Clock, Settings, Upload, ChevronDown, ArrowRight, Download, RotateCcw } from 'lucide-react';
+import { CheckCircle2, Clock, Settings, Upload, ChevronDown, ArrowRight, Download, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/Button';
 import { HoursStrip } from '../components/HoursStrip';
@@ -173,64 +173,67 @@ export default function DashboardScreen() {
       </Section>
 
       {openWins.length > 0 && (
-      <div className="bg-warning-dim border border-warning/25 rounded-2xl overflow-hidden">
-        <button type="button" aria-expanded={winsExpanded} className="min-h-11 w-full flex items-center gap-3 p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 active:scale-[0.98] transition-transform duration-100" onClick={() => setWinsExpanded(v => !v)}>
-          <div className="w-8 h-8 rounded-xl bg-warning/15 flex items-center justify-center shrink-0">
-            <Zap className="text-warning w-4 h-4" aria-hidden="true" />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-body font-semibold text-ink-primary">Quick wins</h3>
-          </div>
-          <motion.div animate={{ rotate: winsExpanded ? 180 : 0 }} transition={{ duration: 0.2, ease: [0.25, 1, 0.5, 1] }}>
-            <ChevronDown className="w-4 h-4 text-ink-tertiary" aria-hidden="true" />
-          </motion.div>
-        </button>
-        <AnimatePresence initial={false}>
-          {winsExpanded && (
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              variants={{
-                hidden: { height: 0, opacity: 0, transition: { height: { duration: 0.3 }, opacity: { duration: 0.2 } } },
-                visible: {
-                  height: 'auto',
-                  opacity: 1,
-                  transition: {
-                    height: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
-                    opacity: { duration: 0.3, delay: 0.1 },
-                    staggerChildren: 0.06
-                  }
-                }
-              }}
-              className="overflow-hidden"
+        <Section padding="none">
+          <h3>
+            <button
+              type="button"
+              aria-expanded={winsExpanded}
+              className="min-h-11 w-full flex items-center justify-between gap-3 py-3 text-left text-body font-semibold text-ink-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 rounded-xl"
+              onClick={() => setWinsExpanded(v => !v)}
             >
-              <ul className="px-4 pb-4 space-y-2">
-                {openWins.map(win => (
-                  <motion.li
-                    key={win.id}
-                    variants={{
-                      hidden: { opacity: 0, y: 12 },
-                      visible: { opacity: 1, y: 0, transition: { duration: 0.25, ease: [0.25, 1, 0.5, 1] } }
-                    }}
-                    className="flex"
-                  >
-                    <button type="button" className="w-full flex items-center justify-between text-left bg-surface-elevated/40 hover:bg-surface-elevated/60 p-3 rounded-lg border border-warning/10 active:scale-[0.98] transition-transform duration-100" onClick={() => navigate('/curriculum')}>
-                      <div className="flex-1 pr-3">
-                        <p className="text-meta text-ink-primary font-medium leading-snug">{win.text}</p>
-                        <p className="text-kicker text-warning/80 mt-1">Phase {phases.find(p => p.id === win.phaseId)?.number}</p>
-                      </div>
-                      <div className="w-6 h-6 rounded-full bg-warning/15 flex items-center justify-center shrink-0">
-                        <ArrowRight className="w-3.5 h-3.5 text-warning" aria-hidden="true" />
-                      </div>
-                    </button>
-                  </motion.li>
-                ))}
-              </ul>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+              Quick wins
+              <motion.span className="flex shrink-0" animate={{ rotate: winsExpanded ? 180 : 0 }} transition={{ duration: 0.2, ease: [0.25, 1, 0.5, 1] }}>
+                <ChevronDown className="w-4 h-4 text-ink-tertiary" aria-hidden="true" />
+              </motion.span>
+            </button>
+          </h3>
+          <AnimatePresence initial={false}>
+            {winsExpanded && (
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                variants={{
+                  hidden: { height: 0, opacity: 0, transition: { height: { duration: 0.3 }, opacity: { duration: 0.2 } } },
+                  visible: {
+                    height: 'auto',
+                    opacity: 1,
+                    transition: {
+                      height: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
+                      opacity: { duration: 0.3, delay: 0.1 },
+                      staggerChildren: 0.06
+                    }
+                  }
+                }}
+                className="overflow-hidden"
+              >
+                <ul>
+                  {openWins.map(win => (
+                    <motion.li
+                      key={win.id}
+                      variants={{
+                        hidden: { opacity: 0, y: 12 },
+                        visible: { opacity: 1, y: 0, transition: { duration: 0.25, ease: [0.25, 1, 0.5, 1] } }
+                      }}
+                    >
+                      <button
+                        type="button"
+                        className="min-h-11 w-full flex items-center justify-between gap-3 border-t border-rule py-3 text-left transition-colors active:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/70"
+                        onClick={() => navigate('/curriculum')}
+                      >
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-meta leading-snug text-ink-primary">{win.text}</span>
+                          <span className="mt-1 block text-kicker text-ink-tertiary">Phase {phases.find(p => p.id === win.phaseId)?.number}</span>
+                        </span>
+                        <ArrowRight className="w-4 h-4 shrink-0 text-ink-tertiary" aria-hidden="true" />
+                      </button>
+                    </motion.li>
+                  ))}
+                </ul>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Section>
       )}
 
       <ImportSheet isOpen={showImportSheet} onClose={() => setShowImportSheet(false)} onImported={() => { setShowImportSheet(false); showToast('Progress imported successfully.', 'success'); }} />
