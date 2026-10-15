@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProgressStore } from '../hooks/useProgressStore';
 import { phases, priorityWins } from '../data/curriculum';
-import { CheckCircle2, Zap, Settings, Upload, ChevronDown, ArrowRight, Download, RotateCcw } from 'lucide-react';
+import { CheckCircle2, Zap, Clock, Settings, Upload, ChevronDown, ArrowRight, Download, RotateCcw } from 'lucide-react';
 import { motion, animate, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/Button';
 import { ImportSheet } from '../components/ImportSheet';
@@ -159,14 +159,20 @@ export default function DashboardScreen() {
             <span className="text-figure text-ink-primary tabular">{completedDeliverables}</span>
             <span className="text-meta text-ink-tertiary">/ {totalPhases}</span>
           </div>
-          <p className="mt-1 text-meta text-ink-secondary">Deliverables done</p>
+          <p className="mt-1 flex items-center gap-1.5 text-meta text-ink-secondary">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-success" aria-hidden="true" />
+            Deliverables done
+          </p>
         </div>
         <div className="min-w-0 border-l border-rule pl-6">
           <div className="flex flex-wrap items-baseline gap-x-1.5">
             <span className="text-figure text-ink-primary tabular">{totalLogged}</span>
             <span className="whitespace-nowrap text-meta text-ink-tertiary">/ {hoursDisplay}</span>
           </div>
-          <p className="mt-1 text-meta text-ink-secondary">Hours logged</p>
+          <p className="mt-1 flex items-center gap-1.5 text-meta text-ink-secondary">
+            <Clock className="w-4 h-4 shrink-0 text-clock" aria-hidden="true" />
+            Hours logged
+          </p>
         </div>
       </Section>
 
