@@ -84,6 +84,25 @@ A workbench is recognised by its phase number and one line icon in Folio (`text-
 registry (`src/workbenches/registry.ts`) carries no colour fields, so a tool can never bring its own hue, and a colour
 keeps one meaning (Signal is progress, Clock is time, Brick is wrong).
 
+## Hours strip
+
+`HoursStrip` (`src/components/HoursStrip.tsx`) draws progress as a length, never a ring: one segment per phase, as wide
+as the phase's `hoursMax`, filled by that phase's own progress. A long phase looks long, so a small gain on a big phase
+explains itself.
+
+| Part | Looks like | Means |
+|---|---|---|
+| Width | Phase hours over total hours, gaps taken off the total | How big the phase is |
+| Fill | `accent`, from the left edge | The phase's progress percent. A completed phase always reads full |
+| Edge | `accent` on done and current phases, `edge` on the rest | Where you are |
+| Tick | A 2px `clock` bar on the current phase | Tracked hours, as a share of that phase's hours |
+| Number | `text-kicker` under the segment; `ink-primary` for the current phase | The phase number |
+
+The layout is `src/lib/hoursStrip.ts`. It calls `phaseProgress()` itself, so the filled length always equals the overall
+hours-weighted progress; `src/lib/hoursStrip.test.ts` checks that against `overallProgress()` on the real curriculum.
+Each segment is an image with a spoken description ("Phase 3, 40% done, 16 hours, current phase") and the numbers are
+decoration. The fill is static for now: the draw-in animation belongs to the P3 motion pass.
+
 ## Not yet converted (planned for P2)
 
 P1 changes the tokens, type and shared components. These screens still use their own boxes and need the P2 layouts:
