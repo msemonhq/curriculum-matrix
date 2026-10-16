@@ -133,16 +133,26 @@ hours-weighted progress; `src/lib/hoursStrip.test.ts` checks that against `overa
 Each segment is an image with a spoken description ("Phase 3, 40% done, 16 hours, current phase") and the numbers are
 decoration. The fill is static for now: the draw-in animation belongs to the P3 motion pass.
 
-Passing `onSelect` makes it a table of contents (the Roadmap does): each segment gets a button, "Go to Phase 3, 40% done,
-16 hours", that reports the phase id, and the drawn segments are hidden from assistive tech so nothing is read twice. The
-buttons are 44px tall and sit over the segments in the same flex model, so each lines up with the phase it names.
+The strip appears on the Dashboard only. On the Roadmap it said what the phase rows below already say, so it was
+removed there; a link carries you to a phase instead (see below).
 
-The narrowest phases cannot be 44px wide: Phase 1 is about 5% of the strip, so roughly 15px at 360px. Each button
-therefore runs from the midpoint between its neighbour's centre and its own to the midpoint on the other side
-(`hitPercent` in `hoursStrip.ts`; the cells add up to 100% and each contains its own segment's centre). Wide phases get
-wide targets, narrow phases get the most the strip can give them, and a tap can never land between two phases. WCAG 2.5.8
-allows the smaller size because the same destination is on the screen as a full-size control: every phase row is a
-heading button that does the same thing. The strip is a shortcut, never the only way.
+## Dashboard and Roadmap
+
+The Dashboard reads top to bottom as: the greeting and the budget line, the strip, one "Up next" panel with its one
+button, "Next steps", then three figures (Overall, Deliverables, Hours logged), each with a 16px icon in the same place:
+Signal for Overall and Deliverables (progress and done), Clock for hours.
+
+"Next steps" lists the first three unticked core modules of the Up next phase as check rows (`nextModules()` in
+`src/lib/progress.ts`). Ticking a row writes to the same store the Roadmap uses, so the strip, the Overall figure, the
+summary line and the Continue/Start button move at once. A row ticked on this visit stays in the list so it can be
+unticked, and the list refills to three; when every module is ticked it says so and points to the Roadmap, where a phase
+is marked done. The check box is the shared `CheckMark` (`src/components/CheckMark.tsx`), the same one the Roadmap uses.
+
+The Roadmap is the title, a pinned search and filter bar, and the spine. Each filter chip carries its count (All 8,
+To do 6, Active 1, Done 1; `statusCounts()`), and the count follows the whole curriculum, not the search. The Continue/Start
+button on the Dashboard opens the Roadmap on that phase (`src/lib/roadmapLink.ts` puts the phase id in the router's
+location state): the phase opens, its row is brought under the pinned bar with an instant scroll, and its heading button
+takes focus. An id that is not a phase, or a visit without one, changes nothing.
 
 ## Empty states
 
