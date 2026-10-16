@@ -94,6 +94,11 @@ a tool holds data when its saved value, run through its own normalizer, differs 
 then cleared shows no dot, and Brief Builder's saved-at stamp is ignored. The dot is hidden from assistive tech and the
 row's second line carries ", has saved data" for screen readers instead.
 
+A tool opens on one hairline bar (back, the tool's icon, its title with the phase beneath, share), a one-line
+description, then the tool itself in a single `Panel`. There is no glass, no shadow and no rounded header, and the title
+wraps rather than truncating. The tool bodies inside the panel still carry their own headings and nested boxes; they are
+the next thing to convert.
+
 ## Hours strip
 
 `HoursStrip` (`src/components/HoursStrip.tsx`) draws progress as a length, never a ring: one segment per phase, as wide

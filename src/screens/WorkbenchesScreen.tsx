@@ -5,6 +5,7 @@ import { useProgressStore } from '../hooks/useProgressStore';
 import { useToast } from '../hooks/useToast';
 import { shareText } from '../services/share';
 import { findTool } from '../workbenches/registry';
+import { Panel } from '../components/Panel';
 import { ToolList } from '../workbenches/ToolList';
 
 // This screen is only the contents list, the routing and the share button. Each tool lives in src/workbenches
@@ -36,23 +37,23 @@ export default function WorkbenchesScreen() {
     return (
       <div className="flex flex-col h-full bg-surface-base">
         {/* Tool header */}
-        <header className="w-full bg-surface-elevated/85 backdrop-blur-md border-b border-rule border-t-0 border-x-0 rounded-b-3xl shadow-surface-lg px-5 py-3.5 flex items-center gap-3">
+        <header className="flex w-full items-center gap-2 border-b border-rule px-1 py-2">
           <motion.button
             type="button"
             aria-label="Back to workbenches"
             onClick={() => navigate('/workbenches')}
             whileTap={{ scale: 0.90 }}
             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-            className="min-h-11 min-w-11 flex items-center justify-center -ml-1 rounded-full hover:bg-surface-subtle text-ink-secondary hover:text-ink-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
+            className="min-h-11 min-w-11 flex items-center justify-center rounded-full hover:bg-surface-subtle text-ink-secondary hover:text-ink-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
           >
             <ArrowLeft className="w-5 h-5" aria-hidden="true" />
           </motion.button>
 
           <Icon className="w-5 h-5 shrink-0 text-ink-primary" aria-hidden="true" />
 
-          <div className="flex-1 min-w-0">
-            <h2 className="text-title text-ink-primary truncate">{activeTool.title}</h2>
-            <span className="text-meta text-ink-tertiary">{activeTool.phase} Workbench</span>
+          <div className="min-w-0 flex-1">
+            <h2 className="break-words text-title text-ink-primary">{activeTool.title}</h2>
+            <span className="text-meta text-ink-tertiary">{activeTool.phase}</span>
           </div>
 
           {activeTool.share && (
@@ -74,9 +75,9 @@ export default function WorkbenchesScreen() {
           <p className="px-4 pt-4 pb-3 text-body text-ink-secondary">{activeTool.description}</p>
 
           <div className="px-4 pb-28">
-            <div className="bg-surface-elevated border border-rule rounded-2xl p-5 shadow-surface">
+            <Panel>
               <ToolBody />
-            </div>
+            </Panel>
           </div>
         </div>
       </div>
