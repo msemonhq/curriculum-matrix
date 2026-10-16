@@ -84,6 +84,16 @@ A workbench is recognised by its phase number and one line icon in Folio (`text-
 registry (`src/workbenches/registry.ts`) carries no colour fields, so a tool can never bring its own hue, and a colour
 keeps one meaning (Signal is progress, Clock is time, Brick is wrong).
 
+The Workbenches screen is a contents list (`src/workbenches/ToolList.tsx`), not a grid of tiles: a serif numeral, the
+tool's title, "Phase N · what it is for" (the registry's `blurb`), and a chevron, each row separated by a rule. The
+numeral stands in for the icon there; the icon appears in the tool's own header.
+
+A small Signal dot sits before the chevron when the tool holds something the person entered. It is Signal, not Clock,
+because it says "there is work here" and Clock means time only. `toolHoldsData()` (`src/lib/workbenchData.ts`) decides:
+a tool holds data when its saved value, run through its own normalizer, differs from a fresh start. So a field typed and
+then cleared shows no dot, and Brief Builder's saved-at stamp is ignored. The dot is hidden from assistive tech and the
+row's second line carries ", has saved data" for screen readers instead.
+
 ## Hours strip
 
 `HoursStrip` (`src/components/HoursStrip.tsx`) draws progress as a length, never a ring: one segment per phase, as wide

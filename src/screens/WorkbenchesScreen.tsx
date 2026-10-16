@@ -4,9 +4,10 @@ import { motion } from 'framer-motion';
 import { useProgressStore } from '../hooks/useProgressStore';
 import { useToast } from '../hooks/useToast';
 import { shareText } from '../services/share';
-import { TOOLS, findTool } from '../workbenches/registry';
+import { findTool } from '../workbenches/registry';
+import { ToolList } from '../workbenches/ToolList';
 
-// This screen is only the grid, the routing and the share button. Each tool lives in src/workbenches
+// This screen is only the contents list, the routing and the share button. Each tool lives in src/workbenches
 // and reads and writes its own saved data.
 export default function WorkbenchesScreen() {
   const { toolId } = useParams<{ toolId?: string }>();
@@ -82,48 +83,12 @@ export default function WorkbenchesScreen() {
     );
   }
 
-  // ── Grid view ─────────────────────────────────────────────────────
-  const stagger = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.05 } },
-  };
-  const item = {
-    hidden: { opacity: 0, scale: 0.95 },
-    show:   { opacity: 1, scale: 1, transition: { duration: 0.2 } },
-  };
-
+  // ── Contents list ─────────────────────────────────────────────────
   return (
     <div className="p-4 pb-28">
-      <div className="mb-5">
-        <h2 className="text-display text-ink-primary">Workbenches</h2>
-        <p className="text-body text-ink-secondary mt-1">Working tools for each phase.</p>
-      </div>
-
-      <motion.div
-        variants={stagger}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-2 gap-3"
-      >
-        {TOOLS.map(tool => {
-          const Icon = tool.icon;
-          return (
-            <motion.button
-              type="button"
-              key={tool.id}
-              variants={item}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-              onClick={() => navigate(`/workbenches/${tool.id}`)}
-              className="bg-surface-elevated border border-rule rounded-2xl p-4 flex flex-col items-start text-left shadow-surface hover:border-edge hover:-translate-y-px transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
-            >
-              <Icon className="w-5 h-5 mb-3 text-ink-primary" aria-hidden="true" />
-              <span className="text-kicker text-ink-tertiary">{tool.phase}</span>
-              <h3 className="text-body font-semibold text-ink-primary leading-tight mt-1">{tool.title}</h3>
-            </motion.button>
-          );
-        })}
-      </motion.div>
+      <h2 className="text-display text-ink-primary">Workbenches</h2>
+      <p className="mt-1 mb-5 text-body text-ink-secondary">Working tools for each phase.</p>
+      <ToolList />
     </div>
   );
 }
