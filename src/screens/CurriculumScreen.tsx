@@ -165,9 +165,10 @@ export default function CurriculumScreen() {
       {/* Search and filters stay pinned once the title has scrolled away */}
       <div className="px-4 pt-3 pb-3 space-y-3 bg-surface-base/80 backdrop-blur-md sticky top-0 z-10 border-y border-rule">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-tertiary" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-tertiary" aria-hidden="true" />
           <input
             type="text"
+            aria-label="Search phases or JD lines"
             placeholder="Search phases or JD lines..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
