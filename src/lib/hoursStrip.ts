@@ -28,12 +28,6 @@ export interface StripSegment {
   hours: number;
   /** This segment's share of the whole strip, 0-100. All segments add up to 100. */
   widthPercent: number;
-  /**
-   * The share of the strip a tap on this segment may land in, 0-100. The narrowest phases are a few
-   * pixels wide, so each cell runs from the midpoint to its left neighbour's centre to the midpoint to
-   * its right neighbour's centre. Cells add up to 100 and each one contains its own segment's centre.
-   */
-  hitPercent: number;
   /** How much of this segment is filled, 0-100: the rounded phase percent the progress maths uses. */
   fillPercent: number;
   state: SegmentState;
@@ -53,13 +47,6 @@ const round1 = (value: number) => Math.round(value * 10) / 10;
 export function hoursStripLayout(phases: readonly StripPhase[], inputs: StripInputs): StripLayout {
   const totalWeight = phases.reduce((sum, p) => sum + p.hoursMax, 0);
   const widths = phases.map((p) => (totalWeight > 0 ? (p.hoursMax / totalWeight) * 100 : 0));
-  let start = 0;
-  const centres = widths.map((w) => {
-    const centre = start + w / 2;
-    start += w;
-    return centre;
-  });
-  const edges = [0, ...centres.slice(1).map((c, i) => (centres[i] + c) / 2), totalWeight > 0 ? 100 : 0];
   const segments = phases.map<StripSegment>((phase, i) => {
     const completed = inputs.phaseStatus[phase.id] === 'completed';
     const active = !completed && inputs.activePhaseId === phase.id;
@@ -71,7 +58,6 @@ export function hoursStripLayout(phases: readonly StripPhase[], inputs: StripInp
       hours: phase.hoursMax,
       // No weight at all reads as an empty strip, the same way overallProgress reads 0.
       widthPercent: widths[i],
-      hitPercent: edges[i + 1] - edges[i],
       fillPercent: phaseProgress(phase, inputs).percent,
       state: completed ? 'done' : active ? 'active' : 'todo',
       tracked: active && trackedHours > 0 && phase.hoursMax > 0
