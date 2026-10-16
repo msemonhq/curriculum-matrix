@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  formatHours, isModuleChecked, jdReadiness, overallProgress, phaseProgress, phaseRowLine, phaseSummary, readinessState, toggleModuleUpdate, upNextPhase,
+  formatHours, isModuleChecked, jdReadiness, nextModules, overallProgress, phaseProgress, phaseRowLine, phaseSummary, readinessState, toggleModuleUpdate, upNextPhase,
 } from './progress.ts';
 import type { PhaseLike, ProgressInputs } from './progress.ts';
 
@@ -208,4 +208,37 @@ test('readinessState follows jdReadiness: a line whose phases are all finished i
   assert.equal(readinessState(jdReadiness('R1', PHASES, none).percent), 'todo');
   assert.equal(readinessState(jdReadiness('R1', PHASES, partial).percent), 'active');
   assert.equal(readinessState(jdReadiness('R1', PHASES, finished).percent), 'done');
+});
+
+// Phase 3 has core m1..m5 and an optional m6; phase 1 has core m1..m4 and a note m5.
+const ids = (list: Array<{ id: string }>) => list.map((m) => m.id);
+
+test('nextModules offers the first unticked core modules in order and skips optional and note ones', () => {
+  assert.deepEqual(ids(nextModules(PHASES[2], empty(), 3)), ['m1', 'm2', 'm3']);
+  assert.deepEqual(ids(nextModules(PHASES[2], empty(), 10)), ['m1', 'm2', 'm3', 'm4', 'm5']); // m6 is optional
+  assert.deepEqual(ids(nextModules(PHASES[0], empty(), 10)), ['m1', 'm2', 'm3', 'm4']); // m5 is a note
+});
+
+test('nextModules moves past ticked modules, wherever they are', () => {
+  const inputs = { ...empty(), completedModules: { phase_3_m1: true, phase_3_m3: true } };
+  assert.deepEqual(ids(nextModules(PHASES[2], inputs, 3)), ['m2', 'm4', 'm5']);
+});
+
+test('nextModules keeps a row you just ticked, and the window still holds the full count after it', () => {
+  const inputs = { ...empty(), completedModules: { phase_3_m1: true } };
+  assert.deepEqual(ids(nextModules(PHASES[2], inputs, 3, new Set(['m1']))), ['m1', 'm2', 'm3', 'm4']);
+  // Kept ids that are not ticked are not shown twice, and ids from other phases change nothing.
+  assert.deepEqual(ids(nextModules(PHASES[2], empty(), 3, new Set(['m1', 'm9']))), ['m1', 'm2', 'm3']);
+});
+
+test('nextModules is empty when everything is ticked, or when none are wanted', () => {
+  const all = { ...empty(), completedModules: Object.fromEntries(['m1', 'm2', 'm3', 'm4', 'm5'].map((m) => [`phase_3_${m}`, true])) };
+  assert.deepEqual(nextModules(PHASES[2], all, 3), []);
+  assert.deepEqual(ids(nextModules(PHASES[2], all, 3, new Set(['m2']))), ['m2']);
+  assert.deepEqual(nextModules(PHASES[2], empty(), 0), []);
+});
+
+test('nextModules reads a completed phase as ticked, except a module explicitly unticked', () => {
+  const inputs: ProgressInputs = { phaseStatus: { phase_3: 'completed' }, completedModules: { phase_3_m2: false } };
+  assert.deepEqual(ids(nextModules(PHASES[2], inputs, 3)), ['m2']);
 });

@@ -84,6 +84,27 @@ export function upNextPhase<T extends { id: string }>(
   return phases.find((phase) => phase.id === activePhaseId && open(phase)) ?? phases.find(open);
 }
 
+/**
+ * The modules to offer as next steps for a phase: the first `count` unticked core modules, in order.
+ * A module in `keep` that is ticked stays in the list as well, so a row you have just ticked does not
+ * vanish under your thumb and can still be unticked. Optional and note modules never appear.
+ */
+export function nextModules<M extends { id: string; kind?: string }>(
+  phase: { id: string; modules: ReadonlyArray<M> },
+  inputs: ProgressInputs,
+  count: number,
+  keep: ReadonlySet<string> = new Set(),
+): M[] {
+  let open = 0;
+  return phase.modules.filter((module) => {
+    if (!isCoreModule(module)) return false;
+    if (isModuleChecked(inputs, phase.id, module.id)) return keep.has(module.id);
+    if (open >= count) return false;
+    open += 1;
+    return true;
+  });
+}
+
 /** The one status mark used across the app: done, under way, or not started. */
 export type MarkState = 'done' | 'active' | 'todo';
 
