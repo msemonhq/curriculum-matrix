@@ -84,6 +84,19 @@ export function upNextPhase<T extends { id: string }>(
   return phases.find((phase) => phase.id === activePhaseId && open(phase)) ?? phases.find(open);
 }
 
+/** The one status mark used across the app: done, under way, or not started. */
+export type MarkState = 'done' | 'active' | 'todo';
+
+/**
+ * The mark for a readiness percent: done only at 100, under way for anything above 0, and not
+ * started at 0, so an empty line never wears a tick. Out-of-range input falls to the nearest end,
+ * and anything that is not a number reads as not started.
+ */
+export function readinessState(percent: number): MarkState {
+  if (!(percent > 0)) return 'todo';
+  return percent >= 100 ? 'done' : 'active';
+}
+
 export interface PhaseSummaryInput {
   done: number;
   total: number;

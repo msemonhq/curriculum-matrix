@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  formatHours, isModuleChecked, jdReadiness, overallProgress, phaseProgress, phaseRowLine, phaseSummary, toggleModuleUpdate, upNextPhase,
+  formatHours, isModuleChecked, jdReadiness, overallProgress, phaseProgress, phaseRowLine, phaseSummary, readinessState, toggleModuleUpdate, upNextPhase,
 } from './progress.ts';
 import type { PhaseLike, ProgressInputs } from './progress.ts';
 
@@ -184,4 +184,28 @@ test('upNextPhase: nothing is next once every phase is completed', () => {
   const all = Object.fromEntries(PHASES.map((p) => [p.id, 'completed' as const]));
   assert.equal(upNextPhase(PHASES, 'phase_2', all), undefined);
   assert.equal(upNextPhase([], null, {}), undefined);
+});
+
+// ─── readinessState: the Audit's status mark ────────────────────────
+test('readinessState: a tick only at 100, a ringed dot above 0, hollow at 0', () => {
+  assert.equal(readinessState(0), 'todo');
+  assert.equal(readinessState(1), 'active');
+  assert.equal(readinessState(50), 'active');
+  assert.equal(readinessState(99), 'active');
+  assert.equal(readinessState(100), 'done');
+});
+
+test('readinessState: out-of-range and non-numeric input fall to the nearest end', () => {
+  assert.equal(readinessState(-5), 'todo');
+  assert.equal(readinessState(250), 'done');
+  assert.equal(readinessState(Number.NaN), 'todo');
+});
+
+test('readinessState follows jdReadiness: a line whose phases are all finished is done, untouched is todo', () => {
+  const none: ProgressInputs = { phaseStatus: {}, completedModules: {} };
+  const partial: ProgressInputs = { phaseStatus: { phase_1: 'in_progress' }, completedModules: { phase_1_m1: true } };
+  const finished: ProgressInputs = { phaseStatus: { phase_1: 'completed' }, completedModules: {} };
+  assert.equal(readinessState(jdReadiness('R1', PHASES, none).percent), 'todo');
+  assert.equal(readinessState(jdReadiness('R1', PHASES, partial).percent), 'active');
+  assert.equal(readinessState(jdReadiness('R1', PHASES, finished).percent), 'done');
 });

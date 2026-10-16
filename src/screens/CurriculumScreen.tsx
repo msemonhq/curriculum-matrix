@@ -4,14 +4,16 @@ import { phases } from '../data/curriculum';
 import { useProgressStore } from '../hooks/useProgressStore';
 import { useProgress } from '../hooks/useProgress';
 import { isModuleChecked, phaseRowLine, upNextPhase } from '../lib/progress';
+import type { MarkState } from '../lib/progress';
 import type { PhaseStatus } from '../types';
 import {
-  ChevronDown, FileCheck, Check,
+  ChevronDown, FileCheck,
   CheckCircle2, TestTube, Search,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EmptyState } from '../components/EmptyState';
 import { Panel } from '../components/Panel';
+import { StatusMark } from '../components/StatusMark';
 import { HoursStrip } from '../components/HoursStrip';
 import { Button } from '../components/Button';
 import { ReminderControl } from '../components/ReminderControl';
@@ -72,24 +74,12 @@ function CheckMark({ isChecked }: { isChecked: boolean }) {
   );
 }
 
-/** The phase's one status mark: solid when done, a ringed dot while under way, hollow before. Filled with the page colour so the spine never shows through it. */
-function PhaseNode({ status }: { status: PhaseStatus }) {
-  if (status === 'completed') {
-    return (
-      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent" aria-hidden="true">
-        <Check className="h-3.5 w-3.5 text-surface-base" strokeWidth={3} />
-      </span>
-    );
-  }
-  if (status === 'in_progress') {
-    return (
-      <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-accent bg-surface-base" aria-hidden="true">
-        <span className="h-2 w-2 rounded-full bg-accent" />
-      </span>
-    );
-  }
-  return <span className="h-6 w-6 rounded-full border-2 border-edge bg-surface-base" aria-hidden="true" />;
-}
+/** The Roadmap's status values on the shared mark's three states. */
+const MARK_STATE: Record<PhaseStatus, MarkState> = {
+  not_started: 'todo',
+  in_progress: 'active',
+  completed: 'done',
+};
 
 const STATUS_LABEL: Record<PhaseStatus, string> = {
   not_started: 'not started',
@@ -248,7 +238,7 @@ export default function CurriculumScreen() {
                     className="flex min-h-11 min-w-11 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
                     onClick={() => setPhaseStatus(phase.id, STATUS_CYCLE[status] || 'not_started')}
                   >
-                    <PhaseNode status={status} />
+                    <StatusMark state={MARK_STATE[status]} />
                   </motion.button>
                 </div>
 
