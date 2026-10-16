@@ -15,7 +15,7 @@ import { Sheet } from '../components/Sheet';
 import { useToast } from '../hooks/useToast';
 import { buildBackup } from '../lib/sanitize';
 import { cancelAllReminders } from '../services/reminders';
-import { formatHours, phaseSummary } from '../lib/progress';
+import { formatHours, phaseSummary, upNextPhase } from '../lib/progress';
 import { useProgress } from '../hooks/useProgress';
 
 function Figure({ value, unit, label, icon, divided }: { value: React.ReactNode; unit?: string; label: string; icon?: React.ReactNode; divided?: boolean }) {
@@ -52,7 +52,7 @@ export default function DashboardScreen() {
   const totalPhases = phases.length;
   // Weighted by each phase's hoursMax, so a 20-hour phase moves the strip more than a 2-hour one.
   const progressPercent = overall.percent;
-  const nextPhase = activePhaseId ? (phases.find(phase => phase.id === activePhaseId && phaseStatus[phase.id] !== 'completed') || phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed')) : phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed');
+  const nextPhase = upNextPhase(phases, activePhaseId, phaseStatus);
   // Whether the recommended phase is already under way decides what the card says and offers.
   const nextProgress = nextPhase ? byPhase[nextPhase.id] : undefined;
   const nextStarted = !!nextPhase && (phaseStatus[nextPhase.id] === 'in_progress' || (nextProgress?.done ?? 0) > 0);

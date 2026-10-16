@@ -71,6 +71,19 @@ export function formatHours(min: number, max: number): string {
   return min === max ? `~${trim(max)}h` : `~${trim(min)}–${trim(max)}h`;
 }
 
+/**
+ * The phase to work on next: the one marked active if it is not finished, otherwise the first
+ * unfinished phase. Undefined once everything is completed.
+ */
+export function upNextPhase<T extends { id: string }>(
+  phases: readonly T[],
+  activePhaseId: string | null,
+  phaseStatus: Record<string, PhaseStatus>,
+): T | undefined {
+  const open = (phase: T) => phaseStatus[phase.id] !== 'completed';
+  return phases.find((phase) => phase.id === activePhaseId && open(phase)) ?? phases.find(open);
+}
+
 export interface PhaseSummaryInput {
   done: number;
   total: number;

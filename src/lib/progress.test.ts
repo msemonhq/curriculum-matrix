@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  formatHours, isModuleChecked, jdReadiness, overallProgress, phaseProgress, phaseRowLine, phaseSummary, toggleModuleUpdate,
+  formatHours, isModuleChecked, jdReadiness, overallProgress, phaseProgress, phaseRowLine, phaseSummary, toggleModuleUpdate, upNextPhase,
 } from './progress.ts';
 import type { PhaseLike, ProgressInputs } from './progress.ts';
 
@@ -166,4 +166,22 @@ test('phaseRowLine: in progress leads with the status; not started is the plain 
   const input = { done: 2, total: 5, started: true, trackedHours: 3, hoursMin: 16, hoursMax: 16 };
   assert.equal(phaseRowLine('in_progress', input), 'In progress · 2 of 5 modules done · 3h of ~16h');
   assert.equal(phaseRowLine('not_started', { ...input, done: 0, started: false, trackedHours: 0 }), '5 modules to go · ~16h');
+});
+
+test('upNextPhase: the active phase wins while it is unfinished', () => {
+  assert.equal(upNextPhase(PHASES, 'phase_4', { phase_1: 'completed' })?.id, 'phase_4');
+});
+
+test('upNextPhase: with no active phase, or a finished or unknown one, it is the first unfinished phase', () => {
+  const status: ProgressInputs['phaseStatus'] = { phase_1: 'completed', phase_2: 'completed', phase_4: 'completed' };
+  assert.equal(upNextPhase(PHASES, null, status)?.id, 'phase_3');
+  assert.equal(upNextPhase(PHASES, 'phase_4', status)?.id, 'phase_3'); // active but completed
+  assert.equal(upNextPhase(PHASES, 'nope', status)?.id, 'phase_3');
+  assert.equal(upNextPhase(PHASES, null, {})?.id, 'phase_1');
+});
+
+test('upNextPhase: nothing is next once every phase is completed', () => {
+  const all = Object.fromEntries(PHASES.map((p) => [p.id, 'completed' as const]));
+  assert.equal(upNextPhase(PHASES, 'phase_2', all), undefined);
+  assert.equal(upNextPhase([], null, {}), undefined);
 });
