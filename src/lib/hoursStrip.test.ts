@@ -153,3 +153,33 @@ test('describeSegment reads as plain words', () => {
   assert.equal(describeSegment(segments[2]), 'Phase 3, 40% done, 16 hours, current phase, 4.3 hours tracked');
   assert.equal(describeSegment(segments[3]), 'Phase 4, 0% done, 18 hours');
 });
+
+test('tap cells add up to 100, are never negative, and each one contains its own segment\'s centre', () => {
+  const { segments } = hoursStripLayout(PHASES, inputs());
+  close(segments.reduce((sum, s) => sum + s.hitPercent, 0), 100);
+  let cellStart = 0;
+  let segmentStart = 0;
+  for (const segment of segments) {
+    assert.ok(segment.hitPercent >= 0);
+    const centre = segmentStart + segment.widthPercent / 2;
+    assert.ok(centre >= cellStart - 1e-9 && centre <= cellStart + segment.hitPercent + 1e-9, `${segment.id} centre ${centre} is outside its cell`);
+    cellStart += segment.hitPercent;
+    segmentStart += segment.widthPercent;
+  }
+});
+
+test('tap cells: a lone phase takes the whole strip; no weight gives no cells to tap', () => {
+  const one: StripPhase[] = [{ id: 'a', number: 1, hoursMax: 4, modules: [{ id: 'm1' }] }];
+  assert.equal(hoursStripLayout(one, inputs()).segments[0].hitPercent, 100);
+  const weightless: StripPhase[] = [
+    { id: 'a', number: 1, hoursMax: 0, modules: [{ id: 'm1' }] },
+    { id: 'b', number: 2, hoursMax: 0, modules: [{ id: 'm1' }] },
+  ];
+  assert.deepEqual(hoursStripLayout(weightless, inputs()).segments.map((s) => s.hitPercent), [0, 0]);
+});
+
+test('tap cells follow the hours: the real curriculum\'s first two phases get the small cells', () => {
+  const { segments } = hoursStripLayout(PHASES, inputs());
+  const sorted = [...segments].sort((a, b) => a.hitPercent - b.hitPercent).map((s) => s.id);
+  assert.deepEqual(sorted.slice(0, 2).sort(), ['phase_1', 'phase_2']);
+});

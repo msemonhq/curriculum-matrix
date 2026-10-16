@@ -103,6 +103,17 @@ hours-weighted progress; `src/lib/hoursStrip.test.ts` checks that against `overa
 Each segment is an image with a spoken description ("Phase 3, 40% done, 16 hours, current phase") and the numbers are
 decoration. The fill is static for now: the draw-in animation belongs to the P3 motion pass.
 
+Passing `onSelect` makes it a table of contents (the Roadmap does): each segment gets a button, "Go to Phase 3, 40% done,
+16 hours", that reports the phase id, and the drawn segments are hidden from assistive tech so nothing is read twice. The
+buttons are 44px tall and sit over the segments in the same flex model, so each lines up with the phase it names.
+
+The narrowest phases cannot be 44px wide: Phase 1 is about 5% of the strip, so roughly 15px at 360px. Each button
+therefore runs from the midpoint between its neighbour's centre and its own to the midpoint on the other side
+(`hitPercent` in `hoursStrip.ts`; the cells add up to 100% and each contains its own segment's centre). Wide phases get
+wide targets, narrow phases get the most the strip can give them, and a tap can never land between two phases. WCAG 2.5.8
+allows the smaller size because the same destination is on the screen as a full-size control: every phase row is a
+heading button that does the same thing. The strip is a shortcut, never the only way.
+
 ## Not yet converted (planned for P2)
 
 P1 changes the tokens, type and shared components. These screens still use their own boxes and need the P2 layouts:
