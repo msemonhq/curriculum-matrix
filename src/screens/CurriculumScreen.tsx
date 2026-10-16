@@ -190,6 +190,8 @@ export default function CurriculumScreen() {
           {statusFilters.map(f => (
             <button
               key={f.value}
+              type="button"
+              aria-pressed={statusFilter === f.value}
               onClick={() => setStatusFilter(f.value)}
               className={`flex-1 min-h-11 py-1.5 rounded-xl text-meta font-semibold transition-all duration-200 ${
                 statusFilter === f.value
