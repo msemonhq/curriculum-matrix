@@ -1,9 +1,10 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { phases } from '../data/curriculum';
 import { useProgressStore } from '../hooks/useProgressStore';
 import { useProgress } from '../hooks/useProgress';
-import { isModuleChecked, phaseRowLine, upNextPhase } from '../lib/progress';
+import { isModuleChecked, phaseRowLine, statusCounts } from '../lib/progress';
+import { phaseIdFromState } from '../lib/roadmapLink';
 import type { MarkState } from '../lib/progress';
 import type { PhaseStatus } from '../types';
 import {
@@ -14,7 +15,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { EmptyState } from '../components/EmptyState';
 import { Panel } from '../components/Panel';
 import { StatusMark } from '../components/StatusMark';
-import { HoursStrip } from '../components/HoursStrip';
 import { Button } from '../components/Button';
 import { CheckMark } from '../components/CheckMark';
 import { ReminderControl } from '../components/ReminderControl';
@@ -51,29 +51,31 @@ const STATUS_LABEL: Record<PhaseStatus, string> = {
 function scrollToPhase(id: string) {
   const row = document.getElementById(`phase-${id}`);
   if (!row) return;
-  const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  row.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
+  // An instant jump: the screen is still fading in when a link brings you here, and a smooth scroll would fight it.
+  row.scrollIntoView({ behavior: 'auto', block: 'start' });
   row.querySelector<HTMLElement>('h3 button')?.focus({ preventScroll: true });
 }
 
 export default function CurriculumScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [expandedId, setExpandedId]   = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const {
-    activePhaseId, phaseStatus, deliverables, timeTracking, notes,
+    phaseStatus, deliverables, timeTracking, notes,
     completedModules, toggleModule,
     setPhaseStatus, toggleDeliverable, setPhaseTime, setPhaseNote,
   } = useProgressStore();
   const { byPhase } = useProgress();
 
+  const counts = useMemo(() => statusCounts(phases, phaseStatus), [phaseStatus]);
   const statusFilters = [
-    { value: 'all',         label: 'All' },
-    { value: 'not_started', label: 'To do' },
-    { value: 'in_progress', label: 'Active' },
-    { value: 'completed',   label: 'Done' },
+    { value: 'all',         label: 'All',    count: phases.length },
+    { value: 'not_started', label: 'To do',  count: counts.not_started },
+    { value: 'in_progress', label: 'Active', count: counts.in_progress },
+    { value: 'completed',   label: 'Done',   count: counts.completed },
   ];
 
   const filteredPhases = useMemo(() => {
@@ -87,39 +89,20 @@ export default function CurriculumScreen() {
     });
   }, [searchQuery, statusFilter, phaseStatus]);
 
-  // A tap on the strip names a phase the current search or filter may be hiding: show everything, then scroll.
-  const pendingScroll = useRef<string | null>(null);
-  const goToPhase = (id: string) => {
-    if (filteredPhases.some(phase => phase.id === id)) {
-      scrollToPhase(id);
-      return;
-    }
-    pendingScroll.current = id;
-    setSearchQuery('');
-    setStatusFilter('all');
-  };
+  // A link from the Dashboard or the header can ask for one phase: open it and bring it to the top.
+  const requestedPhaseId = phaseIdFromState(location.state);
   useEffect(() => {
-    const id = pendingScroll.current;
-    if (id && filteredPhases.some(phase => phase.id === id)) {
-      pendingScroll.current = null;
-      scrollToPhase(id);
-    }
-  }, [filteredPhases]);
+    if (!requestedPhaseId || !phases.some(phase => phase.id === requestedPhaseId)) return;
+    setExpandedId(requestedPhaseId);
+    const frame = requestAnimationFrame(() => scrollToPhase(requestedPhaseId));
+    return () => cancelAnimationFrame(frame);
+  }, [requestedPhaseId, location.key]);
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto">
       <div className="px-4 pt-4 pb-3">
         <h2 className="text-display text-ink-primary">Roadmap</h2>
-        <HoursStrip
-          className="mt-4"
-          phases={phases}
-          phaseStatus={phaseStatus}
-          completedModules={completedModules}
-          activePhaseId={upNextPhase(phases, activePhaseId, phaseStatus)?.id ?? null}
-          timeTracking={timeTracking}
-          onSelect={goToPhase}
-        />
       </div>
 
       {/* Search and filters stay pinned once the title has scrolled away */}
@@ -150,7 +133,7 @@ export default function CurriculumScreen() {
                   : 'border border-edge bg-surface-subtle text-ink-secondary hover:text-ink-primary'
               }`}
             >
-              {f.label}
+              {f.label} <span className="font-normal tabular">{f.count}</span>
             </button>
           ))}
         </div>

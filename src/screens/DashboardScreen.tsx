@@ -17,6 +17,7 @@ import { buildBackup } from '../lib/sanitize';
 import { cancelAllReminders } from '../services/reminders';
 import { formatHours, isModuleChecked, nextModules, phaseSummary, upNextPhase } from '../lib/progress';
 import { useProgress } from '../hooks/useProgress';
+import { ROADMAP_PATH, roadmapState } from '../lib/roadmapLink';
 
 const NEXT_STEP_COUNT = 3;
 const NO_IDS: ReadonlySet<string> = new Set();
@@ -146,7 +147,7 @@ export default function DashboardScreen() {
               })}
             </p>
           )}
-          <Button fullWidth onClick={() => navigate('/curriculum')} className="mt-6">
+          <Button fullWidth onClick={() => navigate(ROADMAP_PATH, { state: roadmapState(nextPhase.id) })} className="mt-6">
             {nextStarted ? 'Continue' : 'Start'} Phase {nextPhase.number} <ArrowRight className="w-4 h-4" aria-hidden="true" />
           </Button>
         </Panel>
