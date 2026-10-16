@@ -99,6 +99,21 @@ description, then the tool itself in a single `Panel`. There is no glass, no sha
 wraps rather than truncating. The tool bodies inside the panel still carry their own headings and nested boxes; they are
 the next thing to convert.
 
+## Status mark and the Audit
+
+`StatusMark` (`src/components/StatusMark.tsx`) is the one way the app shows "how far along": a solid Signal disc with a
+tick when done, a Signal ring with a dot while under way, a hollow `edge` ring before. The Roadmap's spine nodes and the
+Audit's rows use it, so the same shape means the same thing on both. It is decorative; the screen says the state in
+words next to it.
+
+The Audit leads with readiness, the thing a person can change, and states coverage once, as a sentence ("All 10
+job-description lines are covered by a phase"), because coverage is a fact about how the curriculum was designed. Each
+line is a row: the mark, the line's ID in mono, a serif readiness figure on the right, the requirement, "Served by
+Phase 1", and a readiness bar. `readinessState()` (`src/lib/progress.ts`) picks the mark from the readiness percent: a
+tick only at 100, so a line at 0% shows a hollow ring and never a tick. The bar carries `role="progressbar"` with its
+value; the visible figure is hidden from assistive tech so it is not read twice. A line no phase serves (a state the
+current data never reaches) shows Brick text, "Gap", and a "Review roadmap" button instead of a bar.
+
 ## Hours strip
 
 `HoursStrip` (`src/components/HoursStrip.tsx`) draws progress as a length, never a ring: one segment per phase, as wide

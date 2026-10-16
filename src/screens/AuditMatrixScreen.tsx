@@ -1,126 +1,71 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
+import { AlertTriangle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { jdLines, phases } from '../data/curriculum';
 import { useProgress } from '../hooks/useProgress';
+import { readinessState } from '../lib/progress';
+import { Button } from '../components/Button';
 import { ProgressBar } from '../components/ProgressBar';
-import { Target, AlertTriangle, CheckCircle2, ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { StatusMark } from '../components/StatusMark';
 
-function DonutChart({ covered, total }: { covered: number; total: number }) {
-  const radius = 44;
-  const stroke = 8;
-  const circumference = 2 * Math.PI * radius;
-  const percent = total > 0 ? covered / total : 0;
-  const pct = Math.round(percent * 100);
-
-  return (
-    <div className="relative w-36 h-36 flex items-center justify-center">
-      <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100" role="img" aria-label={`${pct}% of job description requirements are covered by the curriculum design`}>
-        <circle cx="50" cy="50" r={radius} fill="transparent" stroke="currentColor" className="text-surface-subtle" strokeWidth={stroke} />
-        <motion.circle
-          cx="50"
-          cy="50"
-          r={radius}
-          fill="transparent"
-          stroke={pct < 100 ? 'currentColor' : 'currentColor'}
-          className={pct < 100 ? 'text-danger' : 'text-success'}
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset: circumference - circumference * percent }}
-          transition={{ duration: 0.9 }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-title text-ink-primary tabular leading-none">{pct}%</span>
-        <span className="text-kicker text-ink-tertiary mt-0.5">Coverage</span>
-      </div>
-    </div>
-  );
-}
-
+// Coverage is a fact about how the curriculum was designed, so it gets one sentence. The thing the
+// person can change is readiness, so that is what the list shows: a mark, a figure and a bar per line.
 export default function AuditMatrixScreen() {
   const navigate = useNavigate();
   const { byJdLine } = useProgress();
   const servedIds = useMemo(() => new Set(phases.flatMap(p => p.jdLinesServed)), []);
-  const coveredCount = jdLines.filter(line => servedIds.has(line.id)).length;
-  const gaps = jdLines.filter(line => !servedIds.has(line.id));
-  const hasGaps = gaps.length > 0;
+  const gapCount = jdLines.filter(line => !servedIds.has(line.id)).length;
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 pt-4 pb-4 bg-surface-base/95 sticky top-0 z-10 border-b border-rule">
-        <div className="flex items-center gap-5">
-          <DonutChart covered={coveredCount} total={jdLines.length} />
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2"><Target className="w-4 h-4 text-accent" aria-hidden="true" /><span className="text-meta text-ink-secondary font-semibold">Curriculum coverage</span></div>
-            <span className={`text-title tabular ${hasGaps ? 'text-danger' : 'text-success'}`}>{coveredCount}<span className="text-ink-tertiary font-normal"> / {jdLines.length}</span></span>
-            <span className="text-meta text-ink-secondary">{hasGaps ? `${gaps.length} gap${gaps.length === 1 ? '' : 's'} detected` : `All ${jdLines.length} job-description lines are covered`}</span>
-            <span className="text-meta text-ink-tertiary">Design of the curriculum, not your progress</span>
-          </div>
-        </div>
-        {hasGaps && (
-          <div
-            className="mt-3 bg-danger-dim border border-danger/25 rounded-xl p-3 flex items-start gap-3"
-            role="status"
-          >
-            <AlertTriangle className="text-danger w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
-            <div>
-              <p className="text-meta font-semibold text-danger">Coverage gap detected</p>
-              <p className="text-meta text-ink-secondary mt-0.5">Review the uncovered requirements below.</p>
-            </div>
-          </div>
-        )}
-      </div>
-
       <div className="flex-1 overflow-y-auto p-4 pb-28">
-        <h3 className="text-meta text-ink-secondary font-semibold mb-3">Job description lines</h3>
-        <div className="space-y-2">
+        <h2 className="text-display text-ink-primary">Audit</h2>
+        {gapCount > 0 ? (
+          <p role="status" className="mt-1 text-body text-danger">
+            {gapCount} of {jdLines.length} job-description lines {gapCount === 1 ? 'has' : 'have'} no phase.
+          </p>
+        ) : (
+          <p className="mt-1 text-body text-ink-secondary">All {jdLines.length} job-description lines are covered by a phase.</p>
+        )}
+
+        <h3 className="mt-6 mb-3 text-kicker text-ink-secondary">Your readiness, by line</h3>
+        <ol className="border-b border-rule">
           {jdLines.map(line => {
             const servingPhases = phases.filter(p => p.jdLinesServed.includes(line.id));
             const isUnserved = servingPhases.length === 0;
-            return <div key={line.id} className={`rounded-xl border overflow-hidden ${isUnserved ? 'bg-danger-dim border-danger/25' : 'bg-surface-elevated border-rule'}`}>
-              <div className="p-3 flex gap-3 items-start">
-                {isUnserved ? <AlertTriangle className="w-4 h-4 text-danger mt-0.5 shrink-0" aria-label="Uncovered requirement" /> : <CheckCircle2 className="w-4 h-4 text-success mt-0.5 shrink-0" aria-label="Covered requirement" />}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span
-                      className={`font-mono text-kicker px-2 py-0.5 rounded-md font-medium ${isUnserved ? 'bg-danger/15 text-danger' : 'bg-accent-dim text-accent'}`}
-                    >
-                      {line.id}
-                    </span>
-                    {isUnserved && (
-                      <span className="text-kicker text-danger">Gap</span>
-                    )}
+            const percent = byJdLine[line.id].percent;
+            return (
+              <li key={line.id} className="flex gap-3 border-t border-rule py-4">
+                {isUnserved
+                  ? <AlertTriangle className="h-6 w-6 shrink-0 p-0.5 text-danger" role="img" aria-label="Uncovered requirement" />
+                  : <StatusMark state={readinessState(percent)} />}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="font-mono text-meta text-ink-tertiary">{line.id}</span>
+                    {isUnserved
+                      ? <span className="text-meta font-semibold text-danger">Gap</span>
+                      // The progress bar below says this to a screen reader, so the figure is not read twice.
+                      : <span aria-hidden="true" className="text-title tabular text-ink-primary">{percent}%</span>}
                   </div>
-                  <p className={`text-body mt-1 leading-snug ${isUnserved ? 'text-danger/90' : 'text-ink-primary'}`}>{line.text}</p>
-                  {servingPhases.length > 0 && <p className="text-meta text-accent mt-1.5 font-medium">Served by: {servingPhases.map(p => `Phase ${p.number}`).join(', ')}</p>}
-                  {servingPhases.length > 0 && (
-                    <div className="mt-2">
-                      <div className="flex items-center justify-between text-meta text-ink-secondary mb-1">
-                        <span>Your readiness</span>
-                        <span className="tabular">{byJdLine[line.id].percent}%</span>
+                  <p className="mt-1 text-body text-ink-primary">{line.text}</p>
+                  {isUnserved ? (
+                    <>
+                      <p className="mt-1 text-meta text-danger">No phase covers this line.</p>
+                      <Button variant="secondary" className="mt-3" onClick={() => navigate('/curriculum')}>Review roadmap</Button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="mt-1 text-meta text-ink-secondary">Served by {servingPhases.map(p => `Phase ${p.number}`).join(', ')}</p>
+                      <div className="mt-3" role="progressbar" aria-label={`Readiness for ${line.id}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent}>
+                        <ProgressBar progress={percent} />
                       </div>
-                      <div role="progressbar" aria-label={`Readiness for ${line.id}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={byJdLine[line.id].percent}>
-                        <ProgressBar progress={byJdLine[line.id].percent} />
-                      </div>
-                    </div>
-                  )}
-                  {isUnserved && (
-                    <button
-                      type="button"
-                      onClick={() => navigate('/curriculum')}
-                      className="mt-2 inline-flex min-h-11 items-center gap-1 text-meta font-semibold text-danger underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
-                    >
-                      Review roadmap <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
-                    </button>
+                    </>
                   )}
                 </div>
-              </div>
-            </div>;
+              </li>
+            );
           })}
-        </div>
+        </ol>
       </div>
     </div>
   );
