@@ -3,31 +3,20 @@ import React from 'react';
 interface EmptyStateProps {
   title:        string;
   description?: string;
+  /** The one thing the person can do about it. */
   action?:      React.ReactNode;
 }
 
+/** An empty list says what is missing and offers one way forward. Text only: there is nothing to illustrate. */
 export function EmptyState({ title, description, action }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center text-center py-16 px-8">
-      {/* Geometric illustration */}
-      <div className="relative mb-6">
-        <div className="w-16 h-16 rounded-2xl bg-surface-subtle border border-rule flex items-center justify-center">
-          <svg className="text-accent" width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-            <rect x="2" y="2" width="10" height="10" rx="2.5" fill="currentColor" opacity="0.4"/>
-            <rect x="16" y="2" width="10" height="10" rx="2.5" fill="currentColor" opacity="0.2"/>
-            <rect x="2" y="16" width="10" height="10" rx="2.5" fill="currentColor" opacity="0.2"/>
-            <rect x="16" y="16" width="10" height="10" rx="2.5" fill="currentColor" opacity="0.1"/>
-          </svg>
-        </div>
-        <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-surface-elevated border border-rule flex items-center justify-center">
-          <div className="w-1.5 h-1.5 rounded-full bg-ink-tertiary" />
-        </div>
+    <div className="py-6">
+      {/* The words are a live region so a screen reader hears the list go empty; the action stays outside it. */}
+      <div role="status">
+        <h3 className="text-title text-ink-primary">{title}</h3>
+        {description && <p className="mt-1 text-body text-ink-secondary">{description}</p>}
       </div>
-      <h3 className="text-title text-ink-primary mb-2">{title}</h3>
-      {description && (
-        <p className="text-body text-ink-secondary max-w-xs">{description}</p>
-      )}
-      {action && <div className="mt-6">{action}</div>}
+      {action && <div className="mt-4">{action}</div>}
     </div>
   );
 }

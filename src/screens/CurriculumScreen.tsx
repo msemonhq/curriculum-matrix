@@ -198,9 +198,15 @@ export default function CurriculumScreen() {
       {/* Phase list */}
       <div className="p-4 space-y-3 pb-28">
         {filteredPhases.length === 0 && (
-          <div className="mt-8">
-            <EmptyState title="No phases found" description="Try adjusting your search or filters." />
-          </div>
+          <EmptyState
+            title="No phases match"
+            description="Try a different search, or show every phase."
+            action={
+              <Button variant="secondary" onClick={() => { setSearchQuery(''); setStatusFilter('all'); }}>
+                Show all phases
+              </Button>
+            }
+          />
         )}
 
         <motion.ol variants={staggerContainer} initial="hidden" animate="show">

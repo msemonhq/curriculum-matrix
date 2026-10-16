@@ -144,7 +144,15 @@ wide targets, narrow phases get the most the strip can give them, and a tap can 
 allows the smaller size because the same destination is on the screen as a full-size control: every phase row is a
 heading button that does the same thing. The strip is a shortcut, never the only way.
 
-## Not yet converted (planned for P2)
+## Empty states
 
-The Dashboard and the Roadmap now follow this system. These screens still use their own boxes and need the P2 layouts:
-the Workbench tiles and the Audit donut and line cards.
+`EmptyState` is text: a serif title, one line of explanation and, when there is something to do about it, one secondary
+button. There is no illustration and no icon tile, because there is nothing to draw. The Roadmap's is "No phases match",
+"Try a different search, or show every phase.", and a "Show all phases" button that clears the search and the filter. The
+words are a live region so a screen reader hears the list go empty; the button sits outside it.
+
+## Still to convert
+
+Every screen's layout now follows this system. What is left is inside the eight workbench tools: their own headings,
+descriptions that repeat the line shown above the panel (the AI verification log, for one), and boxes nested inside the
+Panel. Convert them tool by tool, starting with the ones that show the most chrome before the first field.
