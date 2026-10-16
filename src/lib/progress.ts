@@ -84,6 +84,16 @@ export function upNextPhase<T extends { id: string }>(
   return phases.find((phase) => phase.id === activePhaseId && open(phase)) ?? phases.find(open);
 }
 
+/** How many phases are in each status; a phase with no recorded status is not started. */
+export function statusCounts(
+  phases: ReadonlyArray<{ id: string }>,
+  phaseStatus: Record<string, PhaseStatus>,
+): Record<PhaseStatus, number> {
+  const counts: Record<PhaseStatus, number> = { not_started: 0, in_progress: 0, completed: 0 };
+  for (const phase of phases) counts[phaseStatus[phase.id] ?? 'not_started'] += 1;
+  return counts;
+}
+
 /**
  * The modules to offer as next steps for a phase: the first `count` unticked core modules, in order.
  * A module in `keep` that is ticked stays in the list as well, so a row you have just ticked does not

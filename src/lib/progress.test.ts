@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  formatHours, isModuleChecked, jdReadiness, nextModules, overallProgress, phaseProgress, phaseRowLine, phaseSummary, readinessState, toggleModuleUpdate, upNextPhase,
+  formatHours, isModuleChecked, jdReadiness, nextModules, overallProgress, phaseProgress, phaseRowLine, phaseSummary, readinessState, statusCounts, toggleModuleUpdate, upNextPhase,
 } from './progress.ts';
 import type { PhaseLike, ProgressInputs } from './progress.ts';
 
@@ -241,4 +241,12 @@ test('nextModules is empty when everything is ticked, or when none are wanted', 
 test('nextModules reads a completed phase as ticked, except a module explicitly unticked', () => {
   const inputs: ProgressInputs = { phaseStatus: { phase_3: 'completed' }, completedModules: { phase_3_m2: false } };
   assert.deepEqual(ids(nextModules(PHASES[2], inputs, 3)), ['m2']);
+});
+
+test('statusCounts tallies each status and treats a phase with no status as not started', () => {
+  assert.deepEqual(statusCounts(PHASES, {}), { not_started: 8, in_progress: 0, completed: 0 });
+  const mixed = { phase_1: 'completed', phase_2: 'completed', phase_3: 'in_progress', phase_5: 'not_started' } as const;
+  assert.deepEqual(statusCounts(PHASES, mixed), { not_started: 5, in_progress: 1, completed: 2 });
+  // A status for a phase that does not exist is not counted.
+  assert.deepEqual(statusCounts(PHASES.slice(0, 2), { phase_1: 'completed', phase_7: 'completed' }), { not_started: 1, in_progress: 0, completed: 1 });
 });
