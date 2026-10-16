@@ -8,6 +8,12 @@ import DashboardScreen from './screens/DashboardScreen';
 import CurriculumScreen from './screens/CurriculumScreen';
 import WorkbenchesScreen from './screens/WorkbenchesScreen';
 import AuditMatrixScreen from './screens/AuditMatrixScreen';
+import { ResumeChip } from './components/ResumeChip';
+import { phases } from './data/curriculum';
+import { useProgress } from './hooks/useProgress';
+import { useProgressStore } from './hooks/useProgressStore';
+import { upNextPhase } from './lib/progress';
+import { ROADMAP_PATH, roadmapState } from './lib/roadmapLink';
 
 interface MatrixLogoProps { activeTab: string; }
 const MatrixLogo: React.FC<MatrixLogoProps> = ({ activeTab }) => {
@@ -15,8 +21,8 @@ const MatrixLogo: React.FC<MatrixLogoProps> = ({ activeTab }) => {
   const activePos = positions[activeTab] || positions.dashboard;
   const baseSquares = [{ id: 'dashboard', x: 1, y: 1 }, { id: 'curriculum', x: 13, y: 1 }, { id: 'workbenches', x: 1, y: 13 }, { id: 'audit', x: 13, y: 13 }];
   return (
-    <div className="relative w-6 h-6 flex items-center justify-center shrink-0">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <div className="relative w-7 h-7 flex items-center justify-center shrink-0">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         {baseSquares.map(sq => (
           <rect
             key={sq.id}
@@ -52,15 +58,30 @@ function MainApp() {
   const activeTab = getActiveTab();
   const tabs = [{ id: 'dashboard', path: '/', label: 'Dashboard', icon: LayoutDashboard }, { id: 'curriculum', path: '/curriculum', label: 'Roadmap', icon: Map }, { id: 'workbenches', path: '/workbenches', label: 'Workbenches', icon: TestTube }, { id: 'audit', path: '/audit', label: 'Audit', icon: Target }];
   const isInsideTool = location.pathname.startsWith('/workbenches/') && location.pathname.length > '/workbenches/'.length;
+  // On the screens you wander off to, the header offers a way back to the phase you are on. The Dashboard
+  // and the Roadmap already show it, and a tool is focused work, so none of those get the chip.
+  const activePhaseId = useProgressStore((state) => state.activePhaseId);
+  const phaseStatus = useProgressStore((state) => state.phaseStatus);
+  const { byPhase } = useProgress();
+  const resumePhase = !isInsideTool && (activeTab === 'workbenches' || activeTab === 'audit')
+    ? upNextPhase(phases, activePhaseId, phaseStatus)
+    : undefined;
   
   React.useEffect(() => { if (mainRef.current) mainRef.current.scrollTop = 0; }, [location.pathname]);
 
   return (
     <div className="flex flex-col h-screen bg-surface-base overflow-hidden text-ink-primary pb-safe">
-      <header className="w-full z-20 pt-safe-top">
-        <div className="px-4 py-4 flex items-center gap-3">
+      <header className="w-full z-20 pt-safe-top border-b border-rule">
+        <div className="flex min-h-16 items-center gap-3 px-4 py-2">
           <MatrixLogo activeTab={activeTab} />
-          <span className="text-meta text-ink-secondary">Rokomari BSPR</span>
+          <span className="min-w-0 flex-1 text-title text-ink-primary">Rokomari BSPR</span>
+          {resumePhase && (
+            <ResumeChip
+              phaseNumber={resumePhase.number}
+              percent={byPhase[resumePhase.id].percent}
+              onClick={() => navigate(ROADMAP_PATH, { state: roadmapState(resumePhase.id) })}
+            />
+          )}
         </div>
       </header>
       <main ref={mainRef} className="flex-1 overflow-y-auto scroll-smooth relative">
