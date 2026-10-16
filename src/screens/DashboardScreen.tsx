@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProgressStore } from '../hooks/useProgressStore';
 import { phases, priorityWins } from '../data/curriculum';
-import { CheckCircle2, Clock, Settings, Upload, ChevronDown, ArrowRight, Download, RotateCcw } from 'lucide-react';
+import { CheckCircle2, Clock, Gauge, Settings,Upload, ChevronDown, ArrowRight, Download, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/Button';
 import { HoursStrip } from '../components/HoursStrip';
@@ -155,7 +155,11 @@ export default function DashboardScreen() {
 
       {/* Columns size to their content (not equal thirds), so 123.5 hours still fits beside the other two. */}
       <Section className="flex justify-between">
-        <Figure value={`${progressPercent}%`} label="Overall" />
+        <Figure
+          value={`${progressPercent}%`}
+          label="Overall"
+          icon={<Gauge className="mt-px w-4 h-4 shrink-0 text-success" aria-hidden="true" />}
+        />
         <Figure
           divided
           value={completedDeliverables}
