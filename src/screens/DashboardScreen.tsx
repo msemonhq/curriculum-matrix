@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProgressStore } from '../hooks/useProgressStore';
-import { phases, priorityWins } from '../data/curriculum';
-import { CheckCircle2, Clock, Gauge, Settings,Upload, ChevronDown, ArrowRight, Download, RotateCcw } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { phases } from '../data/curriculum';
+import { CheckCircle2, Clock, Gauge, Settings, Upload, ArrowRight, Download, RotateCcw } from 'lucide-react';
 import { Button } from '../components/Button';
+import { CheckMark } from '../components/CheckMark';
 import { HoursStrip } from '../components/HoursStrip';
 import { ImportSheet } from '../components/ImportSheet';
 import { TextInput } from '../components/TextInput';
@@ -15,8 +15,11 @@ import { Sheet } from '../components/Sheet';
 import { useToast } from '../hooks/useToast';
 import { buildBackup } from '../lib/sanitize';
 import { cancelAllReminders } from '../services/reminders';
-import { formatHours, phaseSummary, upNextPhase } from '../lib/progress';
+import { formatHours, isModuleChecked, nextModules, phaseSummary, upNextPhase } from '../lib/progress';
 import { useProgress } from '../hooks/useProgress';
+
+const NEXT_STEP_COUNT = 3;
+const NO_IDS: ReadonlySet<string> = new Set();
 
 function Figure({ value, unit, label, icon, divided }: { value: React.ReactNode; unit?: string; label: string; icon?: React.ReactNode; divided?: boolean }) {
   return (
@@ -35,13 +38,14 @@ function Figure({ value, unit, label, icon, divided }: { value: React.ReactNode;
 
 export default function DashboardScreen() {
   const navigate = useNavigate();
-  const { activePhaseId, phaseStatus, completedModules, deliverables, timeTracking, displayName, setDisplayName, resetProgress } = useProgressStore();
+  const { activePhaseId, phaseStatus, completedModules, deliverables, timeTracking, displayName, setDisplayName, resetProgress, toggleModule } = useProgressStore();
   const { showToast } = useToast();
   const { overall, byPhase } = useProgress();
   const [showImportSheet, setShowImportSheet] = useState(false);
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
   const [showResetSheet, setShowResetSheet] = useState(false);
-  const [winsExpanded, setWinsExpanded] = useState(false);
+  // Rows ticked on this visit stay in the list (and can be unticked); the set belongs to one phase.
+  const [ticked, setTicked] = useState<{ phaseId: string; ids: ReadonlySet<string> }>({ phaseId: '', ids: new Set() });
 
   // The greeting is the screen's one title; the header above only carries the app name.
   const hour = new Date().getHours();
@@ -97,8 +101,13 @@ export default function DashboardScreen() {
     showToast('All progress has been reset.', 'success');
   };
 
-  // Quick wins disappear once their phase is completed.
-  const openWins = priorityWins.filter(win => phaseStatus[win.phaseId] !== 'completed');
+  // The first few unticked modules of the up-next phase, plus any ticked since this screen opened.
+  const kept = nextPhase && ticked.phaseId === nextPhase.id ? ticked.ids : NO_IDS;
+  const steps = nextPhase ? nextModules(nextPhase, { phaseStatus, completedModules }, NEXT_STEP_COUNT, kept) : [];
+  const tickStep = (phaseId: string, moduleId: string, wasChecked: boolean) => {
+    if (!wasChecked) setTicked(prev => ({ phaseId, ids: new Set([...(prev.phaseId === phaseId ? prev.ids : []), moduleId]) }));
+    toggleModule(phaseId, moduleId);
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -153,6 +162,42 @@ export default function DashboardScreen() {
         </Section>
       )}
 
+      {nextPhase && (
+        <Section padding="none">
+          <div className="flex items-baseline justify-between gap-3 py-3">
+            <h3 className="text-body font-semibold text-ink-primary">Next steps</h3>
+            <span className="text-meta text-ink-tertiary">Phase {nextPhase.number}</span>
+          </div>
+          {steps.length > 0 ? (
+            <ul>
+              {steps.map(mod => {
+                const isChecked = isModuleChecked({ phaseStatus, completedModules }, nextPhase.id, mod.id);
+                return (
+                  <li key={mod.id}>
+                    <button
+                      type="button"
+                      role="checkbox"
+                      aria-checked={isChecked}
+                      onClick={() => tickStep(nextPhase.id, mod.id, isChecked)}
+                      className={`min-h-11 w-full flex items-start gap-3 border-t border-rule py-3 text-left text-meta leading-snug transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/70 ${
+                        isChecked ? 'text-ink-primary' : 'text-ink-secondary'
+                      }`}
+                    >
+                      <CheckMark isChecked={isChecked} />
+                      <span className="flex-1">{mod.title}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p className="border-t border-rule py-3 text-meta text-ink-secondary">
+              Every module in Phase {nextPhase.number} is ticked. Mark the phase done on the Roadmap.
+            </p>
+          )}
+        </Section>
+      )}
+
       {/* Columns size to their content (not equal thirds), so 123.5 hours still fits beside the other two. */}
       <Section className="flex justify-between">
         <Figure
@@ -175,70 +220,6 @@ export default function DashboardScreen() {
           icon={<Clock className="mt-px w-4 h-4 shrink-0 text-clock" aria-hidden="true" />}
         />
       </Section>
-
-      {openWins.length > 0 && (
-        <Section padding="none">
-          <h3>
-            <button
-              type="button"
-              aria-expanded={winsExpanded}
-              className="min-h-11 w-full flex items-center justify-between gap-3 py-3 text-left text-body font-semibold text-ink-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 rounded-xl"
-              onClick={() => setWinsExpanded(v => !v)}
-            >
-              Quick wins
-              <motion.span className="flex shrink-0" animate={{ rotate: winsExpanded ? 180 : 0 }} transition={{ duration: 0.2, ease: [0.25, 1, 0.5, 1] }}>
-                <ChevronDown className="w-4 h-4 text-ink-tertiary" aria-hidden="true" />
-              </motion.span>
-            </button>
-          </h3>
-          <AnimatePresence initial={false}>
-            {winsExpanded && (
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                variants={{
-                  hidden: { height: 0, opacity: 0, transition: { height: { duration: 0.3 }, opacity: { duration: 0.2 } } },
-                  visible: {
-                    height: 'auto',
-                    opacity: 1,
-                    transition: {
-                      height: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
-                      opacity: { duration: 0.3, delay: 0.1 },
-                      staggerChildren: 0.06
-                    }
-                  }
-                }}
-                className="overflow-hidden"
-              >
-                <ul>
-                  {openWins.map(win => (
-                    <motion.li
-                      key={win.id}
-                      variants={{
-                        hidden: { opacity: 0, y: 12 },
-                        visible: { opacity: 1, y: 0, transition: { duration: 0.25, ease: [0.25, 1, 0.5, 1] } }
-                      }}
-                    >
-                      <button
-                        type="button"
-                        className="min-h-11 w-full flex items-center justify-between gap-3 border-t border-rule py-3 text-left transition-colors active:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/70"
-                        onClick={() => navigate('/curriculum')}
-                      >
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-meta leading-snug text-ink-primary">{win.text}</span>
-                          <span className="mt-1 block text-kicker text-ink-tertiary">Phase {phases.find(p => p.id === win.phaseId)?.number}</span>
-                        </span>
-                        <ArrowRight className="w-4 h-4 shrink-0 text-ink-tertiary" aria-hidden="true" />
-                      </button>
-                    </motion.li>
-                  ))}
-                </ul>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </Section>
-      )}
 
       <ImportSheet isOpen={showImportSheet} onClose={() => setShowImportSheet(false)} onImported={() => { setShowImportSheet(false); showToast('Progress imported successfully.', 'success'); }} />
       <Sheet isOpen={showSettingsSheet} onClose={() => setShowSettingsSheet(false)} title="Settings">
@@ -299,10 +280,3 @@ export default function DashboardScreen() {
     </div>
   );
 }
-
-
-
-
-
-
-
