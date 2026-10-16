@@ -114,6 +114,14 @@ tick only at 100, so a line at 0% shows a hollow ring and never a tick. The bar 
 value; the visible figure is hidden from assistive tech so it is not read twice. A line no phase serves (a state the
 current data never reaches) shows Brick text, "Gap", and a "Review roadmap" button instead of a bar.
 
+## Header
+
+One bar on every screen: the 28px mark (it moves to the active tab's square), "Rokomari BSPR" in the title face, and a
+hairline under it. On Workbenches and Audit it also carries a resume chip (`ResumeChip`) with the phase you are on and its
+progress, "Phase 2 · 67%", which opens the Roadmap on that phase. It stays off the Dashboard and the Roadmap, which already
+show that phase, off a tool's own screen, and off once the curriculum is complete. The chip is 44px tall; at 320px the
+name wraps to two lines before it would meet the chip.
+
 ## Hours strip
 
 `HoursStrip` (`src/components/HoursStrip.tsx`) draws progress as a length, never a ring: one segment per phase, as wide
