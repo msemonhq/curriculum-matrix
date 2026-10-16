@@ -116,7 +116,5 @@ heading button that does the same thing. The strip is a shortcut, never the only
 
 ## Not yet converted (planned for P2)
 
-P1 changes the tokens, type and shared components. These screens still use their own boxes and need the P2 layouts:
-the Dashboard ring, icon tiles and Quick wins block (which borrows `warning`, so Clock still appears outside time until
-it is redesigned); the Roadmap phase cards and their `shadow-surface`; the Workbench tiles; the Audit donut and line cards.
-
+The Dashboard and the Roadmap now follow this system. These screens still use their own boxes and need the P2 layouts:
+the Workbench tiles and the Audit donut and line cards.
