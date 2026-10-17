@@ -8,45 +8,13 @@ import DashboardScreen from './screens/DashboardScreen';
 import CurriculumScreen from './screens/CurriculumScreen';
 import WorkbenchesScreen from './screens/WorkbenchesScreen';
 import AuditMatrixScreen from './screens/AuditMatrixScreen';
+import { MatrixMark } from './components/MatrixMark';
 import { ResumeChip } from './components/ResumeChip';
 import { phases } from './data/curriculum';
 import { useProgress } from './hooks/useProgress';
 import { useProgressStore } from './hooks/useProgressStore';
 import { upNextPhase } from './lib/progress';
 import { ROADMAP_PATH, roadmapState } from './lib/roadmapLink';
-
-interface MatrixLogoProps { activeTab: string; }
-const MatrixLogo: React.FC<MatrixLogoProps> = ({ activeTab }) => {
-  const positions: Record<string, { x: number; y: number }> = { dashboard: { x: 1, y: 1 }, curriculum: { x: 13, y: 1 }, workbenches: { x: 1, y: 13 }, audit: { x: 13, y: 13 } };
-  const activePos = positions[activeTab] || positions.dashboard;
-  const baseSquares = [{ id: 'dashboard', x: 1, y: 1 }, { id: 'curriculum', x: 13, y: 1 }, { id: 'workbenches', x: 1, y: 13 }, { id: 'audit', x: 13, y: 13 }];
-  return (
-    <div className="relative w-7 h-7 flex items-center justify-center shrink-0">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        {baseSquares.map(sq => (
-          <rect
-            key={sq.id}
-            x={sq.x}
-            y={sq.y}
-            width="8"
-            height="8"
-            rx="2.5"
-            className="fill-surface-overlay stroke-edge/50"
-            strokeWidth="0.8"
-          />
-        ))}
-        <motion.rect
-          animate={{ x: activePos.x, y: activePos.y }}
-          transition={{ type: 'spring', stiffness: 450, damping: 28, mass: 0.7 }}
-          width="8"
-          height="8"
-          rx="2.5"
-          className="fill-accent"
-        />
-      </svg>
-    </div>
-  );
-};
 
 function MainApp() {
   const navigate = useNavigate();
@@ -73,7 +41,7 @@ function MainApp() {
     <div className="flex flex-col h-screen bg-surface-base overflow-hidden text-ink-primary pb-safe">
       <header className="w-full z-20 pt-safe-top border-b border-rule">
         <div className="flex min-h-16 items-center gap-3 px-4 py-2">
-          <MatrixLogo activeTab={activeTab} />
+          <MatrixMark activeTab={activeTab} />
           <span className="min-w-0 flex-1 text-title text-ink-primary">Rokomari BSPR</span>
           {resumePhase && (
             <ResumeChip
