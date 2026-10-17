@@ -6,7 +6,7 @@ import { ToolTextArea } from '../components/ToolTextArea';
 import { MAX_ITEMS, newId } from '../lib/fields';
 import { CLAIM_STATUSES, REQUIRED_CLAIMS, normalizeVerificationLog, verificationCounts } from '../lib/workbench';
 import type { Claim, ClaimStatus } from '../lib/workbench';
-import { EmptyHint, Hint, Panel, RemoveButton, SectionHeading } from './ui';
+import { EmptyHint, Panel, RemoveButton } from './ui';
 import { useToolSlice } from './useToolSlice';
 
 const STATUS_LABEL: Record<ClaimStatus, string> = { unchecked: 'Unchecked', confirmed: 'Confirmed', unsupported: 'Unsupported' };
@@ -28,11 +28,6 @@ export default function VerificationLog() {
 
   return (
     <div className="w-full text-left">
-      <SectionHeading>Verification Log</SectionHeading>
-      <Hint className="mb-4">
-        Log {REQUIRED_CLAIMS} claims an AI made about the Bangladeshi book market. For each, find the primary source and mark it confirmed or unsupported.
-      </Hint>
-
       <div className="mb-5" role="status">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 mb-2">
           <span className="text-body font-semibold text-ink-primary tabular">
