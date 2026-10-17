@@ -3,7 +3,7 @@ import { ToolInput } from '../components/ToolInput';
 import { ToolTextArea } from '../components/ToolTextArea';
 import { DECISIONS, DECISION_LABEL, abSampleSize, normalizeAbTest } from '../lib/workbench';
 import type { AbTestData, Decision } from '../lib/workbench';
-import { Hint, SectionHeading } from './ui';
+import { Hint, ToolSection } from './ui';
 import { useToolSlice } from './useToolSlice';
 
 const fmt = (n: number) => n.toLocaleString('en-US');
@@ -15,75 +15,76 @@ export default function AbTest() {
 
   return (
     <div className="w-full text-left">
-      <SectionHeading>Test plan</SectionHeading>
-      <div className="space-y-4">
-        <ToolTextArea
-          id="ab-hypothesis"
-          label="Hypothesis"
-          rows={3}
-          value={data.hypothesis}
-          maxLength={4000}
-          placeholder="If we change [what], then [metric] will [rise or fall] by [amount], because [reason]."
-          onChange={(e) => set({ hypothesis: e.target.value })}
-        />
-        <ToolInput
-          id="ab-metric"
-          label="Primary metric"
-          value={data.primaryMetric}
-          maxLength={500}
-          placeholder="e.g. Checkout conversion rate"
-          onChange={(e) => set({ primaryMetric: e.target.value })}
-        />
-        <ToolTextArea
-          id="ab-guardrails"
-          label="Guardrail metrics"
-          rows={2}
-          value={data.guardrails}
-          maxLength={1000}
-          placeholder="Metrics that must not get worse, e.g. refund rate, page load time"
-          onChange={(e) => set({ guardrails: e.target.value })}
-        />
-        <div className="grid grid-cols-2 gap-3">
-          <ToolInput
-            id="ab-baseline"
-            label="Baseline rate (%)"
-            type="number"
-            inputMode="decimal"
-            min={0}
-            max={100}
-            step="any"
-            value={data.baselinePct}
-            placeholder="4"
-            onChange={(e) => set({ baselinePct: e.target.value })}
+      <ToolSection first title="Test plan">
+        <div className="space-y-4">
+          <ToolTextArea
+            id="ab-hypothesis"
+            label="Hypothesis"
+            rows={3}
+            value={data.hypothesis}
+            maxLength={4000}
+            placeholder="If we change [what], then [metric] will [rise or fall] by [amount], because [reason]."
+            onChange={(e) => set({ hypothesis: e.target.value })}
           />
           <ToolInput
-            id="ab-mde"
-            label="Smallest effect (points)"
-            type="number"
-            inputMode="decimal"
-            min={0}
-            step="any"
-            value={data.mdePoints}
-            placeholder="1"
-            onChange={(e) => set({ mdePoints: e.target.value })}
+            id="ab-metric"
+            label="Primary metric"
+            value={data.primaryMetric}
+            maxLength={500}
+            placeholder="e.g. Checkout conversion rate"
+            onChange={(e) => set({ primaryMetric: e.target.value })}
           />
-        </div>
-        <Hint>Baseline is today&apos;s rate, for example 4 for 4%. The smallest effect is the lift worth detecting, in percentage points, for example 1.</Hint>
+          <ToolTextArea
+            id="ab-guardrails"
+            label="Guardrail metrics"
+            rows={2}
+            value={data.guardrails}
+            maxLength={1000}
+            placeholder="Metrics that must not get worse, e.g. refund rate, page load time"
+            onChange={(e) => set({ guardrails: e.target.value })}
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <ToolInput
+              id="ab-baseline"
+              label="Baseline rate (%)"
+              type="number"
+              inputMode="decimal"
+              min={0}
+              max={100}
+              step="any"
+              value={data.baselinePct}
+              placeholder="4"
+              onChange={(e) => set({ baselinePct: e.target.value })}
+            />
+            <ToolInput
+              id="ab-mde"
+              label="Smallest effect (points)"
+              type="number"
+              inputMode="decimal"
+              min={0}
+              step="any"
+              value={data.mdePoints}
+              placeholder="1"
+              onChange={(e) => set({ mdePoints: e.target.value })}
+            />
+          </div>
+          <Hint>Baseline is today&apos;s rate, for example 4 for 4%. The smallest effect is the lift worth detecting, in percentage points, for example 1.</Hint>
 
-        <div className="p-4 bg-accent-dim border border-accent/25 rounded-xl" role="status">
-          {size.ok ? (
-            <>
-              <p className="text-title text-ink-primary tabular">{fmt(size.perArm)} visitors per arm</p>
-              <p className="text-meta text-ink-secondary mt-1 tabular">{fmt(size.total)} in total · 95% confidence, 80% power, two-sided</p>
-            </>
-          ) : (
-            <p className="text-body text-ink-secondary">{size.message}</p>
-          )}
+          <div className="p-4 bg-accent-dim border border-accent/25 rounded-xl" role="status">
+            {size.ok ? (
+              <>
+                <p className="text-title text-ink-primary tabular">{fmt(size.perArm)} visitors per arm</p>
+                <p className="text-meta text-ink-secondary mt-1 tabular">{fmt(size.total)} in total · 95% confidence, 80% power, two-sided</p>
+              </>
+            ) : (
+              <p className="text-body text-ink-secondary">{size.message}</p>
+            )}
+          </div>
         </div>
-      </div>
 
-      <div className="mt-8">
-        <SectionHeading>Test report</SectionHeading>
+      </ToolSection>
+
+      <ToolSection title="Test report">
         <div className="space-y-4">
           <ToolTextArea
             id="ab-result"
@@ -117,7 +118,7 @@ export default function AbTest() {
             onChange={(e) => set({ learning: e.target.value })}
           />
         </div>
-      </div>
+      </ToolSection>
     </div>
   );
 }
