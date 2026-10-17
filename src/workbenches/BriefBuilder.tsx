@@ -4,7 +4,6 @@ import { ToolInput } from '../components/ToolInput';
 import { ToolTextArea } from '../components/ToolTextArea';
 import { normalizeBrief } from '../lib/workbench';
 import type { BriefData, Confidence } from '../lib/workbench';
-import { Hint, SectionHeading } from './ui';
 import { useToolSlice } from './useToolSlice';
 
 const CONFIDENCE_OPTIONS: ReadonlyArray<{ value: Confidence; label: string }> = [
@@ -30,9 +29,6 @@ export default function BriefBuilder() {
 
   return (
     <div className="w-full text-left">
-      <SectionHeading>Leadership brief</SectionHeading>
-      <Hint className="mb-4">One page. Lead with the answer, back it with three findings, then say what you need decided and how sure you are.</Hint>
-
       <div className="space-y-4">
         <ToolInput id="brief-title" label="Title" value={data.title} maxLength={300} placeholder="e.g. Where to put the Eid campaign budget" onChange={(e) => change({ title: e.target.value })} />
         <ToolInput id="brief-audience" label="Audience" value={data.audience} maxLength={1000} placeholder="e.g. Head of Marketing and the CEO" onChange={(e) => change({ audience: e.target.value })} />
