@@ -20,6 +20,13 @@ const FOCUSABLE_SELECTOR = [
 export function Sheet({ isOpen, onClose, title, children }: SheetProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
+  // Callers pass a new onClose on every render. Keeping the latest one in a ref means the open/close
+  // effect below runs only when the sheet opens or closes, not on every keystroke in a field inside it.
+  // (Re-running it handed focus back to the button that opened the sheet, which closed the keyboard.)
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
 
   useEffect(() => {
     if (!isOpen) return;
@@ -31,7 +38,7 @@ export function Sheet({ isOpen, onClose, title, children }: SheetProps) {
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
-        onClose();
+        onCloseRef.current();
         return;
       }
 
@@ -62,7 +69,7 @@ export function Sheet({ isOpen, onClose, title, children }: SheetProps) {
       document.body.style.overflow = previousOverflow;
       triggerRef.current?.focus();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   return (
     <AnimatePresence>
