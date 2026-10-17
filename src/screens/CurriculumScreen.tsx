@@ -154,7 +154,7 @@ export default function CurriculumScreen() {
         )}
 
         <motion.ol variants={staggerContainer} initial="hidden" animate="show">
-          {filteredPhases.map((phase, index) => {
+          {filteredPhases.map((phase) => {
             const isExpanded    = expandedId === phase.id;
             const status        = phaseStatus[phase.id] || 'not_started';
             const deliverableDone = deliverables[phase.id] || false;
