@@ -1,4 +1,4 @@
-// The Ledger palette: six named colours. Every other tone below is one of them, or Folio
+// The Ledger palette: seven named colours. Every other tone below is one of them, or Folio
 // blended over Press/Graphite, so scripts/design-tokens.test.mjs can recompute and check it.
 const PRESS = '#0B0D10'; // page
 const GRAPHITE = '#151920'; // raised panel
@@ -6,6 +6,7 @@ const FOLIO = '#ECE8DF'; // ink
 const SIGNAL = '#00C4DB'; // action, progress, complete
 const CLOCK = '#F7941E'; // time
 const BRICK = '#F87171'; // error, uncovered
+const BAIZE = '#52D681'; // a finished deliverable
 
 const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(',');
 const dim = (hex) => `rgba(${rgb(hex)},0.15)`;
@@ -34,6 +35,7 @@ export default {
         accent: { DEFAULT: SIGNAL, dim: dim(SIGNAL) },
         clock: { DEFAULT: CLOCK, dim: dim(CLOCK) },
         danger: { DEFAULT: BRICK, dim: dim(BRICK) },
+        done: BAIZE,
         // Status words keep their names but borrow a palette colour: done is Signal, caution is Clock.
         success: { DEFAULT: SIGNAL, dim: dim(SIGNAL) },
         warning: { DEFAULT: CLOCK, dim: dim(CLOCK) },

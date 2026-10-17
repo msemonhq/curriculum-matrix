@@ -129,6 +129,29 @@ export default function DashboardScreen() {
         timeTracking={timeTracking}
       />
 
+      {/* Columns size to their content (not equal thirds), so 123.5 hours still fits beside the other two. */}
+      <Section className="flex justify-between">
+        <Figure
+          value={`${progressPercent}%`}
+          label="Overall"
+          icon={<Gauge className="mt-px w-4 h-4 shrink-0 text-success" aria-hidden="true" />}
+        />
+        <Figure
+          divided
+          value={completedDeliverables}
+          unit={`/ ${totalPhases}`}
+          label="Deliverables"
+          icon={<CheckCircle2 className="mt-px w-4 h-4 shrink-0 text-done" aria-hidden="true" />}
+        />
+        <Figure
+          divided
+          value={totalLogged}
+          unit="h"
+          label="Hours logged"
+          icon={<Clock className="mt-px w-4 h-4 shrink-0 text-clock" aria-hidden="true" />}
+        />
+      </Section>
+
       {nextPhase ? (
         <Panel padding="large">
           <p className="text-kicker text-ink-secondary">Up next</p>
@@ -198,29 +221,6 @@ export default function DashboardScreen() {
           )}
         </Section>
       )}
-
-      {/* Columns size to their content (not equal thirds), so 123.5 hours still fits beside the other two. */}
-      <Section className="flex justify-between">
-        <Figure
-          value={`${progressPercent}%`}
-          label="Overall"
-          icon={<Gauge className="mt-px w-4 h-4 shrink-0 text-success" aria-hidden="true" />}
-        />
-        <Figure
-          divided
-          value={completedDeliverables}
-          unit={`/ ${totalPhases}`}
-          label="Deliverables"
-          icon={<CheckCircle2 className="mt-px w-4 h-4 shrink-0 text-success" aria-hidden="true" />}
-        />
-        <Figure
-          divided
-          value={totalLogged}
-          unit="h"
-          label="Hours logged"
-          icon={<Clock className="mt-px w-4 h-4 shrink-0 text-clock" aria-hidden="true" />}
-        />
-      </Section>
 
       <ImportSheet isOpen={showImportSheet} onClose={() => setShowImportSheet(false)} onImported={() => { setShowImportSheet(false); showToast('Progress imported successfully.', 'success'); }} />
       <Sheet isOpen={showSettingsSheet} onClose={() => setShowSettingsSheet(false)} title="Settings">

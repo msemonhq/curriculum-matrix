@@ -5,7 +5,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 // The colours live in tailwind.config.js and nowhere else. These tests keep it that way, and keep
-// the derived tones honest: each is recomputed from the six named colours, and every text colour
+// the derived tones honest: each is recomputed from the seven named colours, and every text colour
 // is checked against every surface it can sit on.
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const config = (await import(pathToFileURL(resolve(root, 'tailwind.config.js')).href)).default;
@@ -18,6 +18,7 @@ const PALETTE = {
   signal: '#00C4DB',
   clock: '#F7941E',
   brick: '#F87171',
+  baize: '#52D681',
 };
 
 const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
@@ -35,13 +36,14 @@ const contrast = (a, b) => {
   return (hi + 0.05) / (lo + 0.05);
 };
 
-test('the six named colours are the plan’s palette', () => {
+test('the seven named colours are the palette', () => {
   assert.equal(colors.surface.base, PALETTE.press);
   assert.equal(colors.surface.elevated, PALETTE.graphite);
   assert.equal(colors.ink.primary, PALETTE.folio);
   assert.equal(colors.accent.DEFAULT, PALETTE.signal);
   assert.equal(colors.clock.DEFAULT, PALETTE.clock);
   assert.equal(colors.danger.DEFAULT, PALETTE.brick);
+  assert.equal(colors.done, PALETTE.baize);
 });
 
 test('status words borrow a palette colour instead of adding one', () => {
@@ -69,7 +71,7 @@ test('every text colour reads at 4.5:1 on every surface', () => {
   const surfaces = Object.entries(colors.surface);
   const texts = [
     ['ink.primary', colors.ink.primary], ['ink.secondary', colors.ink.secondary], ['ink.tertiary', colors.ink.tertiary],
-    ['accent', colors.accent.DEFAULT], ['clock', colors.clock.DEFAULT], ['danger', colors.danger.DEFAULT],
+    ['accent', colors.accent.DEFAULT], ['clock', colors.clock.DEFAULT], ['danger', colors.danger.DEFAULT], ['done', colors.done],
   ];
   for (const [textName, fg] of texts) {
     for (const [surfaceName, bg] of surfaces) {

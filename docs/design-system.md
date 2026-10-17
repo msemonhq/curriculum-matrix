@@ -8,12 +8,12 @@ surface for things you can act on. The source of truth for every value below is 
 
 1. **Say it once.** One title per screen, one primary button per screen, one status per phase.
 2. **Rules over boxes.** A raised surface means "you can type or tap here".
-3. **Color is a unit.** Signal is progress and the action. Clock is time. Brick is destructive or wrong.
+3. **Color is a unit.** Signal is progress and the action. Clock is time. Brick is destructive or wrong. Baize is a finished deliverable.
 4. **12px is the floor.** Sentence case everywhere (no `uppercase` or wide tracking; the test fails on them); serif only for figures and titles.
 
 ## Colour
 
-Six named colours. Every other tone is Folio blended over Press or Graphite, and the test recomputes each one.
+Seven named colours. Every other tone is Folio blended over Press or Graphite, and the test recomputes each one.
 
 | Token | Value | Use |
 |---|---|---|
@@ -27,6 +27,7 @@ Six named colours. Every other tone is Folio blended over Press or Graphite, and
 | `accent`, `accent-dim` | Signal `#00C4DB` | Progress, primary button, focus, links |
 | `clock`, `clock-dim` | Clock `#F7941E` | Hours and time only |
 | `danger`, `danger-dim` | Brick `#F87171` | Destructive actions and errors |
+| `done` | Baize `#52D681` | A finished deliverable: the Dashboard's Deliverables icon. A green you can tell from Signal at a glance |
 | `success`, `success-dim` | Signal | Done. Same value as `accent`, named for meaning |
 | `warning`, `warning-dim` | Clock | Caution. Same value as `clock`, named for meaning |
 | `edge` | Folio 42% | Borders of controls: 3:1 on Press and Graphite |
@@ -146,9 +147,10 @@ removed there; a link carries you to a phase instead (see below).
 
 ## Dashboard and Roadmap
 
-The Dashboard reads top to bottom as: the greeting and the budget line, the strip, one "Up next" panel with its one
-button, "Next steps", then three figures (Overall, Deliverables, Hours logged), each with a 16px icon in the same place:
-Signal for Overall and Deliverables (progress and done), Clock for hours.
+The Dashboard reads top to bottom as: the greeting and the budget line, the strip, three figures (Overall, Deliverables,
+Hours logged), one "Up next" panel with its one button, then "Next steps". The strip and the figures say where you are;
+Up next and Next steps say what to do, and they stay together because they are about the same phase. Each figure has a
+16px icon in the same place: Signal for Overall (progress), Baize for Deliverables (finished work), Clock for hours.
 
 "Next steps" lists the first three unticked core modules of the Up next phase as check rows (`nextModules()` in
 `src/lib/progress.ts`). Ticking a row writes to the same store the Roadmap uses, so the strip, the Overall figure, the
