@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react';
+import { Info, Plus } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Select } from '../components/Select';
 import { ToolInput } from '../components/ToolInput';
@@ -6,7 +6,7 @@ import { ToolTextArea } from '../components/ToolTextArea';
 import { MAX_ITEMS, newId } from '../lib/fields';
 import { normalizeIssueTree } from '../lib/workbench';
 import type { Branch, Hypothesis } from '../lib/workbench';
-import { EmptyHint, Hint, Panel, RemoveButton, SectionHeading } from './ui';
+import { EmptyHint, Panel, RemoveButton, ToolSection } from './ui';
 import { useToolSlice } from './useToolSlice';
 
 const blankHypothesis = (): Hypothesis => ({ id: newId(), text: '', rank: 0, dataSource: '', method: '', decisionResult: '' });
@@ -39,11 +39,6 @@ export default function IssueTree() {
 
   return (
     <div className="w-full text-left">
-      <SectionHeading>One-page research plan</SectionHeading>
-      <Hint className="mb-4">
-        Start with the question, split it into branches, and give each branch a hypothesis you can test. For each one, name the data, the method, and the result that would change your decision.
-      </Hint>
-
       <ToolTextArea
         id="tree-question"
         label="Research question"
@@ -54,9 +49,16 @@ export default function IssueTree() {
         onChange={(e) => update((current) => ({ ...current, question: e.target.value }))}
       />
 
-      <div className="mt-5">
-        <SectionHeading>Branches and hypotheses</SectionHeading>
-        {hasSharedRank && <p role="status" className="mb-3 text-meta text-warning">Two hypotheses share the same priority. Give each its own number to rank them.</p>}
+      <ToolSection
+        title="Branches and hypotheses"
+        hint="For each hypothesis, name the data, the method, and the result that would change your decision."
+      >
+        {hasSharedRank && (
+          <p role="status" className="mb-3 flex items-start gap-2 text-meta text-ink-primary">
+            <Info className="mt-px w-4 h-4 shrink-0 text-ink-secondary" aria-hidden="true" />
+            Two hypotheses share the same priority. Give each its own number to rank them.
+          </p>
+        )}
         {data.branches.length === 0 && <EmptyHint>No branches yet. Add one for each part of the question you want to test.</EmptyHint>}
 
         <ul className="space-y-4 mb-4">
@@ -81,7 +83,7 @@ export default function IssueTree() {
 
                 <ul className="space-y-3">
                   {branch.hypotheses.map((h, hi) => (
-                    <li key={h.id} className="p-3 bg-surface-base border border-rule rounded-xl">
+                    <li key={h.id} className="pt-3 border-t border-rule">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-meta font-semibold text-ink-primary">Hypothesis {bi + 1}.{hi + 1}</span>
                         <RemoveButton
@@ -157,7 +159,7 @@ export default function IssueTree() {
         <Button variant="secondary" fullWidth onClick={addBranch} disabled={data.branches.length >= MAX_ITEMS}>
           <Plus className="w-4 h-4" aria-hidden="true" /> Add branch
         </Button>
-      </div>
+      </ToolSection>
     </div>
   );
 }

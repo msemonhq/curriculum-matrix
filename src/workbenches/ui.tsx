@@ -3,7 +3,7 @@ import { Trash2 } from 'lucide-react';
 import { IconButton } from '../components/IconButton';
 
 export function SectionHeading({ children }: { children: React.ReactNode }) {
-  return <h4 className="text-meta text-ink-secondary font-semibold mb-3">{children}</h4>;
+  return <h3 className="text-title text-ink-primary">{children}</h3>;
 }
 
 /** Muted explanatory text under a heading. */
@@ -16,9 +16,29 @@ export function EmptyHint({ children }: { children: React.ReactNode }) {
   return <div className="p-4 mb-3 border border-dashed border-rule rounded-xl text-body text-ink-secondary">{children}</div>;
 }
 
-/** A bordered group inside a tool: one claim, one branch, one day. */
-export function Panel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={`p-3 bg-surface-subtle border border-rule rounded-xl ${className}`}>{children}</div>;
+/** A raised group inside a tool where the person types: one claim, one branch, one day. */
+export function Panel({ children, className = '', ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={`p-4 bg-surface-elevated border border-rule rounded-xl ${className}`} {...props}>{children}</div>;
+}
+
+interface ToolSectionProps {
+  title: string;
+  /** One line under the title, only for what the screen's own description does not already say. */
+  hint?: React.ReactNode;
+  /** The first section of a tool has no rule above it. */
+  first?: boolean;
+  children: React.ReactNode;
+}
+
+/** A titled part of a tool, separated from the part above by a hairline. */
+export function ToolSection({ title, hint, first = false, children }: ToolSectionProps) {
+  return (
+    <section className={first ? '' : 'mt-8 border-t border-rule pt-6'}>
+      <SectionHeading>{title}</SectionHeading>
+      {hint && <Hint className="mt-1">{hint}</Hint>}
+      <div className="mt-4">{children}</div>
+    </section>
+  );
 }
 
 interface RemoveButtonProps {

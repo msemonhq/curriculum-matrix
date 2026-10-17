@@ -10,7 +10,7 @@ import {
   normalizeStrategyCanvas, opportunityScore, rankOpportunities, removeCompetitor,
 } from '../lib/strategy';
 import type { CanvasFactor, Opportunity } from '../lib/strategy';
-import { EmptyHint, Hint, Panel, RemoveButton, SectionHeading } from './ui';
+import { EmptyHint, Panel, RemoveButton, ToolSection } from './ui';
 import { useToolSlice } from './useToolSlice';
 
 interface ScoreSliderProps {
@@ -24,7 +24,7 @@ interface ScoreSliderProps {
 function ScoreSlider({ id, label, value, strong = false, onChange }: ScoreSliderProps) {
   return (
     <div className="flex items-center gap-3">
-      <label htmlFor={id} className={`w-24 shrink-0 truncate text-meta ${strong ? 'text-accent font-semibold' : 'text-ink-secondary'}`}>{label}</label>
+      <label htmlFor={id} className={`w-24 shrink-0 break-words text-meta ${strong ? 'text-accent font-semibold' : 'text-ink-secondary'}`}>{label}</label>
       <input
         id={id}
         type="range"
@@ -60,35 +60,33 @@ export default function StrategyCanvas() {
 
   return (
     <div className="w-full text-left">
-      <SectionHeading>Competitors</SectionHeading>
-      <Hint className="mb-3">Name up to {MAX_COMPETITORS} competitors to compare yourself with.</Hint>
-      {data.competitors.length === 0 && <EmptyHint>No competitors yet. Add the first one to see where you lead and where you trail.</EmptyHint>}
-      <ul className="space-y-2 mb-3">
-        {data.competitors.map((c, i) => (
-          <li key={c.id} className="flex items-center gap-2">
-            <ToolInput
-              id={`competitor-${c.id}`}
-              aria-label={`Competitor ${i + 1} name`}
-              value={c.name}
-              maxLength={100}
-              placeholder={`Competitor ${i + 1}`}
-              onChange={(e) => update((current) => ({ ...current, competitors: current.competitors.map((x) => (x.id === c.id ? { ...x, name: e.target.value } : x)) }))}
-            />
-            <RemoveButton
-              label={`Delete ${competitorName(i)}`}
-              needsConfirm={Boolean(c.name.trim()) || data.factors.length > 0}
-              onRemove={() => update((current) => removeCompetitor(current, c.id))}
-            />
-          </li>
-        ))}
-      </ul>
-      <Button variant="secondary" fullWidth onClick={() => update((current) => addCompetitor(current, newId()))} disabled={data.competitors.length >= MAX_COMPETITORS}>
-        <Plus className="w-4 h-4" aria-hidden="true" /> Add competitor
-      </Button>
+      <ToolSection first title="Competitors" hint={`Name up to ${MAX_COMPETITORS} competitors to compare yourself with.`}>
+        {data.competitors.length === 0 && <EmptyHint>No competitors yet. Add the first one to see where you lead and where you trail.</EmptyHint>}
+        <ul className="space-y-2 mb-3">
+          {data.competitors.map((c, i) => (
+            <li key={c.id} className="flex items-center gap-2">
+              <ToolInput
+                id={`competitor-${c.id}`}
+                aria-label={`Competitor ${i + 1} name`}
+                value={c.name}
+                maxLength={100}
+                placeholder={`Competitor ${i + 1}`}
+                onChange={(e) => update((current) => ({ ...current, competitors: current.competitors.map((x) => (x.id === c.id ? { ...x, name: e.target.value } : x)) }))}
+              />
+              <RemoveButton
+                label={`Delete ${competitorName(i)}`}
+                needsConfirm={Boolean(c.name.trim()) || data.factors.length > 0}
+                onRemove={() => update((current) => removeCompetitor(current, c.id))}
+              />
+            </li>
+          ))}
+        </ul>
+        <Button variant="secondary" fullWidth onClick={() => update((current) => addCompetitor(current, newId()))} disabled={data.competitors.length >= MAX_COMPETITORS}>
+          <Plus className="w-4 h-4" aria-hidden="true" /> Add competitor
+        </Button>
+      </ToolSection>
 
-      <div className="mt-8">
-        <SectionHeading>Gap matrix</SectionHeading>
-        <Hint className="mb-3">Score each factor from {SCORE_MIN} to {SCORE_MAX} for you and for each competitor. The gap is measured against the best competitor.</Hint>
+      <ToolSection title="Gap matrix" hint={`Score each factor from ${SCORE_MIN} to ${SCORE_MAX} for you and for each competitor. The gap is measured against the best competitor.`}>
         {data.factors.length === 0 && <EmptyHint>No factors yet. Add what customers compare, for example price, delivery speed or range.</EmptyHint>}
         <ul className="space-y-3 mb-3">
           {data.factors.map((f, fi) => {
@@ -132,11 +130,9 @@ export default function StrategyCanvas() {
         <Button variant="secondary" fullWidth onClick={() => update((current) => addFactor(current, newId()))} disabled={data.factors.length >= MAX_FACTORS}>
           <Plus className="w-4 h-4" aria-hidden="true" /> Add factor
         </Button>
-      </div>
+      </ToolSection>
 
-      <div className="mt-8">
-        <SectionHeading>Ranked opportunities</SectionHeading>
-        <Hint className="mb-3">Rate each idea for impact and effort. The score is impact divided by effort, so a high-impact, low-effort idea comes first.</Hint>
+      <ToolSection title="Ranked opportunities" hint="Rate each idea for impact and effort. The score is impact divided by effort, so a high-impact, low-effort idea comes first.">
         {data.opportunities.length === 0 && <EmptyHint>No opportunities yet. Turn a gap into an idea you could test.</EmptyHint>}
         <ul className="space-y-3 mb-3">
           {ranked.map((o, i) => {
@@ -192,7 +188,7 @@ export default function StrategyCanvas() {
         >
           <Plus className="w-4 h-4" aria-hidden="true" /> Add opportunity
         </Button>
-      </div>
+      </ToolSection>
     </div>
   );
 }

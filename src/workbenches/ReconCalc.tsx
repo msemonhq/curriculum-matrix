@@ -4,16 +4,16 @@ import { ToolInput } from '../components/ToolInput';
 import { ToolTextArea } from '../components/ToolTextArea';
 import { describeFlag, normalizeRecon, reconSummary, reconcileRow } from '../lib/workbench';
 import type { ReconFlag, ReconRow } from '../lib/workbench';
-import { Hint, Panel, SectionHeading } from './ui';
+import { Hint, Panel } from './ui';
 import { useToolSlice } from './useToolSlice';
 
 const fmt = (n: number) => n.toLocaleString('en-US');
 const signed = (n: number) => (n > 0 ? `+${fmt(n)}` : fmt(n));
 
-const FLAG_BADGE: Record<ReconFlag, { variant: 'success' | 'danger' | 'warning' | 'default'; label: string } | null> = {
+const FLAG_BADGE: Record<ReconFlag, { variant: 'success' | 'danger' | 'default'; label: string } | null> = {
   ok: { variant: 'success', label: 'Within threshold' },
   over: { variant: 'danger', label: 'Over threshold' },
-  zero_baseline: { variant: 'warning', label: 'Cannot compare' },
+  zero_baseline: { variant: 'default', label: 'Cannot compare' },
   no_data: null,
 };
 
@@ -31,12 +31,7 @@ export default function ReconCalc() {
 
   return (
     <div className="w-full text-left">
-      <SectionHeading>GA4 vs Meta, one week</SectionHeading>
-      <Hint className="mb-4">
-        GA4 counts sessions on the site and Meta counts clicks on the ad, so they rarely match. Enter seven days of each. The difference is shown as a percentage of Meta link clicks.
-      </Hint>
-
-      <div className="mb-4">
+      <div className="mb-6">
         <ToolInput
           id="recon-threshold"
           label="Flag a day when the difference is above (%)"
@@ -54,6 +49,7 @@ export default function ReconCalc() {
           }}
           onBlur={() => setThresholdText(String(data.thresholdPct))}
         />
+        <Hint className="mt-1.5">GA4 counts sessions on the site and Meta counts clicks on the ad, so they rarely match. The difference is shown as a percentage of Meta link clicks.</Hint>
       </div>
 
       <ul className="space-y-3 mb-5">
@@ -100,7 +96,7 @@ export default function ReconCalc() {
                   <p className="mt-2 text-meta text-ink-tertiary">{describeFlag(result, data.thresholdPct)}</p>
                 )}
                 {result.flag === 'zero_baseline' && (
-                  <p role="status" className="mt-2 text-meta text-warning">{describeFlag(result, data.thresholdPct)}</p>
+                  <p role="status" className="mt-2 text-meta text-ink-primary">{describeFlag(result, data.thresholdPct)}</p>
                 )}
                 {(result.flag === 'ok' || result.flag === 'over') && result.diff !== null && result.pct !== null && (
                   <p role="status" className={`mt-2 text-body font-semibold tabular ${result.flag === 'over' ? 'text-danger' : 'text-success'}`}>
@@ -113,8 +109,8 @@ export default function ReconCalc() {
         })}
       </ul>
 
-      <div className="p-4 mb-5 bg-surface-subtle border border-rule rounded-xl" role="status">
-        <h5 className="text-meta text-ink-secondary font-semibold mb-2">Week total</h5>
+      <Panel className="mb-6" role="status">
+        <h3 className="text-title text-ink-primary mb-2">Week total</h3>
         {summary.days === 0 ? (
           <p className="text-body text-ink-secondary">Enter both numbers for at least one day to see the total.</p>
         ) : (
@@ -128,7 +124,7 @@ export default function ReconCalc() {
             <p className="text-ink-secondary">Days over the threshold: {summary.flaggedDays} of {summary.days}</p>
           </div>
         )}
-      </div>
+      </Panel>
 
       <ToolTextArea
         id="recon-note"

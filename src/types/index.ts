@@ -31,13 +31,6 @@ export interface Phase {
   workbenchId?: string;
 }
 
-/** A quick win shown on the dashboard until its phase is completed. */
-export interface PriorityWin {
-  id: string;
-  phaseId: string;
-  text: string;
-}
-
 export interface WorkbenchData {
   [phaseId: string]: Record<string, unknown>;
 }

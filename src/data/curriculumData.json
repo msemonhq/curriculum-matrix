@@ -397,22 +397,5 @@
       "hoursMin": 20,
       "hoursMax": 20
     }
-  ],
-  "priorityWins": [
-    {
-      "id": "win_competitor_signoff",
-      "phaseId": "phase_6",
-      "text": "Secure BSPR-lead sign-off on competitor set & category list"
-    },
-    {
-      "id": "win_analytics_access",
-      "phaseId": "phase_4",
-      "text": "Connect real or demo GA4 / Meta view access"
-    },
-    {
-      "id": "win_bangla_keywords",
-      "phaseId": "phase_5",
-      "text": "Verify Bangla-language keyword research tool"
-    }
   ]
 }

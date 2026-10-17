@@ -1,19 +1,22 @@
-import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { phases } from '../data/curriculum';
 import { useProgressStore } from '../hooks/useProgressStore';
 import { useProgress } from '../hooks/useProgress';
-import { formatHours, isModuleChecked } from '../lib/progress';
+import { isModuleChecked, phaseRowLine, statusCounts } from '../lib/progress';
+import { phaseIdFromState } from '../lib/roadmapLink';
+import type { MarkState } from '../lib/progress';
 import type { PhaseStatus } from '../types';
 import {
-  ChevronDown, BookOpen, Clock, Target, FileCheck,
-  Circle, CheckCircle2, PlayCircle, TestTube, Search,
+  ChevronDown, FileCheck,
+  CheckCircle2, TestTube, Search,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EmptyState } from '../components/EmptyState';
-import { Badge } from '../components/Badge';
-import { ProgressBar } from '../components/ProgressBar';
+import { Panel } from '../components/Panel';
+import { StatusMark } from '../components/StatusMark';
 import { Button } from '../components/Button';
+import { CheckMark } from '../components/CheckMark';
 import { ReminderControl } from '../components/ReminderControl';
 
 const STATUS_CYCLE: Record<PhaseStatus, PhaseStatus> = {
@@ -31,46 +34,12 @@ const staggerItem = {
   show:   { opacity: 1, y: 0, transition: { duration: 0.25 } },
 };
 
-/** Visual only: the surrounding button carries the checkbox role and state. */
-function CheckMark({ isChecked }: { isChecked: boolean }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={`relative w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 transition-all duration-300 ${
-        isChecked
-          ? 'bg-accent/20 border border-accent'
-          : 'bg-surface-base border border-edge'
-      }`}
-    >
-      <svg className="w-3.5 h-3.5 text-accent" viewBox="0 0 16 16" fill="none">
-        <motion.path
-          d="M3.5 8.5L6.5 11.5L12.5 5"
-          stroke={isChecked ? 'currentColor' : 'transparent'}
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          initial={false}
-          animate={{
-            pathLength: isChecked ? 1 : 0,
-            opacity: isChecked ? 1 : 0,
-          }}
-          transition={{
-            pathLength: { type: 'spring', stiffness: 450, damping: 28 },
-            opacity: { duration: 0.15 },
-          }}
-        />
-      </svg>
-      {isChecked && (
-        <motion.span
-          initial={{ scale: 0.6, opacity: 0.9 }}
-          animate={{ scale: 1.6, opacity: 0 }}
-          transition={{ duration: 0.35, ease: 'easeOut' }}
-          className="absolute inset-0 rounded-md bg-accent/40 pointer-events-none"
-        />
-      )}
-    </span>
-  );
-}
+/** The Roadmap's status values on the shared mark's three states. */
+const MARK_STATE: Record<PhaseStatus, MarkState> = {
+  not_started: 'todo',
+  in_progress: 'active',
+  completed: 'done',
+};
 
 const STATUS_LABEL: Record<PhaseStatus, string> = {
   not_started: 'not started',
@@ -78,8 +47,18 @@ const STATUS_LABEL: Record<PhaseStatus, string> = {
   completed: 'completed',
 };
 
+/** Scrolls a phase row into view (below the pinned filter bar) and moves focus to its heading button. */
+function scrollToPhase(id: string) {
+  const row = document.getElementById(`phase-${id}`);
+  if (!row) return;
+  // An instant jump: the screen is still fading in when a link brings you here, and a smooth scroll would fight it.
+  row.scrollIntoView({ behavior: 'auto', block: 'start' });
+  row.querySelector<HTMLElement>('h3 button')?.focus({ preventScroll: true });
+}
+
 export default function CurriculumScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [expandedId, setExpandedId]   = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -91,11 +70,12 @@ export default function CurriculumScreen() {
   } = useProgressStore();
   const { byPhase } = useProgress();
 
+  const counts = useMemo(() => statusCounts(phases, phaseStatus), [phaseStatus]);
   const statusFilters = [
-    { value: 'all',         label: 'All' },
-    { value: 'not_started', label: 'To Do' },
-    { value: 'in_progress', label: 'Active' },
-    { value: 'completed',   label: 'Done' },
+    { value: 'all',         label: 'All',    count: phases.length },
+    { value: 'not_started', label: 'To do',  count: counts.not_started },
+    { value: 'in_progress', label: 'Active', count: counts.in_progress },
+    { value: 'completed',   label: 'Done',   count: counts.completed },
   ];
 
   const filteredPhases = useMemo(() => {
@@ -109,22 +89,29 @@ export default function CurriculumScreen() {
     });
   }, [searchQuery, statusFilter, phaseStatus]);
 
-  const getStatusIcon = (status: string | undefined) => {
-    switch (status) {
-      case 'completed':  return <CheckCircle2 className="text-success w-6 h-6" aria-hidden="true" />;
-      case 'in_progress': return <PlayCircle className="text-accent w-6 h-6" aria-hidden="true" />;
-      default:            return <Circle className="text-ink-tertiary w-6 h-6" aria-hidden="true" />;
-    }
-  };
+  // A link from the Dashboard or the header can ask for one phase: open it and bring it to the top.
+  const requestedPhaseId = phaseIdFromState(location.state);
+  useEffect(() => {
+    if (!requestedPhaseId || !phases.some(phase => phase.id === requestedPhaseId)) return;
+    setExpandedId(requestedPhaseId);
+    const frame = requestAnimationFrame(() => scrollToPhase(requestedPhaseId));
+    return () => cancelAnimationFrame(frame);
+  }, [requestedPhaseId, location.key]);
 
   return (
     <div className="flex flex-col h-full">
-      {/* Sticky search + filter bar */}
-      <div className="px-4 pt-3 pb-3 space-y-3 bg-surface-base/80 backdrop-blur-md sticky top-0 z-10 border-b border-rule">
+      <div className="flex-1 overflow-y-auto">
+      <div className="px-4 pt-4 pb-3">
+        <h2 className="text-display text-ink-primary">Roadmap</h2>
+      </div>
+
+      {/* Search and filters stay pinned once the title has scrolled away */}
+      <div className="px-4 pt-3 pb-3 space-y-3 bg-surface-base/80 backdrop-blur-md sticky top-0 z-10 border-y border-rule">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-tertiary" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-tertiary" aria-hidden="true" />
           <input
             type="text"
+            aria-label="Search phases or JD lines"
             placeholder="Search phases or JD lines..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -137,6 +124,8 @@ export default function CurriculumScreen() {
           {statusFilters.map(f => (
             <button
               key={f.value}
+              type="button"
+              aria-pressed={statusFilter === f.value}
               onClick={() => setStatusFilter(f.value)}
               className={`flex-1 min-h-11 py-1.5 rounded-xl text-meta font-semibold transition-all duration-200 ${
                 statusFilter === f.value
@@ -144,21 +133,27 @@ export default function CurriculumScreen() {
                   : 'border border-edge bg-surface-subtle text-ink-secondary hover:text-ink-primary'
               }`}
             >
-              {f.label}
+              {f.label} <span className="font-normal tabular">{f.count}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Phase list */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-28">
+      <div className="p-4 space-y-3 pb-28">
         {filteredPhases.length === 0 && (
-          <div className="mt-8">
-            <EmptyState title="No phases found" description="Try adjusting your search or filters." />
-          </div>
+          <EmptyState
+            title="No phases match"
+            description="Try a different search, or show every phase."
+            action={
+              <Button variant="secondary" onClick={() => { setSearchQuery(''); setStatusFilter('all'); }}>
+                Show all phases
+              </Button>
+            }
+          />
         )}
 
-        <motion.div variants={staggerContainer} initial="hidden" animate="show" className="space-y-3">
+        <motion.ol variants={staggerContainer} initial="hidden" animate="show">
           {filteredPhases.map((phase) => {
             const isExpanded    = expandedId === phase.id;
             const status        = phaseStatus[phase.id] || 'not_started';
@@ -166,72 +161,56 @@ export default function CurriculumScreen() {
             const toolId        = phase.workbenchId;
             const timeLogged    = timeTracking[phase.id] || 0;
             const note          = notes[phase.id] || '';
-            const timePercent   = phase.hoursMax > 0 ? Math.min((timeLogged / phase.hoursMax) * 100, 100) : 0;
             const moduleProgress = byPhase[phase.id];
+            const rowLine       = phaseRowLine(status, {
+              done: moduleProgress.done,
+              total: moduleProgress.total,
+              started: status === 'in_progress' || moduleProgress.done > 0,
+              trackedHours: timeLogged,
+              hoursMin: phase.hoursMin,
+              hoursMax: phase.hoursMax,
+            });
 
             return (
-              <motion.div key={phase.id} variants={staggerItem}>
-                {/* Phase card */}
-                <div className="bg-surface-elevated border border-rule rounded-2xl overflow-hidden shadow-surface">
+              <motion.li key={phase.id} id={`phase-${phase.id}`} variants={staggerItem} className="relative flex scroll-mt-40">
+                {/* The spine runs down from the top of the phase and ends in its mark, so a tick means the phase has been walked to its end.
+                    The line is Signal once the phase is finished. The mark's bottom edge sits on the row's bottom edge, so the next phase's line starts where this mark ends. */}
+                <span aria-hidden="true" className={`pointer-events-none absolute bottom-3 left-6 top-0 w-px ${status === 'completed' ? 'bg-accent' : 'bg-rule'}`} />
 
-                  {/* Phase header row */}
-                  <div
-                    className="p-4 flex items-center gap-3 cursor-pointer active:bg-surface-subtle transition-colors"
-                    onClick={() => setExpandedId(isExpanded ? null : phase.id)}
+                <div className="relative flex w-12 shrink-0 flex-col items-center justify-end">
+                  {/* Status: a real button so it can be focused and is announced with its state */}
+                  <motion.button
+                    type="button"
+                    whileTap={{ scale: 0.8 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                    aria-label={`Phase ${phase.number} status: ${STATUS_LABEL[status]}, tap to change`}
+                    className="-mb-2.5 flex min-h-11 min-w-11 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
+                    onClick={() => setPhaseStatus(phase.id, STATUS_CYCLE[status] || 'not_started')}
                   >
-                    {/* Status: a real button so it can be focused and is announced with its state */}
-                    <motion.button
+                    <StatusMark state={MARK_STATE[status]} />
+                  </motion.button>
+                </div>
+
+                <div className="min-w-0 flex-1 pb-6">
+                  <h3>
+                    <button
                       type="button"
-                      whileTap={{ scale: 0.8 }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                      aria-label={`Phase ${phase.number} status: ${STATUS_LABEL[status]}, tap to change`}
-                      className="-mx-2.5 -my-2 flex min-h-11 min-w-11 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPhaseStatus(phase.id, STATUS_CYCLE[status] || 'not_started');
-                      }}
+                      aria-expanded={isExpanded}
+                      onClick={() => setExpandedId(isExpanded ? null : phase.id)}
+                      className="flex min-h-11 w-full items-start gap-3 rounded-xl py-2.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
                     >
-                      {getStatusIcon(status)}
-                    </motion.button>
-
-                    <div className="flex-1 min-w-0">
-                      {/* Phase number badge */}
-                      <Badge variant="phase" className="mb-1">
-                        Phase {String(phase.number).padStart(2, '0')}
-                      </Badge>
-                      <h3 className="text-title text-ink-primary leading-tight break-words">{phase.title}</h3>
-
-                      {/* Meta row */}
-                      <div className="flex items-center gap-3 mt-1.5 text-meta text-ink-tertiary">
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {formatHours(phase.hoursMin, phase.hoursMax)}
+                      <span className="min-w-0 flex-1">
+                        <span className="block break-words text-title leading-tight text-ink-primary">
+                          <span className="text-ink-secondary">Phase {phase.number}</span> {phase.title}
                         </span>
-                        <span className="flex items-center gap-1">
-                          <FileCheck className="w-3 h-3" aria-hidden="true" />
-                          {moduleProgress.done}/{moduleProgress.total} modules
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Target className="w-3 h-3" />
-                          {phase.jdLinesServed.join(', ')}
-                        </span>
-                      </div>
-
-                      {/* Inline time progress bar */}
-                      {timeLogged > 0 && (
-                        <div className="mt-2">
-                          <ProgressBar progress={timePercent} height="thin" />
-                        </div>
-                      )}
-                    </div>
-
-                    <motion.div
-                      animate={{ rotate: isExpanded ? 180 : 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ChevronDown className="text-ink-tertiary w-4 h-4" />
-                    </motion.div>
-                  </div>
+                        <span className="mt-1 block text-meta text-ink-secondary">{rowLine}</span>
+                        <span className="mt-0.5 block text-meta text-ink-tertiary">Serves <span className="font-mono">{phase.jdLinesServed.join(', ')}</span></span>
+                      </span>
+                      <motion.span className="mt-1.5 flex shrink-0" animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                        <ChevronDown className="h-4 w-4 text-ink-tertiary" aria-hidden="true" />
+                      </motion.span>
+                    </button>
+                  </h3>
 
                   {/* Expanded detail */}
                   <AnimatePresence>
@@ -243,20 +222,17 @@ export default function CurriculumScreen() {
                         transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
                         className="overflow-hidden"
                       >
-                        <div className="px-4 pb-4 pt-1 border-t border-rule bg-surface-subtle/50 space-y-4">
+                        <Panel padding="none" className="mt-1 divide-y divide-rule">
 
-                          {/* Target Course */}
-                          <div className="mt-3 bg-surface-overlay rounded-xl p-3 border border-rule">
-                            <h4 className="flex items-center gap-2 text-meta text-ink-secondary font-semibold mb-2">
-                              <BookOpen className="w-3.5 h-3.5 text-accent" />
-                              Target Course
-                            </h4>
-                            <p className="text-body text-ink-primary">{phase.course}</p>
+                          {/* Target course and its modules */}
+                          <div className="p-4">
+                            <h4 className="text-kicker text-ink-secondary">Target course</h4>
+                            <p className="mt-1 text-body text-ink-primary">{phase.course}</p>
                             <motion.ul
                               variants={staggerContainer}
                               initial="hidden"
                               animate="show"
-                              className="mt-2 space-y-1.5"
+                              className="mt-2"
                             >
                               {phase.modules.map((mod) => {
                                 if (mod.kind === 'note') {
@@ -264,7 +240,7 @@ export default function CurriculumScreen() {
                                     <motion.li
                                       key={mod.id}
                                       variants={staggerItem}
-                                      className="text-meta px-3 py-2 rounded-xl border border-dashed border-rule text-ink-tertiary"
+                                      className="border-t border-rule py-2.5 text-meta text-ink-tertiary"
                                     >
                                       <span className="block">{mod.title}</span>
                                       {mod.description && <span className="block mt-0.5">{mod.description}</span>}
@@ -273,20 +249,18 @@ export default function CurriculumScreen() {
                                 }
                                 const isChecked = isModuleChecked({ phaseStatus, completedModules }, phase.id, mod.id);
                                 return (
-                                  <motion.li key={mod.id} variants={staggerItem}>
+                                  <motion.li key={mod.id} variants={staggerItem} className="border-t border-rule">
                                     <button
                                       type="button"
                                       role="checkbox"
                                       aria-checked={isChecked}
                                       onClick={() => toggleModule(phase.id, mod.id)}
-                                      className={`w-full min-h-11 text-left text-meta px-3 py-2 rounded-xl flex items-start gap-2.5 transition-all duration-200 border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 ${
-                                        isChecked
-                                          ? 'bg-accent-dim/30 border-accent/30 text-ink-primary'
-                                          : 'bg-surface-subtle border-rule text-ink-secondary hover:border-edge'
+                                      className={`w-full min-h-11 text-left text-meta py-2.5 flex items-start gap-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/70 ${
+                                        isChecked ? 'text-ink-primary' : 'text-ink-secondary'
                                       }`}
                                     >
                                       <CheckMark isChecked={isChecked} />
-                                      <span className={`flex-1 leading-relaxed ${isChecked ? 'text-ink-primary font-medium' : ''}`}>
+                                      <span className="flex-1 leading-relaxed">
                                         <span className="block">{mod.title}</span>
                                         {mod.kind === 'optional' && <span className="block text-kicker text-ink-tertiary mt-0.5">Optional (not counted in progress)</span>}
                                         {mod.description && <span className="block text-ink-tertiary mt-0.5">{mod.description}</span>}
@@ -298,23 +272,20 @@ export default function CurriculumScreen() {
                             </motion.ul>
                           </div>
 
-                          {/* Strategic Application */}
-                          <div>
-                            <h4 className="text-meta text-ink-secondary font-semibold mb-2">
-                              Strategic Application
-                            </h4>
-                            <p className="text-body text-ink-primary bg-accent-dim border border-accent/20 p-3 rounded-xl">
-                              {phase.application}
-                            </p>
+                          {/* Strategic application: plain text, no tinted box */}
+                          <div className="p-4">
+                            <h4 className="text-kicker text-ink-secondary">Strategic application</h4>
+                            <p className="mt-1 text-body text-ink-primary">{phase.application}</p>
                           </div>
 
-                          {/* Hours + Notes */}
-                          <div className="space-y-3">
-                            <div className="bg-surface-elevated border border-rule rounded-xl p-3">
-                              <label className="block text-meta text-ink-secondary font-semibold mb-1.5">
-                                Hours Logged
+                          {/* Hours and notes: the things you type */}
+                          <div className="p-4 space-y-4">
+                            <div>
+                              <label htmlFor={`hours-${phase.id}`} className="block text-meta text-ink-secondary font-semibold mb-1.5">
+                                Hours logged
                               </label>
                               <input
+                                id={`hours-${phase.id}`}
                                 type="number"
                                 min="0"
                                 value={timeLogged || ''}
@@ -324,11 +295,12 @@ export default function CurriculumScreen() {
                               />
                             </div>
 
-                            <div className="bg-surface-elevated border border-rule rounded-xl p-3">
-                              <label className="block text-meta text-ink-secondary font-semibold mb-1.5">
-                                Notes / Blockers
+                            <div>
+                              <label htmlFor={`notes-${phase.id}`} className="block text-meta text-ink-secondary font-semibold mb-1.5">
+                                Notes and blockers
                               </label>
                               <textarea
+                                id={`notes-${phase.id}`}
                                 rows={2}
                                 value={note}
                                 onChange={(e) => setPhaseNote(phase.id, e.target.value)}
@@ -341,58 +313,57 @@ export default function CurriculumScreen() {
                           {/* Reminder */}
                           <ReminderControl phaseId={phase.id} phaseTitle={phase.title} />
 
-                          {/* Deliverable toggle */}
-                          <div
-                            className={`p-3 rounded-xl border cursor-pointer transition-all duration-200 ${
-                              deliverableDone
-                                ? 'bg-success-dim border-success/30'
-                                : 'bg-surface-elevated border-rule hover:border-edge'
-                            }`}
+                          {/* Deliverable: a real toggle, so keyboards and screen readers can reach it */}
+                          <button
+                            type="button"
+                            aria-pressed={deliverableDone}
                             onClick={() => toggleDeliverable(phase.id)}
+                            className="flex w-full min-h-11 items-start gap-3 p-4 text-left transition-colors active:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/70"
                           >
-                            <div className="flex items-start gap-3">
-                              <motion.div
-                                animate={{ scale: deliverableDone ? [1, 1.25, 1] : 1 }}
-                                transition={{ duration: 0.3 }}
-                                className="mt-0.5"
-                              >
-                                {deliverableDone
-                                  ? <CheckCircle2 className="w-5 h-5 text-success" />
-                                  : <FileCheck className="w-5 h-5 text-ink-tertiary" />
-                                }
-                              </motion.div>
-                              <div>
-                                <h4 className={`text-body font-semibold ${deliverableDone ? 'text-success' : 'text-ink-primary'}`}>
-                                  Proof-of-Skill Deliverable
-                                </h4>
-                                <p className={`text-meta mt-0.5 ${deliverableDone ? 'text-success/80' : 'text-ink-secondary'}`}>
-                                  {phase.deliverable}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Open Workbench */}
-                          {toolId && (
-                            <Button
-                              variant="secondary"
-                              fullWidth
-                              onClick={() => navigate(`/workbenches/${toolId}`)}
-                              className="gap-2"
+                            <motion.span
+                              animate={{ scale: deliverableDone ? [1, 1.25, 1] : 1 }}
+                              transition={{ duration: 0.3 }}
+                              className="mt-0.5 flex"
                             >
-                              <TestTube className="w-4 h-4" />
-                              Open Workbench
-                            </Button>
+                              {deliverableDone
+                                ? <CheckCircle2 className="w-5 h-5 text-done" aria-hidden="true" />
+                                : <FileCheck className="w-5 h-5 text-ink-tertiary" aria-hidden="true" />
+                              }
+                            </motion.span>
+                            <span>
+                              <span className={`block text-body font-semibold ${deliverableDone ? 'text-done' : 'text-ink-primary'}`}>
+                                Proof-of-skill deliverable
+                              </span>
+                              <span className="mt-0.5 block text-meta text-ink-secondary">
+                                {phase.deliverable}
+                              </span>
+                            </span>
+                          </button>
+
+                          {/* Open workbench */}
+                          {toolId && (
+                            <div className="p-4">
+                              <Button
+                                variant="secondary"
+                                fullWidth
+                                onClick={() => navigate(`/workbenches/${toolId}`)}
+                                className="gap-2"
+                              >
+                                <TestTube className="w-4 h-4" aria-hidden="true" />
+                                Open workbench
+                              </Button>
+                            </div>
                           )}
-                        </div>
+                        </Panel>
                       </motion.div>
                     )}
                   </AnimatePresence>
                 </div>
-              </motion.div>
+              </motion.li>
             );
           })}
-        </motion.div>
+        </motion.ol>
+      </div>
       </div>
     </div>
   );

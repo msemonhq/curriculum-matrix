@@ -25,6 +25,8 @@ interface ProgressState extends ProgressData {
 }
 
 const PHASE_IDS = curriculumData.phases.map((phase) => phase.id);
+/** Every module id of each phase, so reopening a completed phase can keep the other modules ticked. */
+const MODULE_IDS: Record<string, string[]> = Object.fromEntries(curriculumData.phases.map((phase) => [phase.id, phase.modules.map((module) => module.id)]));
 
 /**
  * Keeps a copy of the data exactly as it was before a schema migration rewrites it, so a bad
@@ -48,7 +50,7 @@ export const useProgressStore = create<ProgressState>()(
       setActivePhase: (phaseId) => set({ activePhaseId: phaseId }),
       setPhaseStatus: (phaseId, status) => set((state) => ({ phaseStatus: { ...state.phaseStatus, [phaseId]: status }, activePhaseId: status === 'in_progress' ? phaseId : (status === 'completed' && state.activePhaseId === phaseId ? null : state.activePhaseId) })),
       toggleDeliverable: (phaseId) => set((state) => ({ deliverables: { ...state.deliverables, [phaseId]: !state.deliverables[phaseId] } })),
-      toggleModule: (phaseId, moduleId) => set((state) => toggleModuleUpdate(state, phaseId, moduleId)),
+      toggleModule: (phaseId, moduleId) => set((state) => toggleModuleUpdate(state, phaseId, moduleId, MODULE_IDS[phaseId] ?? [])),
       setWorkbench: (toolId, data) => set((state) => ({ workbench: { ...state.workbench, [toolId]: data as Record<string, unknown> } })),
       setPhaseTime: (phaseId, hours) => set((state) => ({ timeTracking: { ...state.timeTracking, [phaseId]: Math.max(0, Number.isFinite(hours) ? hours : 0) } })),
       setPhaseNote: (phaseId, note) => set((state) => ({ notes: { ...state.notes, [phaseId]: note } })),

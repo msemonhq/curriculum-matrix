@@ -71,6 +71,101 @@ export function formatHours(min: number, max: number): string {
   return min === max ? `~${trim(max)}h` : `~${trim(min)}–${trim(max)}h`;
 }
 
+/**
+ * The phase to work on next: the one marked active if it is not finished, otherwise the first
+ * unfinished phase. Undefined once everything is completed.
+ */
+export function upNextPhase<T extends { id: string }>(
+  phases: readonly T[],
+  activePhaseId: string | null,
+  phaseStatus: Record<string, PhaseStatus>,
+): T | undefined {
+  const open = (phase: T) => phaseStatus[phase.id] !== 'completed';
+  return phases.find((phase) => phase.id === activePhaseId && open(phase)) ?? phases.find(open);
+}
+
+/** How many phases are in each status; a phase with no recorded status is not started. */
+export function statusCounts(
+  phases: ReadonlyArray<{ id: string }>,
+  phaseStatus: Record<string, PhaseStatus>,
+): Record<PhaseStatus, number> {
+  const counts: Record<PhaseStatus, number> = { not_started: 0, in_progress: 0, completed: 0 };
+  for (const phase of phases) counts[phaseStatus[phase.id] ?? 'not_started'] += 1;
+  return counts;
+}
+
+/**
+ * The modules to offer as next steps for a phase: the first `count` unticked core modules, in order.
+ * A module in `keep` that is ticked stays in the list as well, so a row you have just ticked does not
+ * vanish under your thumb and can still be unticked. Optional and note modules never appear.
+ */
+export function nextModules<M extends { id: string; kind?: string }>(
+  phase: { id: string; modules: ReadonlyArray<M> },
+  inputs: ProgressInputs,
+  count: number,
+  keep: ReadonlySet<string> = new Set(),
+): M[] {
+  let open = 0;
+  return phase.modules.filter((module) => {
+    if (!isCoreModule(module)) return false;
+    if (isModuleChecked(inputs, phase.id, module.id)) return keep.has(module.id);
+    if (open >= count) return false;
+    open += 1;
+    return true;
+  });
+}
+
+/** The one status mark used across the app: done, under way, or not started. */
+export type MarkState = 'done' | 'active' | 'todo';
+
+/**
+ * The mark for a readiness percent: done only at 100, under way for anything above 0, and not
+ * started at 0, so an empty line never wears a tick. Out-of-range input falls to the nearest end,
+ * and anything that is not a number reads as not started.
+ */
+export function readinessState(percent: number): MarkState {
+  if (!(percent > 0)) return 'todo';
+  return percent >= 100 ? 'done' : 'active';
+}
+
+export interface PhaseSummaryInput {
+  done: number;
+  total: number;
+  /** In progress, or at least one module ticked. */
+  started: boolean;
+  trackedHours: number;
+  hoursMin: number;
+  hoursMax: number;
+}
+
+/**
+ * The line under a phase title: "2 of 4 modules done · 6h of ~15–18h" once it is under way,
+ * "4 modules to go · ~15–18h" before. Tracked hours show whenever there are some.
+ */
+export function phaseSummary({ done, total, started, trackedHours, hoursMin, hoursMax }: PhaseSummaryInput): string {
+  const noun = total === 1 ? 'module' : 'modules';
+  const budget = formatHours(hoursMin, hoursMax);
+  const tracked = Math.round(trackedHours * 10) / 10;
+  const parts: string[] = [];
+  if (total > 0) parts.push(started ? `${done} of ${total} ${noun} done` : `${total} ${noun} to go`);
+  parts.push(tracked > 0 ? `${trim(tracked)}h of ${budget}` : budget);
+  return parts.join(' · ');
+}
+
+/**
+ * The line under a phase title on the Roadmap: "Done · 5.5h" once finished (tracked hours if any,
+ * otherwise the budget), "In progress · 2 of 5 modules done · 3h of ~16h" while under way, and the
+ * plain summary before that.
+ */
+export function phaseRowLine(status: PhaseStatus, input: PhaseSummaryInput): string {
+  if (status === 'completed') {
+    const tracked = Math.round(input.trackedHours * 10) / 10;
+    return `Done · ${tracked > 0 ? `${trim(tracked)}h` : formatHours(input.hoursMin, input.hoursMax)}`;
+  }
+  const summary = phaseSummary(input);
+  return status === 'in_progress' ? `In progress · ${summary}` : summary;
+}
+
 export interface ToggleState extends ProgressInputs {
   activePhaseId: string | null;
 }
@@ -78,18 +173,35 @@ export interface ToggleState extends ProgressInputs {
 /**
  * State change for ticking/unticking a module. The toggle uses the effective value (so a module
  * that a completed phase shows as ticked unticks on the first tap). Ticking the first module of a
- * not_started phase starts the phase and makes it active; unticking never reverts a status and
- * completing a phase stays a manual step.
+ * not_started phase starts the phase and makes it active. Unticking a module of a completed phase
+ * reopens it (in progress, and the active phase), because a phase with a module undone is not done;
+ * without that the phase would stay pinned at 100% and nothing would move. Completing a phase stays a
+ * manual step, and unticking in a phase that is not completed never changes its status.
+ *
+ * `phaseModuleIds` is every module of the phase, core or not. When a completed phase is reopened, each
+ * module it was showing as ticked is saved as ticked, so the others stay ticked once the phase no
+ * longer counts them all as done.
  */
 export function toggleModuleUpdate(
   state: ToggleState,
   phaseId: string,
   moduleId: string,
+  phaseModuleIds: readonly string[],
 ): Pick<ToggleState, 'completedModules'> & Partial<Pick<ToggleState, 'phaseStatus' | 'activePhaseId'>> {
   const wasChecked = isModuleChecked(state, phaseId, moduleId);
   const completedModules = { ...state.completedModules, [moduleKey(phaseId, moduleId)]: !wasChecked };
   const status = state.phaseStatus[phaseId] ?? 'not_started';
   if (!wasChecked && status === 'not_started') {
+    return {
+      completedModules,
+      phaseStatus: { ...state.phaseStatus, [phaseId]: 'in_progress' },
+      activePhaseId: phaseId,
+    };
+  }
+  if (wasChecked && status === 'completed') {
+    for (const id of phaseModuleIds) {
+      if (id !== moduleId && isModuleChecked(state, phaseId, id)) completedModules[moduleKey(phaseId, id)] = true;
+    }
     return {
       completedModules,
       phaseStatus: { ...state.phaseStatus, [phaseId]: 'in_progress' },

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  formatHours, isModuleChecked, jdReadiness, overallProgress, phaseProgress, toggleModuleUpdate,
+  formatHours, isModuleChecked, jdReadiness, nextModules, overallProgress, phaseProgress, phaseRowLine, phaseSummary, readinessState, statusCounts, toggleModuleUpdate, upNextPhase,
 } from './progress.ts';
 import type { PhaseLike, ProgressInputs } from './progress.ts';
 
@@ -78,33 +78,67 @@ test('isModuleChecked: explicit value wins, completed phase is the default', () 
   assert.equal(isModuleChecked(inputs, 'phase_2', 'm1'), false);
 });
 
-test('toggle uses the effective value: first tap on a default-ticked module unticks it', () => {
+const P1_IDS = ['m1', 'm2', 'm3', 'm4', 'm5'];
+const P4_IDS = ['m1', 'm2', 'm3', 'm4', 'm5'];
+const P3_IDS = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6'];
+
+test('unticking a module of a completed phase reopens it and keeps the others ticked', () => {
   const state = { phaseStatus: { phase_1: 'completed' as const }, completedModules: {}, activePhaseId: null };
-  const next = toggleModuleUpdate(state, 'phase_1', 'm1');
-  assert.deepEqual(next, { completedModules: { phase_1_m1: false } });
+  const next = toggleModuleUpdate(state, 'phase_1', 'm1', P1_IDS);
+  assert.equal(next.phaseStatus?.phase_1, 'in_progress');
+  assert.equal(next.activePhaseId, 'phase_1');
+  assert.deepEqual(next.completedModules, { phase_1_m1: false, phase_1_m2: true, phase_1_m3: true, phase_1_m4: true, phase_1_m5: true });
+});
+
+test('unticking in a completed phase moves the progress figures, and they match the checkboxes', () => {
+  const before = { phaseStatus: { phase_1: 'completed' as const }, completedModules: {}, activePhaseId: null };
+  assert.equal(phaseProgress(PHASES[0], before).percent, 100);
+  const after = { ...before, ...toggleModuleUpdate(before, 'phase_1', 'm1', P1_IDS) };
+  // Core modules m1 to m4: three still ticked of four.
+  assert.deepEqual(phaseProgress(PHASES[0], after), { done: 3, total: 4, percent: 75 });
+  assert.equal(overallProgress(PHASES, after).percent, Math.round((5.5 * 0.75 / 92.5) * 100));
+  assert.ok(overallProgress(PHASES, after).fraction < overallProgress(PHASES, before).fraction);
+  for (const id of ['m2', 'm3', 'm4', 'm5']) assert.equal(isModuleChecked(after, 'phase_1', id), true, id);
+  assert.equal(isModuleChecked(after, 'phase_1', 'm1'), false);
+});
+
+test('reopening a completed phase does not tick a module that was explicitly unticked', () => {
+  const state = { phaseStatus: { phase_1: 'completed' as const }, completedModules: { phase_1_m3: false }, activePhaseId: null };
+  const next = toggleModuleUpdate(state, 'phase_1', 'm1', P1_IDS);
+  assert.equal(next.completedModules.phase_1_m3, false);
+  assert.equal(next.completedModules.phase_1_m2, true);
+});
+
+test('ticking again after a phase was reopened works as in any in-progress phase', () => {
+  let state: ProgressInputs & { activePhaseId: string | null } = { phaseStatus: { phase_1: 'completed' }, completedModules: {}, activePhaseId: null };
+  state = { ...state, ...toggleModuleUpdate(state, 'phase_1', 'm1', P1_IDS) };
+  state = { ...state, ...toggleModuleUpdate(state, 'phase_1', 'm1', P1_IDS) };
+  assert.equal(state.phaseStatus.phase_1, 'in_progress');
+  assert.equal(phaseProgress(PHASES[0], state).percent, 100);
 });
 
 test('ticking the first module of a not_started phase starts it and makes it active', () => {
   const state = { phaseStatus: {}, completedModules: {}, activePhaseId: 'phase_1' };
-  const next = toggleModuleUpdate(state, 'phase_4', 'm1');
+  const next = toggleModuleUpdate(state, 'phase_4', 'm1', P4_IDS);
   assert.equal(next.completedModules.phase_4_m1, true);
   assert.equal(next.phaseStatus?.phase_4, 'in_progress');
   assert.equal(next.activePhaseId, 'phase_4');
 });
 
-test('ticking in an in-progress phase leaves status and active phase alone; unticking never reverts', () => {
+test('in a phase that is not completed, ticking and unticking leave status and active phase alone', () => {
   const state = { phaseStatus: { phase_4: 'in_progress' as const }, completedModules: { phase_4_m1: true }, activePhaseId: 'phase_2' };
-  const tick = toggleModuleUpdate(state, 'phase_4', 'm2');
+  const tick = toggleModuleUpdate(state, 'phase_4', 'm2', P4_IDS);
   assert.equal(tick.phaseStatus, undefined);
   assert.equal(tick.activePhaseId, undefined);
-  const untick = toggleModuleUpdate(state, 'phase_4', 'm1');
+  const untick = toggleModuleUpdate(state, 'phase_4', 'm1', P4_IDS);
   assert.deepEqual(untick, { completedModules: { phase_4_m1: false } });
+  assert.equal(phaseProgress(PHASES[3], { ...state, ...untick }).percent, 0);
 });
 
 test('a phase with every core module ticked is not auto-completed', () => {
   let state = { phaseStatus: {} as ProgressInputs['phaseStatus'], completedModules: {} as Record<string, boolean>, activePhaseId: null as string | null };
   for (const m of ['m1', 'm2', 'm3', 'm4', 'm5']) {
-    state = { ...state, ...toggleModuleUpdate(state, 'phase_3', m) };
+    state = { ...state, ...toggleModuleUpdate(state, 'phase_3', m, P3_IDS) };
   }
   assert.equal(state.phaseStatus.phase_3, 'in_progress');
   assert.equal(phaseProgress(PHASES[2], state).percent, 100);
@@ -124,4 +158,129 @@ test('formatHours writes ranges with an en dash and drops the range when min equ
   assert.equal(formatHours(18, 19), '~18–19h');
   assert.equal(formatHours(87, 92.5), '~87–92.5h');
   assert.equal(formatHours(16, 16), '~16h');
+});
+
+test('phaseSummary: under way shows modules done and tracked hours against the budget', () => {
+  assert.equal(
+    phaseSummary({ done: 2, total: 4, started: true, trackedHours: 6, hoursMin: 15, hoursMax: 18 }),
+    '2 of 4 modules done · 6h of ~15–18h',
+  );
+  assert.equal(
+    phaseSummary({ done: 1, total: 3, started: true, trackedHours: 1.5, hoursMin: 2, hoursMax: 2 }),
+    '1 of 3 modules done · 1.5h of ~2h',
+  );
+});
+
+test('phaseSummary: before the phase starts it counts the modules to go and gives the budget', () => {
+  assert.equal(phaseSummary({ done: 0, total: 4, started: false, trackedHours: 0, hoursMin: 15, hoursMax: 18 }), '4 modules to go · ~15–18h');
+});
+
+test('phaseSummary: no tracked hours gives the budget alone; tiny or invalid hours count as none', () => {
+  assert.equal(phaseSummary({ done: 2, total: 5, started: true, trackedHours: 0, hoursMin: 16, hoursMax: 16 }), '2 of 5 modules done · ~16h');
+  assert.equal(phaseSummary({ done: 2, total: 5, started: true, trackedHours: 0.04, hoursMin: 16, hoursMax: 16 }), '2 of 5 modules done · ~16h');
+  assert.equal(phaseSummary({ done: 2, total: 5, started: true, trackedHours: Number.NaN, hoursMin: 16, hoursMax: 16 }), '2 of 5 modules done · ~16h');
+});
+
+test('phaseSummary: tracked hours round to one decimal and show even before a module is ticked', () => {
+  assert.equal(phaseSummary({ done: 0, total: 5, started: false, trackedHours: 3.46, hoursMin: 4.5, hoursMax: 6 }), '5 modules to go · 3.5h of ~4.5–6h');
+});
+
+test('phaseSummary: singular module, and a phase with no core modules gives only the hours', () => {
+  assert.equal(phaseSummary({ done: 0, total: 1, started: false, trackedHours: 0, hoursMin: 1, hoursMax: 1 }), '1 module to go · ~1h');
+  assert.equal(phaseSummary({ done: 0, total: 0, started: true, trackedHours: 2, hoursMin: 3, hoursMax: 4 }), '2h of ~3–4h');
+});
+
+test('phaseRowLine: a finished phase says Done with the hours actually tracked, or the budget if none', () => {
+  const base = { done: 5, total: 5, started: true, hoursMin: 16, hoursMax: 16 };
+  assert.equal(phaseRowLine('completed', { ...base, trackedHours: 9.25 }), 'Done · 9.3h');
+  assert.equal(phaseRowLine('completed', { ...base, trackedHours: 0 }), 'Done · ~16h');
+});
+
+test('phaseRowLine: in progress leads with the status; not started is the plain summary', () => {
+  const input = { done: 2, total: 5, started: true, trackedHours: 3, hoursMin: 16, hoursMax: 16 };
+  assert.equal(phaseRowLine('in_progress', input), 'In progress · 2 of 5 modules done · 3h of ~16h');
+  assert.equal(phaseRowLine('not_started', { ...input, done: 0, started: false, trackedHours: 0 }), '5 modules to go · ~16h');
+});
+
+test('upNextPhase: the active phase wins while it is unfinished', () => {
+  assert.equal(upNextPhase(PHASES, 'phase_4', { phase_1: 'completed' })?.id, 'phase_4');
+});
+
+test('upNextPhase: with no active phase, or a finished or unknown one, it is the first unfinished phase', () => {
+  const status: ProgressInputs['phaseStatus'] = { phase_1: 'completed', phase_2: 'completed', phase_4: 'completed' };
+  assert.equal(upNextPhase(PHASES, null, status)?.id, 'phase_3');
+  assert.equal(upNextPhase(PHASES, 'phase_4', status)?.id, 'phase_3'); // active but completed
+  assert.equal(upNextPhase(PHASES, 'nope', status)?.id, 'phase_3');
+  assert.equal(upNextPhase(PHASES, null, {})?.id, 'phase_1');
+});
+
+test('upNextPhase: nothing is next once every phase is completed', () => {
+  const all = Object.fromEntries(PHASES.map((p) => [p.id, 'completed' as const]));
+  assert.equal(upNextPhase(PHASES, 'phase_2', all), undefined);
+  assert.equal(upNextPhase([], null, {}), undefined);
+});
+
+// ─── readinessState: the Audit's status mark ────────────────────────
+test('readinessState: a tick only at 100, a ringed dot above 0, hollow at 0', () => {
+  assert.equal(readinessState(0), 'todo');
+  assert.equal(readinessState(1), 'active');
+  assert.equal(readinessState(50), 'active');
+  assert.equal(readinessState(99), 'active');
+  assert.equal(readinessState(100), 'done');
+});
+
+test('readinessState: out-of-range and non-numeric input fall to the nearest end', () => {
+  assert.equal(readinessState(-5), 'todo');
+  assert.equal(readinessState(250), 'done');
+  assert.equal(readinessState(Number.NaN), 'todo');
+});
+
+test('readinessState follows jdReadiness: a line whose phases are all finished is done, untouched is todo', () => {
+  const none: ProgressInputs = { phaseStatus: {}, completedModules: {} };
+  const partial: ProgressInputs = { phaseStatus: { phase_1: 'in_progress' }, completedModules: { phase_1_m1: true } };
+  const finished: ProgressInputs = { phaseStatus: { phase_1: 'completed' }, completedModules: {} };
+  assert.equal(readinessState(jdReadiness('R1', PHASES, none).percent), 'todo');
+  assert.equal(readinessState(jdReadiness('R1', PHASES, partial).percent), 'active');
+  assert.equal(readinessState(jdReadiness('R1', PHASES, finished).percent), 'done');
+});
+
+// Phase 3 has core m1..m5 and an optional m6; phase 1 has core m1..m4 and a note m5.
+const ids = (list: Array<{ id: string }>) => list.map((m) => m.id);
+
+test('nextModules offers the first unticked core modules in order and skips optional and note ones', () => {
+  assert.deepEqual(ids(nextModules(PHASES[2], empty(), 3)), ['m1', 'm2', 'm3']);
+  assert.deepEqual(ids(nextModules(PHASES[2], empty(), 10)), ['m1', 'm2', 'm3', 'm4', 'm5']); // m6 is optional
+  assert.deepEqual(ids(nextModules(PHASES[0], empty(), 10)), ['m1', 'm2', 'm3', 'm4']); // m5 is a note
+});
+
+test('nextModules moves past ticked modules, wherever they are', () => {
+  const inputs = { ...empty(), completedModules: { phase_3_m1: true, phase_3_m3: true } };
+  assert.deepEqual(ids(nextModules(PHASES[2], inputs, 3)), ['m2', 'm4', 'm5']);
+});
+
+test('nextModules keeps a row you just ticked, and the window still holds the full count after it', () => {
+  const inputs = { ...empty(), completedModules: { phase_3_m1: true } };
+  assert.deepEqual(ids(nextModules(PHASES[2], inputs, 3, new Set(['m1']))), ['m1', 'm2', 'm3', 'm4']);
+  // Kept ids that are not ticked are not shown twice, and ids from other phases change nothing.
+  assert.deepEqual(ids(nextModules(PHASES[2], empty(), 3, new Set(['m1', 'm9']))), ['m1', 'm2', 'm3']);
+});
+
+test('nextModules is empty when everything is ticked, or when none are wanted', () => {
+  const all = { ...empty(), completedModules: Object.fromEntries(['m1', 'm2', 'm3', 'm4', 'm5'].map((m) => [`phase_3_${m}`, true])) };
+  assert.deepEqual(nextModules(PHASES[2], all, 3), []);
+  assert.deepEqual(ids(nextModules(PHASES[2], all, 3, new Set(['m2']))), ['m2']);
+  assert.deepEqual(nextModules(PHASES[2], empty(), 0), []);
+});
+
+test('nextModules reads a completed phase as ticked, except a module explicitly unticked', () => {
+  const inputs: ProgressInputs = { phaseStatus: { phase_3: 'completed' }, completedModules: { phase_3_m2: false } };
+  assert.deepEqual(ids(nextModules(PHASES[2], inputs, 3)), ['m2']);
+});
+
+test('statusCounts tallies each status and treats a phase with no status as not started', () => {
+  assert.deepEqual(statusCounts(PHASES, {}), { not_started: 8, in_progress: 0, completed: 0 });
+  const mixed = { phase_1: 'completed', phase_2: 'completed', phase_3: 'in_progress', phase_5: 'not_started' } as const;
+  assert.deepEqual(statusCounts(PHASES, mixed), { not_started: 5, in_progress: 1, completed: 2 });
+  // A status for a phase that does not exist is not counted.
+  assert.deepEqual(statusCounts(PHASES.slice(0, 2), { phase_1: 'completed', phase_7: 'completed' }), { not_started: 1, in_progress: 0, completed: 1 });
 });

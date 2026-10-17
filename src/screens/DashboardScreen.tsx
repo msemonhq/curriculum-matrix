@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProgressStore } from '../hooks/useProgressStore';
-import { phases, priorityWins } from '../data/curriculum';
-import { CheckCircle2, Zap, Clock, Settings, Upload, ChevronDown, ArrowRight, Download, RotateCcw } from 'lucide-react';
-import { motion, animate, AnimatePresence } from 'framer-motion';
+import { phases } from '../data/curriculum';
+import { CheckCircle2, Clock, Gauge, Settings, Upload, ArrowRight, Download, RotateCcw } from 'lucide-react';
 import { Button } from '../components/Button';
+import { CheckMark } from '../components/CheckMark';
+import { HoursStrip } from '../components/HoursStrip';
 import { ImportSheet } from '../components/ImportSheet';
 import { TextInput } from '../components/TextInput';
 import { IconButton } from '../components/IconButton';
@@ -14,38 +15,49 @@ import { Sheet } from '../components/Sheet';
 import { useToast } from '../hooks/useToast';
 import { buildBackup } from '../lib/sanitize';
 import { cancelAllReminders } from '../services/reminders';
-import { formatHours } from '../lib/progress';
+import { formatHours, isModuleChecked, nextModules, phaseSummary, upNextPhase } from '../lib/progress';
 import { useProgress } from '../hooks/useProgress';
+import { ROADMAP_PATH, roadmapState } from '../lib/roadmapLink';
 
-function AnimatedNumber({ value, suffix = '' }: { value: number; suffix?: string }) {
-  const [display, setDisplay] = useState(0);
-  useEffect(() => {
-    const controls = animate(0, value, {
-      duration: 1.0,
-      ease: "linear",
-      onUpdate: (latest) => setDisplay(Math.round(latest))
-    });
-    return () => controls.stop();
-  }, [value]);
-  return <span className="tabular">{display}{suffix}</span>;
+const NEXT_STEP_COUNT = 3;
+const NO_IDS: ReadonlySet<string> = new Set();
+
+function Figure({ value, unit, label, icon, divided }: { value: React.ReactNode; unit?: string; label: string; icon?: React.ReactNode; divided?: boolean }) {
+  return (
+    <div className={`min-w-0 ${divided ? 'border-l border-rule pl-3' : ''}`}>
+      <div className="flex flex-wrap items-baseline gap-x-1">
+        <span className="text-figure text-ink-primary tabular">{value}</span>
+        {unit && <span className="whitespace-nowrap text-meta text-ink-tertiary">{unit}</span>}
+      </div>
+      <p className="mt-1 flex items-start gap-1.5 text-meta text-ink-secondary">
+        {icon}
+        <span>{label}</span>
+      </p>
+    </div>
+  );
 }
 
 export default function DashboardScreen() {
   const navigate = useNavigate();
-  const { activePhaseId, phaseStatus, deliverables, timeTracking, displayName, setDisplayName, resetProgress } = useProgressStore();
+  const { activePhaseId, phaseStatus, completedModules, deliverables, timeTracking, displayName, setDisplayName, resetProgress, toggleModule } = useProgressStore();
   const { showToast } = useToast();
   const { overall, byPhase } = useProgress();
   const [showImportSheet, setShowImportSheet] = useState(false);
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
   const [showResetSheet, setShowResetSheet] = useState(false);
-  const [winsExpanded, setWinsExpanded] = useState(false);
+  // Rows ticked on this visit stay in the list (and can be unticked); the set belongs to one phase.
+  const [ticked, setTicked] = useState<{ phaseId: string; ids: ReadonlySet<string> }>({ phaseId: '', ids: new Set() });
 
-  const completedPhases = phases.filter(phase => phaseStatus[phase.id] === 'completed').length;
+  // The greeting is the screen's one title; the header above only carries the app name.
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const name = displayName.trim();
+
   const completedDeliverables = Object.values(deliverables).filter(Boolean).length;
   const totalPhases = phases.length;
-  // Weighted by each phase's hoursMax, so a 20-hour phase moves the ring more than a 2-hour one.
+  // Weighted by each phase's hoursMax, so a 20-hour phase moves the strip more than a 2-hour one.
   const progressPercent = overall.percent;
-  const nextPhase = activePhaseId ? (phases.find(phase => phase.id === activePhaseId && phaseStatus[phase.id] !== 'completed') || phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed')) : phases.find(phase => (phaseStatus[phase.id] || 'not_started') !== 'completed');
+  const nextPhase = upNextPhase(phases, activePhaseId, phaseStatus);
   // Whether the recommended phase is already under way decides what the card says and offers.
   const nextProgress = nextPhase ? byPhase[nextPhase.id] : undefined;
   const nextStarted = !!nextPhase && (phaseStatus[nextPhase.id] === 'in_progress' || (nextProgress?.done ?? 0) > 0);
@@ -53,8 +65,6 @@ export default function DashboardScreen() {
   const totalHoursMax = phases.reduce((acc, p) => acc + p.hoursMax, 0);
   const hoursDisplay = formatHours(totalHoursMin, totalHoursMax);
   const totalLogged = Math.round(Object.values(timeTracking).reduce((sum, h) => sum + (h || 0), 0) * 10) / 10;
-  const radius = 42;
-  const circumference = 2 * Math.PI * radius;
 
   const makeBackup = () => {
     const state = useProgressStore.getState();
@@ -92,38 +102,77 @@ export default function DashboardScreen() {
     showToast('All progress has been reset.', 'success');
   };
 
-  // Quick wins disappear once their phase is completed.
-  const openWins = priorityWins.filter(win => phaseStatus[win.phaseId] !== 'completed');
+  // The first few unticked modules of the up-next phase, plus any ticked since this screen opened.
+  const kept = nextPhase && ticked.phaseId === nextPhase.id ? ticked.ids : NO_IDS;
+  const steps = nextPhase ? nextModules(nextPhase, { phaseStatus, completedModules }, NEXT_STEP_COUNT, kept) : [];
+  const tickStep = (phaseId: string, moduleId: string, wasChecked: boolean) => {
+    if (!wasChecked) setTicked(prev => ({ phaseId, ids: new Set([...(prev.phaseId === phaseId ? prev.ids : []), moduleId]) }));
+    toggleModule(phaseId, moduleId);
+  };
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-app-nav">
-      <div className="flex items-center justify-between">
-        <div><p className="text-meta text-ink-secondary">Overview</p><h2 className="text-display text-ink-primary">Your curriculum</h2></div>
-        <IconButton label="Open settings" onClick={() => setShowSettingsSheet(true)}><Settings className="w-5 h-5" aria-hidden="true" /></IconButton>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <h2 className="break-words text-display text-ink-primary">{greeting}{name ? `, ${name}` : ''}</h2>
+          <p className="mt-1 text-meta text-ink-secondary">{hoursDisplay} across {totalPhases} phases</p>
+        </div>
+        <IconButton className="-mr-3 shrink-0" label="Open settings" onClick={() => setShowSettingsSheet(true)}><Settings className="w-5 h-5" aria-hidden="true" /></IconButton>
       </div>
+
+      <HoursStrip
+        phases={phases}
+        phaseStatus={phaseStatus}
+        completedModules={completedModules}
+        activePhaseId={nextPhase?.id ?? null}
+        timeTracking={timeTracking}
+      />
+
+      {/* Columns size to their content (not equal thirds), so 123.5 hours still fits beside the other two. */}
+      <Section className="flex justify-between">
+        <Figure
+          value={`${progressPercent}%`}
+          label="Overall"
+          icon={<Gauge className="mt-px w-4 h-4 shrink-0 text-success" aria-hidden="true" />}
+        />
+        <Figure
+          divided
+          value={completedDeliverables}
+          unit={`/ ${totalPhases}`}
+          label="Deliverables"
+          icon={<CheckCircle2 className="mt-px w-4 h-4 shrink-0 text-done" aria-hidden="true" />}
+        />
+        <Figure
+          divided
+          value={totalLogged}
+          unit="h"
+          label="Hours logged"
+          icon={<Clock className="mt-px w-4 h-4 shrink-0 text-clock" aria-hidden="true" />}
+        />
+      </Section>
 
       {nextPhase ? (
         <Panel padding="large">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-accent-dim flex items-center justify-center shrink-0">
-              <ArrowRight className="w-5 h-5 text-accent" aria-hidden="true" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-kicker text-accent">Up next</p>
-              <h3 className="text-title text-ink-primary mt-1">
-                Phase {nextPhase.number}: {nextPhase.title}
-              </h3>
-              {nextProgress && nextProgress.total > 0 && (
-                <p className="text-meta text-ink-secondary mt-1">
-                  {nextStarted ? `${nextProgress.done} of ${nextProgress.total} modules done` : `${nextProgress.total} modules to go`}
-                </p>
-              )}
-              <Button fullWidth onClick={() => navigate('/curriculum')} className="mt-7">
-                {nextStarted ? 'Continue' : 'Start'} Phase {nextPhase.number} <ArrowRight className="w-4 h-4" aria-hidden="true" />
-              </Button>
-            </div>
-          </div>
+          <p className="text-kicker text-ink-secondary">Up next</p>
+          <h3 className="mt-1 text-title text-ink-primary">
+            <span className="text-ink-secondary">Phase {nextPhase.number}</span> {nextPhase.title}
+          </h3>
+          {nextProgress && (
+            <p className="mt-1 text-meta text-ink-secondary">
+              {phaseSummary({
+                done: nextProgress.done,
+                total: nextProgress.total,
+                started: nextStarted,
+                trackedHours: timeTracking[nextPhase.id] ?? 0,
+                hoursMin: nextPhase.hoursMin,
+                hoursMax: nextPhase.hoursMax,
+              })}
+            </p>
+          )}
+          <Button fullWidth onClick={() => navigate(ROADMAP_PATH, { state: roadmapState(nextPhase.id) })} className="mt-6">
+            {nextStarted ? 'Continue' : 'Start'} Phase {nextPhase.number} <ArrowRight className="w-4 h-4" aria-hidden="true" />
+          </Button>
         </Panel>
       ) : (
         <Section padding="large">
@@ -137,104 +186,40 @@ export default function DashboardScreen() {
         </Section>
       )}
 
-      <Section padding="large" className="flex items-center justify-center">
-        <div className="relative w-56 h-56 flex items-center justify-center">
-          <svg className="w-full h-full -rotate-90 block" viewBox="0 0 100 100" role="img" aria-label={`${progressPercent}% of curriculum complete`}>
-            <circle cx="50" cy="50" r={radius} fill="transparent" className="text-rule" stroke="currentColor" strokeWidth="7" />
-            <motion.circle cx="50" cy="50" r={radius} fill="transparent" className="text-accent" stroke="currentColor" strokeWidth="7" strokeLinecap="round" strokeDasharray={circumference} initial={{ strokeDashoffset: circumference }} animate={{ strokeDashoffset: circumference - (circumference * progressPercent) / 100 }} transition={{ duration: 1.2 }} />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center space-y-1.5 pt-1">
-            <span className="text-figure text-ink-primary tabular">
-              <AnimatedNumber value={progressPercent} suffix="%" />
-            </span>
-            <span className="text-kicker text-accent">Overall progress</span>
-            <span className="text-meta text-ink-tertiary">{completedPhases} of {totalPhases} phases completed</span>
+      {nextPhase && (
+        <Section padding="none">
+          <div className="flex items-baseline justify-between gap-3 py-3">
+            <h3 className="text-body font-semibold text-ink-primary">Next steps</h3>
+            <span className="text-meta text-ink-tertiary">Phase {nextPhase.number}</span>
           </div>
-        </div>
-      </Section>
-
-      <Section className="grid grid-cols-2 gap-x-6">
-        <div className="min-w-0">
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-figure text-ink-primary tabular">{completedDeliverables}</span>
-            <span className="text-meta text-ink-tertiary">/ {totalPhases}</span>
-          </div>
-          <p className="mt-1 flex items-center gap-1.5 text-meta text-ink-secondary">
-            <CheckCircle2 className="w-4 h-4 shrink-0 text-success" aria-hidden="true" />
-            Deliverables done
-          </p>
-        </div>
-        <div className="min-w-0 border-l border-rule pl-6">
-          <div className="flex flex-wrap items-baseline gap-x-1.5">
-            <span className="text-figure text-ink-primary tabular">{totalLogged}</span>
-            <span className="whitespace-nowrap text-meta text-ink-tertiary">/ {hoursDisplay}</span>
-          </div>
-          <p className="mt-1 flex items-center gap-1.5 text-meta text-ink-secondary">
-            <Clock className="w-4 h-4 shrink-0 text-clock" aria-hidden="true" />
-            Hours logged
-          </p>
-        </div>
-      </Section>
-
-      {openWins.length > 0 && (
-      <div className="bg-warning-dim border border-warning/25 rounded-2xl overflow-hidden">
-        <button type="button" aria-expanded={winsExpanded} className="min-h-11 w-full flex items-center gap-3 p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 active:scale-[0.98] transition-transform duration-100" onClick={() => setWinsExpanded(v => !v)}>
-          <div className="w-8 h-8 rounded-xl bg-warning/15 flex items-center justify-center shrink-0">
-            <Zap className="text-warning w-4 h-4" aria-hidden="true" />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-body font-semibold text-ink-primary">Quick wins</h3>
-          </div>
-          <motion.div animate={{ rotate: winsExpanded ? 180 : 0 }} transition={{ duration: 0.2, ease: [0.25, 1, 0.5, 1] }}>
-            <ChevronDown className="w-4 h-4 text-ink-tertiary" aria-hidden="true" />
-          </motion.div>
-        </button>
-        <AnimatePresence initial={false}>
-          {winsExpanded && (
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              variants={{
-                hidden: { height: 0, opacity: 0, transition: { height: { duration: 0.3 }, opacity: { duration: 0.2 } } },
-                visible: {
-                  height: 'auto',
-                  opacity: 1,
-                  transition: {
-                    height: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
-                    opacity: { duration: 0.3, delay: 0.1 },
-                    staggerChildren: 0.06
-                  }
-                }
-              }}
-              className="overflow-hidden"
-            >
-              <ul className="px-4 pb-4 space-y-2">
-                {openWins.map(win => (
-                  <motion.li
-                    key={win.id}
-                    variants={{
-                      hidden: { opacity: 0, y: 12 },
-                      visible: { opacity: 1, y: 0, transition: { duration: 0.25, ease: [0.25, 1, 0.5, 1] } }
-                    }}
-                    className="flex"
-                  >
-                    <button type="button" className="w-full flex items-center justify-between text-left bg-surface-elevated/40 hover:bg-surface-elevated/60 p-3 rounded-lg border border-warning/10 active:scale-[0.98] transition-transform duration-100" onClick={() => navigate('/curriculum')}>
-                      <div className="flex-1 pr-3">
-                        <p className="text-meta text-ink-primary font-medium leading-snug">{win.text}</p>
-                        <p className="text-kicker text-warning/80 mt-1">Phase {phases.find(p => p.id === win.phaseId)?.number}</p>
-                      </div>
-                      <div className="w-6 h-6 rounded-full bg-warning/15 flex items-center justify-center shrink-0">
-                        <ArrowRight className="w-3.5 h-3.5 text-warning" aria-hidden="true" />
-                      </div>
+          {steps.length > 0 ? (
+            <ul>
+              {steps.map(mod => {
+                const isChecked = isModuleChecked({ phaseStatus, completedModules }, nextPhase.id, mod.id);
+                return (
+                  <li key={mod.id}>
+                    <button
+                      type="button"
+                      role="checkbox"
+                      aria-checked={isChecked}
+                      onClick={() => tickStep(nextPhase.id, mod.id, isChecked)}
+                      className={`min-h-11 w-full flex items-start gap-3 border-t border-rule py-3 text-left text-meta leading-snug transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/70 ${
+                        isChecked ? 'text-ink-primary' : 'text-ink-secondary'
+                      }`}
+                    >
+                      <CheckMark isChecked={isChecked} />
+                      <span className="flex-1">{mod.title}</span>
                     </button>
-                  </motion.li>
-                ))}
-              </ul>
-            </motion.div>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p className="border-t border-rule py-3 text-meta text-ink-secondary">
+              Every module in Phase {nextPhase.number} is ticked. Mark the phase done on the Roadmap.
+            </p>
           )}
-        </AnimatePresence>
-      </div>
+        </Section>
       )}
 
       <ImportSheet isOpen={showImportSheet} onClose={() => setShowImportSheet(false)} onImported={() => { setShowImportSheet(false); showToast('Progress imported successfully.', 'success'); }} />
@@ -296,10 +281,3 @@ export default function DashboardScreen() {
     </div>
   );
 }
-
-
-
-
-
-
-

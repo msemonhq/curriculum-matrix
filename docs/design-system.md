@@ -8,12 +8,12 @@ surface for things you can act on. The source of truth for every value below is 
 
 1. **Say it once.** One title per screen, one primary button per screen, one status per phase.
 2. **Rules over boxes.** A raised surface means "you can type or tap here".
-3. **Color is a unit.** Signal is progress and the action. Clock is time. Brick is destructive or wrong.
+3. **Color is a unit.** Signal is progress and the action. Clock is time. Brick is destructive or wrong. Baize is a finished deliverable.
 4. **12px is the floor.** Sentence case everywhere (no `uppercase` or wide tracking; the test fails on them); serif only for figures and titles.
 
 ## Colour
 
-Six named colours. Every other tone is Folio blended over Press or Graphite, and the test recomputes each one.
+Seven named colours. Every other tone is Folio blended over Press or Graphite, and the test recomputes each one.
 
 | Token | Value | Use |
 |---|---|---|
@@ -27,6 +27,7 @@ Six named colours. Every other tone is Folio blended over Press or Graphite, and
 | `accent`, `accent-dim` | Signal `#00C4DB` | Progress, primary button, focus, links |
 | `clock`, `clock-dim` | Clock `#F7941E` | Hours and time only |
 | `danger`, `danger-dim` | Brick `#F87171` | Destructive actions and errors |
+| `done` | Baize `#52D681` | A finished deliverable: the Dashboard's Deliverables icon. A green you can tell from Signal at a glance |
 | `success`, `success-dim` | Signal | Done. Same value as `accent`, named for meaning |
 | `warning`, `warning-dim` | Clock | Caution. Same value as `clock`, named for meaning |
 | `edge` | Folio 42% | Borders of controls: 3:1 on Press and Graphite |
@@ -84,9 +85,104 @@ A workbench is recognised by its phase number and one line icon in Folio (`text-
 registry (`src/workbenches/registry.ts`) carries no colour fields, so a tool can never bring its own hue, and a colour
 keeps one meaning (Signal is progress, Clock is time, Brick is wrong).
 
-## Not yet converted (planned for P2)
+The Workbenches screen is a contents list (`src/workbenches/ToolList.tsx`), not a grid of tiles: a serif numeral (the
+phase, read aloud as "Phase N"), the tool's title, one line under it, and a chevron, each row separated by a rule. The
+numeral stands in for the icon there; the icon appears in the tool's own header.
 
-P1 changes the tokens, type and shared components. These screens still use their own boxes and need the P2 layouts:
-the Dashboard ring, icon tiles and Quick wins block (which borrows `warning`, so Clock still appears outside time until
-it is redesigned); the Roadmap phase cards and their `shadow-surface`; the Workbench tiles; the Audit donut and line cards.
+Above the list, the tool of the phase you are on (the same phase as Up next and the header chip) is lifted into a Panel:
+"Up next - Phase N", the tool's title, one line, and an Open button. The list below it stays complete and in order, under
+"All workbenches". Once every phase is done there is no panel. The tool of a finished phase has a quieter title.
 
+The one line under a title says what the tool holds once the person has entered something, and what it is for until then
+(the registry's `blurb`). `toolSummary()` (`src/lib/workbenchSummary.ts`) builds it from the tool's own normalizer and
+helpers, so it cannot disagree with the tool: "4 of 10 claims checked", "Next: Singles Day, in 25 days", "2 days
+compared, 1 over the threshold". It returns null for a tool that holds nothing, and `toolHoldsData()`
+(`src/lib/workbenchData.ts`) decides that: a tool holds data when its saved value, run through its own normalizer,
+differs from a fresh start, so a field typed and then cleared reads as empty and Brief Builder's saved-at stamp is
+ignored. There is no data dot any more; the line replaced it. The formula cheat-sheet saves nothing and has no summary.
+
+A tool opens on one hairline bar (back, the tool's icon, its title with the phase beneath, share), a one-line
+description, then the tool itself in a single `Panel`. There is no glass, no shadow and no rounded header, and the title
+wraps rather than truncating. The tool bodies inside the panel still carry their own headings and nested boxes; they are
+the next thing to convert.
+
+## Status mark and the Audit
+
+`StatusMark` (`src/components/StatusMark.tsx`) is the one way the app shows "how far along": a solid Signal disc with a
+tick when done, a Signal ring with a dot while under way, a hollow `edge` ring before. The Roadmap's spine nodes and the
+Audit's rows use it, so the same shape means the same thing on both. It is decorative; the screen says the state in
+words next to it.
+
+The Audit leads with readiness, the thing a person can change, and states coverage once, as a sentence ("All 10
+job-description lines are covered by a phase"), because coverage is a fact about how the curriculum was designed. Each
+line is a row: the mark, the line's ID in mono, a serif readiness figure on the right, the requirement, "Served by
+Phase 1", and a readiness bar. `readinessState()` (`src/lib/progress.ts`) picks the mark from the readiness percent: a
+tick only at 100, so a line at 0% shows a hollow ring and never a tick. The bar carries `role="progressbar"` with its
+value; the visible figure is hidden from assistive tech so it is not read twice. A line no phase serves (a state the
+current data never reaches) shows Brick text, "Gap", and a "Review roadmap" button instead of a bar.
+
+## Header
+
+One bar on every screen: the 28px mark (it moves to the active tab's square), "Rokomari BSPR" in the title face, and a
+hairline under it. On Workbenches and Audit it also carries a resume chip (`ResumeChip`) with the phase you are on and its
+progress, "Phase 2 · 67%", which opens the Roadmap on that phase. It stays off the Dashboard and the Roadmap, which already
+show that phase, off a tool's own screen, and off once the curriculum is complete. The chip is 44px tall; at 320px the
+name wraps to two lines before it would meet the chip.
+
+## Hours strip
+
+`HoursStrip` (`src/components/HoursStrip.tsx`) draws progress as a length, never a ring: one segment per phase, as wide
+as the phase's `hoursMax`, filled by that phase's own progress. A long phase looks long, so a small gain on a big phase
+explains itself.
+
+| Part | Looks like | Means |
+|---|---|---|
+| Width | Phase hours over total hours, gaps taken off the total | How big the phase is |
+| Fill | `accent`, from the left edge | The phase's progress percent. A completed phase always reads full |
+| Edge | `accent` on done and current phases, `edge` on the rest | Where you are |
+| Tick | A 2px `clock` bar on the current phase | Tracked hours, as a share of that phase's hours |
+| Number | `text-kicker` under the segment; `ink-primary` for the current phase | The phase number |
+
+The layout is `src/lib/hoursStrip.ts`. It calls `phaseProgress()` itself, so the filled length always equals the overall
+hours-weighted progress; `src/lib/hoursStrip.test.ts` checks that against `overallProgress()` on the real curriculum.
+Each segment is an image with a spoken description ("Phase 3, 40% done, 16 hours, current phase") and the numbers are
+decoration. The fill is static for now: the draw-in animation belongs to the P3 motion pass.
+
+The strip appears on the Dashboard only. On the Roadmap it said what the phase rows below already say, so it was
+removed there; a link carries you to a phase instead (see below).
+
+## Dashboard and Roadmap
+
+The Dashboard reads top to bottom as: the greeting and the budget line, the strip, three figures (Overall, Deliverables,
+Hours logged), one "Up next" panel with its one button, then "Next steps". The strip and the figures say where you are;
+Up next and Next steps say what to do, and they stay together because they are about the same phase. Each figure has a
+16px icon in the same place: Signal for Overall (progress), Baize for Deliverables (finished work), Clock for hours.
+
+"Next steps" lists the first three unticked core modules of the Up next phase as check rows (`nextModules()` in
+`src/lib/progress.ts`). Ticking a row writes to the same store the Roadmap uses, so the strip, the Overall figure, the
+summary line and the Continue/Start button move at once. A row ticked on this visit stays in the list so it can be
+unticked, and the list refills to three; when every module is ticked it says so and points to the Roadmap, where a phase
+is marked done. The check box is the shared `CheckMark` (`src/components/CheckMark.tsx`), the same one the Roadmap uses.
+
+The Roadmap is the title, a pinned search and filter bar, and the spine. Each filter chip carries its count (All 8,
+To do 6, Active 1, Done 1; `statusCounts()`), and the count follows the whole curriculum, not the search. The Continue/Start
+button on the Dashboard opens the Roadmap on that phase (`src/lib/roadmapLink.ts` puts the phase id in the router's
+location state): the phase opens, its row is brought under the pinned bar with an instant scroll, and its heading button
+takes focus. An id that is not a phase, or a visit without one, changes nothing.
+
+The spine runs down from the top of each phase and ends in that phase's status mark, so the mark sits where the phase
+ends, below its text and any open detail. The line above a mark is Signal once the phase is completed, `rule` otherwise.
+The mark's bottom edge is the row's bottom edge, so the next phase's line starts exactly where the mark ends.
+
+## Empty states
+
+`EmptyState` is text: a serif title, one line of explanation and, when there is something to do about it, one secondary
+button. There is no illustration and no icon tile, because there is nothing to draw. The Roadmap's is "No phases match",
+"Try a different search, or show every phase.", and a "Show all phases" button that clears the search and the filter. The
+words are a live region so a screen reader hears the list go empty; the button sits outside it.
+
+## Still to convert
+
+Every screen's layout now follows this system. What is left is inside the eight workbench tools: their own headings,
+descriptions that repeat the line shown above the panel (the AI verification log, for one), and boxes nested inside the
+Panel. Convert them tool by tool, starting with the ones that show the most chrome before the first field.

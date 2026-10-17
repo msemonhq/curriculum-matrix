@@ -8,7 +8,7 @@ import { daysUntil, parseYmd } from '../lib/dates';
 import { MAX_ITEMS, newId } from '../lib/fields';
 import { nextCalendarEntryId, normalizeCalendar, sortCalendar } from '../lib/workbench';
 import type { CalendarEntry } from '../lib/workbench';
-import { EmptyHint, Hint, RemoveButton, SectionHeading } from './ui';
+import { EmptyHint, Panel, RemoveButton } from './ui';
 import { useToolSlice } from './useToolSlice';
 
 function whenText(days: number | null): string {
@@ -46,23 +46,22 @@ export default function DemandCalendar() {
 
   return (
     <div className="w-full text-left">
-      <SectionHeading>Demand calendar</SectionHeading>
-      <Hint className="mb-4">List the dates that move demand for books in Bangladesh: festivals, exams, fairs, sales. The next one is highlighted.</Hint>
-
-      <form onSubmit={handleAdd} className="space-y-3 mb-5" noValidate>
-        <ToolInput id="calendar-new-date" label="Date" type="date" value={date} error={dateError || undefined} onChange={(e) => setDate(e.target.value)} />
-        <ToolInput
-          id="calendar-new-title"
-          label="Event or campaign"
-          value={title}
-          maxLength={300}
-          error={titleError || undefined}
-          placeholder="e.g. Ekushey Book Fair opens"
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <Button type="submit" variant="secondary" fullWidth disabled={data.events.length >= MAX_ITEMS}>
-          <Plus className="w-4 h-4" aria-hidden="true" /> Add to calendar
-        </Button>
+      <form onSubmit={handleAdd} noValidate>
+        <Panel className="space-y-3 mb-6">
+          <ToolInput id="calendar-new-date" label="Date" type="date" value={date} error={dateError || undefined} onChange={(e) => setDate(e.target.value)} />
+          <ToolInput
+            id="calendar-new-title"
+            label="Event or campaign"
+            value={title}
+            maxLength={300}
+            error={titleError || undefined}
+            placeholder="e.g. Ekushey Book Fair opens"
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <Button type="submit" variant="secondary" fullWidth disabled={data.events.length >= MAX_ITEMS}>
+            <Plus className="w-4 h-4" aria-hidden="true" /> Add to calendar
+          </Button>
+        </Panel>
       </form>
 
       {events.length === 0 ? (
@@ -74,7 +73,7 @@ export default function DemandCalendar() {
             const days = daysUntil(e.date, now);
             const past = days !== null && days < 0;
             return (
-              <li key={e.id} className={`p-3 border rounded-xl ${isNext ? 'bg-accent-dim border-accent/60' : 'bg-surface-subtle border-rule'} ${past ? 'opacity-70' : ''}`}>
+              <li key={e.id} className={`p-4 border rounded-xl ${isNext ? 'bg-accent-dim border-accent/60' : 'bg-surface-elevated border-rule'} ${past ? 'opacity-70' : ''}`}>
                 {(isNext || past || !e.date) && (
                   <div className="mb-2">
                     {isNext && <Badge variant="accent">Next · {whenText(days)}</Badge>}
