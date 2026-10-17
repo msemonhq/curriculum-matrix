@@ -5,7 +5,6 @@ import { useProgressStore } from '../hooks/useProgressStore';
 import { useToast } from '../hooks/useToast';
 import { shareText } from '../services/share';
 import { findTool } from '../workbenches/registry';
-import { Panel } from '../components/Panel';
 import { ToolList } from '../workbenches/ToolList';
 
 // This screen is only the contents list, the routing and the share button. Each tool lives in src/workbenches
@@ -70,14 +69,12 @@ export default function WorkbenchesScreen() {
           )}
         </header>
 
-        {/* Tool content: a short intro, then the work. The icon is already in the header above. */}
+        {/* Tool content: one line of intro, then the work sits on the page. A tool raises a panel only where you type. */}
         <div className="flex-1 overflow-y-auto">
-          <p className="px-4 pt-4 pb-3 text-body text-ink-secondary">{activeTool.description}</p>
+          <p className="px-4 pt-4 pb-4 text-body text-ink-secondary">{activeTool.description}</p>
 
           <div className="px-4 pb-28">
-            <Panel>
-              <ToolBody />
-            </Panel>
+            <ToolBody />
           </div>
         </div>
       </div>
