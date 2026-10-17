@@ -327,12 +327,12 @@ export default function CurriculumScreen() {
                               className="mt-0.5 flex"
                             >
                               {deliverableDone
-                                ? <CheckCircle2 className="w-5 h-5 text-success" aria-hidden="true" />
+                                ? <CheckCircle2 className="w-5 h-5 text-done" aria-hidden="true" />
                                 : <FileCheck className="w-5 h-5 text-ink-tertiary" aria-hidden="true" />
                               }
                             </motion.span>
                             <span>
-                              <span className={`block text-body font-semibold ${deliverableDone ? 'text-success' : 'text-ink-primary'}`}>
+                              <span className={`block text-body font-semibold ${deliverableDone ? 'text-done' : 'text-ink-primary'}`}>
                                 Proof-of-skill deliverable
                               </span>
                               <span className="mt-0.5 block text-meta text-ink-secondary">
