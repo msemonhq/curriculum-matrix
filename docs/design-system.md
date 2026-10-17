@@ -85,15 +85,21 @@ A workbench is recognised by its phase number and one line icon in Folio (`text-
 registry (`src/workbenches/registry.ts`) carries no colour fields, so a tool can never bring its own hue, and a colour
 keeps one meaning (Signal is progress, Clock is time, Brick is wrong).
 
-The Workbenches screen is a contents list (`src/workbenches/ToolList.tsx`), not a grid of tiles: a serif numeral, the
-tool's title, "Phase N · what it is for" (the registry's `blurb`), and a chevron, each row separated by a rule. The
+The Workbenches screen is a contents list (`src/workbenches/ToolList.tsx`), not a grid of tiles: a serif numeral (the
+phase, read aloud as "Phase N"), the tool's title, one line under it, and a chevron, each row separated by a rule. The
 numeral stands in for the icon there; the icon appears in the tool's own header.
 
-A small Signal dot sits before the chevron when the tool holds something the person entered. It is Signal, not Clock,
-because it says "there is work here" and Clock means time only. `toolHoldsData()` (`src/lib/workbenchData.ts`) decides:
-a tool holds data when its saved value, run through its own normalizer, differs from a fresh start. So a field typed and
-then cleared shows no dot, and Brief Builder's saved-at stamp is ignored. The dot is hidden from assistive tech and the
-row's second line carries ", has saved data" for screen readers instead.
+Above the list, the tool of the phase you are on (the same phase as Up next and the header chip) is lifted into a Panel:
+"Up next - Phase N", the tool's title, one line, and an Open button. The list below it stays complete and in order, under
+"All workbenches". Once every phase is done there is no panel. The tool of a finished phase has a quieter title.
+
+The one line under a title says what the tool holds once the person has entered something, and what it is for until then
+(the registry's `blurb`). `toolSummary()` (`src/lib/workbenchSummary.ts`) builds it from the tool's own normalizer and
+helpers, so it cannot disagree with the tool: "4 of 10 claims checked", "Next: Singles Day, in 25 days", "2 days
+compared, 1 over the threshold". It returns null for a tool that holds nothing, and `toolHoldsData()`
+(`src/lib/workbenchData.ts`) decides that: a tool holds data when its saved value, run through its own normalizer,
+differs from a fresh start, so a field typed and then cleared reads as empty and Brief Builder's saved-at stamp is
+ignored. There is no data dot any more; the line replaced it. The formula cheat-sheet saves nothing and has no summary.
 
 A tool opens on one hairline bar (back, the tool's icon, its title with the phase beneath, share), a one-line
 description, then the tool itself in a single `Panel`. There is no glass, no shadow and no rounded header, and the title
