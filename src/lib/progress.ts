@@ -173,18 +173,35 @@ export interface ToggleState extends ProgressInputs {
 /**
  * State change for ticking/unticking a module. The toggle uses the effective value (so a module
  * that a completed phase shows as ticked unticks on the first tap). Ticking the first module of a
- * not_started phase starts the phase and makes it active; unticking never reverts a status and
- * completing a phase stays a manual step.
+ * not_started phase starts the phase and makes it active. Unticking a module of a completed phase
+ * reopens it (in progress, and the active phase), because a phase with a module undone is not done;
+ * without that the phase would stay pinned at 100% and nothing would move. Completing a phase stays a
+ * manual step, and unticking in a phase that is not completed never changes its status.
+ *
+ * `phaseModuleIds` is every module of the phase, core or not. When a completed phase is reopened, each
+ * module it was showing as ticked is saved as ticked, so the others stay ticked once the phase no
+ * longer counts them all as done.
  */
 export function toggleModuleUpdate(
   state: ToggleState,
   phaseId: string,
   moduleId: string,
+  phaseModuleIds: readonly string[],
 ): Pick<ToggleState, 'completedModules'> & Partial<Pick<ToggleState, 'phaseStatus' | 'activePhaseId'>> {
   const wasChecked = isModuleChecked(state, phaseId, moduleId);
   const completedModules = { ...state.completedModules, [moduleKey(phaseId, moduleId)]: !wasChecked };
   const status = state.phaseStatus[phaseId] ?? 'not_started';
   if (!wasChecked && status === 'not_started') {
+    return {
+      completedModules,
+      phaseStatus: { ...state.phaseStatus, [phaseId]: 'in_progress' },
+      activePhaseId: phaseId,
+    };
+  }
+  if (wasChecked && status === 'completed') {
+    for (const id of phaseModuleIds) {
+      if (id !== moduleId && isModuleChecked(state, phaseId, id)) completedModules[moduleKey(phaseId, id)] = true;
+    }
     return {
       completedModules,
       phaseStatus: { ...state.phaseStatus, [phaseId]: 'in_progress' },

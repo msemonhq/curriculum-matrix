@@ -78,33 +78,67 @@ test('isModuleChecked: explicit value wins, completed phase is the default', () 
   assert.equal(isModuleChecked(inputs, 'phase_2', 'm1'), false);
 });
 
-test('toggle uses the effective value: first tap on a default-ticked module unticks it', () => {
+const P1_IDS = ['m1', 'm2', 'm3', 'm4', 'm5'];
+const P4_IDS = ['m1', 'm2', 'm3', 'm4', 'm5'];
+const P3_IDS = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6'];
+
+test('unticking a module of a completed phase reopens it and keeps the others ticked', () => {
   const state = { phaseStatus: { phase_1: 'completed' as const }, completedModules: {}, activePhaseId: null };
-  const next = toggleModuleUpdate(state, 'phase_1', 'm1');
-  assert.deepEqual(next, { completedModules: { phase_1_m1: false } });
+  const next = toggleModuleUpdate(state, 'phase_1', 'm1', P1_IDS);
+  assert.equal(next.phaseStatus?.phase_1, 'in_progress');
+  assert.equal(next.activePhaseId, 'phase_1');
+  assert.deepEqual(next.completedModules, { phase_1_m1: false, phase_1_m2: true, phase_1_m3: true, phase_1_m4: true, phase_1_m5: true });
+});
+
+test('unticking in a completed phase moves the progress figures, and they match the checkboxes', () => {
+  const before = { phaseStatus: { phase_1: 'completed' as const }, completedModules: {}, activePhaseId: null };
+  assert.equal(phaseProgress(PHASES[0], before).percent, 100);
+  const after = { ...before, ...toggleModuleUpdate(before, 'phase_1', 'm1', P1_IDS) };
+  // Core modules m1 to m4: three still ticked of four.
+  assert.deepEqual(phaseProgress(PHASES[0], after), { done: 3, total: 4, percent: 75 });
+  assert.equal(overallProgress(PHASES, after).percent, Math.round((5.5 * 0.75 / 92.5) * 100));
+  assert.ok(overallProgress(PHASES, after).fraction < overallProgress(PHASES, before).fraction);
+  for (const id of ['m2', 'm3', 'm4', 'm5']) assert.equal(isModuleChecked(after, 'phase_1', id), true, id);
+  assert.equal(isModuleChecked(after, 'phase_1', 'm1'), false);
+});
+
+test('reopening a completed phase does not tick a module that was explicitly unticked', () => {
+  const state = { phaseStatus: { phase_1: 'completed' as const }, completedModules: { phase_1_m3: false }, activePhaseId: null };
+  const next = toggleModuleUpdate(state, 'phase_1', 'm1', P1_IDS);
+  assert.equal(next.completedModules.phase_1_m3, false);
+  assert.equal(next.completedModules.phase_1_m2, true);
+});
+
+test('ticking again after a phase was reopened works as in any in-progress phase', () => {
+  let state: ProgressInputs & { activePhaseId: string | null } = { phaseStatus: { phase_1: 'completed' }, completedModules: {}, activePhaseId: null };
+  state = { ...state, ...toggleModuleUpdate(state, 'phase_1', 'm1', P1_IDS) };
+  state = { ...state, ...toggleModuleUpdate(state, 'phase_1', 'm1', P1_IDS) };
+  assert.equal(state.phaseStatus.phase_1, 'in_progress');
+  assert.equal(phaseProgress(PHASES[0], state).percent, 100);
 });
 
 test('ticking the first module of a not_started phase starts it and makes it active', () => {
   const state = { phaseStatus: {}, completedModules: {}, activePhaseId: 'phase_1' };
-  const next = toggleModuleUpdate(state, 'phase_4', 'm1');
+  const next = toggleModuleUpdate(state, 'phase_4', 'm1', P4_IDS);
   assert.equal(next.completedModules.phase_4_m1, true);
   assert.equal(next.phaseStatus?.phase_4, 'in_progress');
   assert.equal(next.activePhaseId, 'phase_4');
 });
 
-test('ticking in an in-progress phase leaves status and active phase alone; unticking never reverts', () => {
+test('in a phase that is not completed, ticking and unticking leave status and active phase alone', () => {
   const state = { phaseStatus: { phase_4: 'in_progress' as const }, completedModules: { phase_4_m1: true }, activePhaseId: 'phase_2' };
-  const tick = toggleModuleUpdate(state, 'phase_4', 'm2');
+  const tick = toggleModuleUpdate(state, 'phase_4', 'm2', P4_IDS);
   assert.equal(tick.phaseStatus, undefined);
   assert.equal(tick.activePhaseId, undefined);
-  const untick = toggleModuleUpdate(state, 'phase_4', 'm1');
+  const untick = toggleModuleUpdate(state, 'phase_4', 'm1', P4_IDS);
   assert.deepEqual(untick, { completedModules: { phase_4_m1: false } });
+  assert.equal(phaseProgress(PHASES[3], { ...state, ...untick }).percent, 0);
 });
 
 test('a phase with every core module ticked is not auto-completed', () => {
   let state = { phaseStatus: {} as ProgressInputs['phaseStatus'], completedModules: {} as Record<string, boolean>, activePhaseId: null as string | null };
   for (const m of ['m1', 'm2', 'm3', 'm4', 'm5']) {
-    state = { ...state, ...toggleModuleUpdate(state, 'phase_3', m) };
+    state = { ...state, ...toggleModuleUpdate(state, 'phase_3', m, P3_IDS) };
   }
   assert.equal(state.phaseStatus.phase_3, 'in_progress');
   assert.equal(phaseProgress(PHASES[2], state).percent, 100);
