@@ -162,7 +162,6 @@ export default function CurriculumScreen() {
             const timeLogged    = timeTracking[phase.id] || 0;
             const note          = notes[phase.id] || '';
             const moduleProgress = byPhase[phase.id];
-            const above         = index > 0 ? filteredPhases[index - 1] : null;
             const rowLine       = phaseRowLine(status, {
               done: moduleProgress.done,
               total: moduleProgress.total,
@@ -174,18 +173,18 @@ export default function CurriculumScreen() {
 
             return (
               <motion.li key={phase.id} id={`phase-${phase.id}`} variants={staggerItem} className="relative flex scroll-mt-40">
-                {/* The spine: a hairline through the nodes, Signal below a finished phase. Drawn before the node so the node sits on top. */}
-                {above && <span aria-hidden="true" className={`absolute left-6 top-0 h-[22px] w-px ${phaseStatus[above.id] === 'completed' ? 'bg-accent' : 'bg-rule'}`} />}
-                {index < filteredPhases.length - 1 && <span aria-hidden="true" className={`absolute bottom-0 left-6 top-[22px] w-px ${status === 'completed' ? 'bg-accent' : 'bg-rule'}`} />}
+                {/* The spine runs down from the top of the phase and ends in its mark, so a tick means the phase has been walked to its end.
+                    The line is Signal once the phase is finished. The mark's bottom edge sits on the row's bottom edge, so the next phase's line starts where this mark ends. */}
+                <span aria-hidden="true" className={`pointer-events-none absolute bottom-3 left-6 top-0 w-px ${status === 'completed' ? 'bg-accent' : 'bg-rule'}`} />
 
-                <div className="relative flex w-12 shrink-0 items-start justify-center">
+                <div className="relative flex w-12 shrink-0 flex-col items-center justify-end">
                   {/* Status: a real button so it can be focused and is announced with its state */}
                   <motion.button
                     type="button"
                     whileTap={{ scale: 0.8 }}
                     transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                     aria-label={`Phase ${phase.number} status: ${STATUS_LABEL[status]}, tap to change`}
-                    className="flex min-h-11 min-w-11 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
+                    className="-mb-2.5 flex min-h-11 min-w-11 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
                     onClick={() => setPhaseStatus(phase.id, STATUS_CYCLE[status] || 'not_started')}
                   >
                     <StatusMark state={MARK_STATE[status]} />

@@ -164,6 +164,10 @@ button on the Dashboard opens the Roadmap on that phase (`src/lib/roadmapLink.ts
 location state): the phase opens, its row is brought under the pinned bar with an instant scroll, and its heading button
 takes focus. An id that is not a phase, or a visit without one, changes nothing.
 
+The spine runs down from the top of each phase and ends in that phase's status mark, so the mark sits where the phase
+ends, below its text and any open detail. The line above a mark is Signal once the phase is completed, `rule` otherwise.
+The mark's bottom edge is the row's bottom edge, so the next phase's line starts exactly where the mark ends.
+
 ## Empty states
 
 `EmptyState` is text: a serif title, one line of explanation and, when there is something to do about it, one secondary
