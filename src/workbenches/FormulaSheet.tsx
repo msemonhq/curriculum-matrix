@@ -7,7 +7,6 @@ import { FORMULAS, FORMULA_GROUPS, filterFormulas } from '../lib/formulas';
 import type { FormulaEntry, FormulaGroup } from '../lib/formulas';
 import { useToast } from '../hooks/useToast';
 import { copyText } from '../services/share';
-import { Hint, SectionHeading } from './ui';
 
 const GROUP_CHOICES: ReadonlyArray<FormulaGroup | 'All'> = ['All', ...FORMULA_GROUPS];
 
@@ -25,9 +24,6 @@ export default function FormulaSheet() {
 
   return (
     <div className="w-full text-left">
-      <SectionHeading>Formula cheat-sheet</SectionHeading>
-      <Hint className="mb-4">Formulas for the Phase 3 intake, pivot and summary, and the marketing metrics used later. Change the cell references to match your sheet.</Hint>
-
       <ToolInput
         id="formula-search"
         aria-label="Search formulas"
@@ -51,14 +47,16 @@ export default function FormulaSheet() {
         ))}
       </div>
 
-      <p role="status" className="mb-3 text-meta text-ink-secondary tabular">{results.length} of {FORMULAS.length} shown</p>
+      <p className="mb-1 text-meta text-ink-secondary">
+        <span role="status" className="tabular">{results.length} of {FORMULAS.length} shown.</span> Change the cell references to match your sheet.
+      </p>
 
       {results.length === 0 ? (
         <div className="p-4 border border-dashed border-rule rounded-xl text-body text-ink-secondary">No formula matches that search. Try a shorter word, or choose All.</div>
       ) : (
-        <ul className="space-y-3">
+        <ul className="divide-y divide-rule border-t border-rule">
           {results.map((entry) => (
-            <li key={entry.id} className="p-3 bg-surface-subtle border border-rule rounded-xl">
+            <li key={entry.id} className="py-4">
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="flex flex-col items-start gap-1 min-w-0">
                   <h5 className="text-body font-semibold text-ink-primary break-words">{entry.name}</h5>
@@ -68,7 +66,7 @@ export default function FormulaSheet() {
                   <Copy className="w-4 h-4" aria-hidden="true" /> Copy
                 </Button>
               </div>
-              <code className="block p-2.5 mb-2 bg-surface-base border border-rule rounded-lg font-mono text-meta text-success whitespace-pre-wrap break-words">{entry.formula}</code>
+              <code className="block p-3 mb-2 bg-surface-elevated border border-rule rounded-lg font-mono text-meta text-success whitespace-pre-wrap break-words">{entry.formula}</code>
               <p className="text-meta text-ink-secondary">{entry.note}</p>
               {entry.excel && <p className="mt-1.5 text-meta text-ink-secondary"><span className="font-semibold text-ink-primary">In Excel: </span>{entry.excel}</p>}
             </li>
