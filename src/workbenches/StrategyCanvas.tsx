@@ -24,7 +24,7 @@ interface ScoreSliderProps {
 function ScoreSlider({ id, label, value, strong = false, onChange }: ScoreSliderProps) {
   return (
     <div className="flex items-center gap-3">
-      <label htmlFor={id} className={`w-24 shrink-0 truncate text-meta ${strong ? 'text-accent font-semibold' : 'text-ink-secondary'}`}>{label}</label>
+      <label htmlFor={id} className={`w-24 shrink-0 break-words text-meta ${strong ? 'text-accent font-semibold' : 'text-ink-secondary'}`}>{label}</label>
       <input
         id={id}
         type="range"
