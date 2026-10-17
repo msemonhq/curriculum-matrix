@@ -12,6 +12,7 @@ import { MatrixMark } from './components/MatrixMark';
 import { ResumeChip } from './components/ResumeChip';
 import { phases } from './data/curriculum';
 import { useProgress } from './hooks/useProgress';
+import { useSwipeNavigation } from './hooks/useSwipeNavigation';
 import { useProgressStore } from './hooks/useProgressStore';
 import { upNextPhase } from './lib/progress';
 import { ROADMAP_PATH, roadmapState } from './lib/roadmapLink';
@@ -36,6 +37,11 @@ function MainApp() {
     : undefined;
   
   React.useEffect(() => { if (mainRef.current) mainRef.current.scrollTop = 0; }, [location.pathname]);
+  // Swiping sideways moves along the tabs, in the order of the navigation bar. Off inside a tool, which has no bar.
+  useSwipeNavigation(mainRef, activeTab, !isInsideTool, (tab) => {
+    const target = tabs.find((candidate) => candidate.id === tab);
+    if (target) navigate(target.path);
+  });
 
   return (
     <div className="flex flex-col h-screen bg-surface-base overflow-hidden text-ink-primary pb-safe">
